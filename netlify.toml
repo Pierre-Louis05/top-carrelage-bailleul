@@ -42,3 +42,18 @@
   from = "/espace-equipe"
   to = "/espace-equipe/index.html"
   status = 200
+
+[[redirects]]
+  from = "/services"
+  to = "/services.html"
+  status = 200
+
+[[redirects]]
+  from = "/inspirations"
+  to = "/realisations.html"
+  status = 200
+
+[[redirects]]
+  from = "/produits"
+  to = "/univers.html"
+  status = 200

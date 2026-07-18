@@ -3,41 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nos Univers — Top Carrelage Bailleul</title>
-  <meta name="description" content="Découvrez les 5 univers de Top Carrelage : carrelage, sanitaire, parquet, cuisine et dressing." />
+  <title>Nos Produits — Top Carrelage Bailleul</title>
+  <meta name="description" content="Carrelage, salle de bain & sanitaire, parquet, cuisine, pierre naturelle, outillage : découvrez les 6 univers produits de Top Carrelage Bailleul." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
+<!-- TOPBAR -->
+<div class="topbar-site">
+  <div class="container">
+    <div class="topbar-left">
+      <span class="topbar-hide-mobile">📍 22 Av. de l'Europe, Bailleul</span>
+      <span>🕐 Mar–Sam : 9h–12h / 14h–18h30 · Lun : 14h–18h30</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-hide-mobile">Conseils et devis :</span>
+      <a href="tel:+33328480808" class="tel-top">03 28 48 08 08</a>
+    </div>
+  </div>
+</div>
+
+<!-- NAVBAR -->
 <nav id="navbar">
   <div class="container nav-inner">
     <a href="index.html" class="nav-logo">
-      <span class="nav-logo-main">Top Carrelage</span>
-      <span class="nav-logo-sub">Bailleul · Depuis 1985</span>
+      <div class="logo-badge"><div class="badge-back"></div><div class="badge-front"><span>TOP</span></div></div>
+      <div class="nav-logo-text">
+        <span class="nav-logo-main">Carrelage</span>
+        <span class="nav-logo-sub">Choix · Prix · Qualité</span>
+      </div>
     </a>
     <ul class="nav-links">
-      <li><a href="univers.html" class="active">Nos Univers</a></li>
-      <li><a href="realisations.html">Réalisations</a></li>
-      <li><a href="histoire.html">Notre Histoire</a></li>
-      <li><a href="equipe.html">L'Équipe</a></li>
+      <li><a href="index.html">Accueil</a></li>
+      <li class="has-dropdown">
+        <a href="univers.html#carrelage">Carrelage</a>
+        <div class="dropdown">
+          <a href="univers.html#carrelage">Carrelage intérieur</a>
+          <a href="univers.html#carrelage">Carrelage extérieur</a>
+          <a href="univers.html#carrelage">Faïence murale</a>
+        </div>
+      </li>
+      <li class="has-dropdown">
+        <a href="univers.html#salle-de-bain">Salle de bain</a>
+        <div class="dropdown">
+          <a href="univers.html#salle-de-bain">Douche & baignoire</a>
+          <a href="univers.html#salle-de-bain">Meubles & vasques</a>
+          <a href="univers.html#salle-de-bain">Robinetterie</a>
+        </div>
+      </li>
+      <li class="has-dropdown">
+        <a href="univers.html#parquet">Parquet</a>
+        <div class="dropdown">
+          <a href="univers.html#parquet">Stratifié</a>
+          <a href="univers.html#parquet">Contrecollé</a>
+          <a href="univers.html#parquet">Massif</a>
+        </div>
+      </li>
+      <li><a href="univers.html#cuisine">Cuisine</a></li>
+      <li><a href="univers.html#pierre-naturelle">Pierre naturelle</a></li>
+      <li><a href="univers.html#outillage">Outillage</a></li>
+      <li><a href="realisations.html">Inspirations</a></li>
+      <li><a href="services.html">Services</a></li>
       <li><a href="contact.html">Contact</a></li>
     </ul>
-    <a href="rendez-vous.html" class="btn btn-or nav-cta">Prendre RDV</a>
-    <button class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></button>
+    <a href="rendez-vous.html" class="btn btn-rouge nav-cta">Prendre RDV</a>
+    <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </nav>
+
+<!-- MOBILE MENU -->
 <div class="nav-mobile" id="mobileMenu">
-  <button class="nav-mobile-close" id="mobileClose">✕</button>
+  <button class="nav-mobile-close" id="mobileClose" aria-label="Fermer">✕</button>
   <a href="index.html">Accueil</a>
-  <a href="univers.html">Nos Univers</a>
-  <a href="realisations.html">Réalisations</a>
-  <a href="histoire.html">Notre Histoire</a>
-  <a href="equipe.html">L'Équipe</a>
+  <a href="univers.html#carrelage">Carrelage</a>
+  <a href="univers.html#salle-de-bain">Salle de bain & Sanitaire</a>
+  <a href="univers.html#parquet">Parquet</a>
+  <a href="univers.html#cuisine">Cuisine</a>
+  <a href="univers.html#pierre-naturelle">Pierre naturelle</a>
+  <a href="univers.html#outillage">Outillage & Accessoires</a>
+  <a href="realisations.html">Inspirations</a>
+  <a href="services.html">Services</a>
   <a href="contact.html">Contact</a>
-  <a href="rendez-vous.html" class="btn btn-or" style="margin-top:1rem;">Prendre RDV</a>
+  <a href="rendez-vous.html" class="btn btn-rouge" style="margin-top:1rem;">Prendre RDV</a>
 </div>
 
 <!-- PAGE HERO -->
@@ -46,196 +98,201 @@
   <div class="page-hero-overlay"></div>
   <div class="container">
     <div class="page-hero-content">
-      <div class="breadcrumb"><a href="index.html">Accueil</a> <span>/</span> Nos Univers</div>
-      <h1>Nos Univers</h1>
+      <div class="breadcrumb"><a href="index.html">Accueil</a> <span>/</span> Nos Produits</div>
+      <h1>Nos Produits</h1>
       <div class="sep"></div>
-      <p style="color:rgba(250,250,248,0.7); max-width:500px;">Cinq espaces d'expertise pour créer l'intérieur qui vous correspond.</p>
+      <p style="color:rgba(255,255,255,0.75);">Six univers pour équiper et embellir toute la maison.</p>
     </div>
   </div>
 </div>
 
-<main>
-
-  <!-- CARRELAGE -->
-  <section id="carrelage" class="univers-section" style="background:var(--blanc);">
-    <div class="container">
-      <div class="univers-section-grid">
-        <div class="univers-section-img reveal">
-          <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80&auto=format&fit=crop" alt="Carrelage" loading="lazy" />
-        </div>
-        <div class="univers-section-text reveal">
-          <span class="tag">01 — Carrelage</span>
-          <h2>Le carrelage,<br>une toile d'expression</h2>
-          <div class="sep"></div>
-          <p>Du grand format minéral aux mosaïques artisanales, notre collection de carrelage couvre tous les styles et toutes les surfaces. Sols, murs, façades : chaque espace mérite un traitement unique.</p>
-          <p>Nous proposons des références de marques comme Marazzi, Fap Ceramiche, Rex, Florim ou encore Ragno — des collections exclusives difficiles à trouver ailleurs dans la région.</p>
-          <ul class="univers-sub-list">
-            <li>Grands formats</li>
-            <li>Carrelage imitation marbre</li>
-            <li>Carrelage imitation bois</li>
-            <li>Mosaïques</li>
-            <li>Carrelage extérieur</li>
-            <li>Faïence salle de bain</li>
-            <li>Carrelage piscine</li>
-          </ul>
-          <a href="rendez-vous.html" class="btn btn-or">Demander un conseil</a>
-        </div>
+<!-- CARRELAGE -->
+<section id="carrelage" style="background:var(--blanc);">
+  <div class="container">
+    <div class="intro-grid">
+      <div class="intro-text reveal">
+        <span class="tag">Univers 01</span>
+        <h2>Carrelage intérieur<br>& extérieur</h2>
+        <div class="sep"></div>
+        <p>Grès cérame, faïence, grands formats, imitation bois, béton ou pierre : notre sélection couvre tous les styles et tous les usages — sols, murs, terrasses, plages de piscine.</p>
+        <p>Des premiers prix aux collections italiennes haut de gamme, avec plus de 3000 références en stock ou sur commande.</p>
+        <a href="rendez-vous.html" class="btn btn-rouge">Demander conseil</a>
+      </div>
+      <div class="intro-image reveal">
+        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80&auto=format&fit=crop" alt="Carrelage intérieur et extérieur" loading="lazy" />
       </div>
     </div>
-  </section>
-
-  <!-- SANITAIRE -->
-  <section id="sanitaire" class="univers-section" style="background:var(--gris-clair);">
-    <div class="container">
-      <div class="univers-section-grid reverse">
-        <div class="univers-section-img reveal">
-          <img src="https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=900&q=80&auto=format&fit=crop" alt="Sanitaire" loading="lazy" />
-        </div>
-        <div class="univers-section-text reveal">
-          <span class="tag">02 — Sanitaire</span>
-          <h2>La salle de bain,<br>un sanctuaire personnel</h2>
-          <div class="sep"></div>
-          <p>Imaginez une salle de bain qui vous ressemble vraiment — un espace de détente et de soin pensé dans les moindres détails. Nos conseillers vous accompagnent de la conception au choix des finitions.</p>
-          <p>Nous travaillons avec Geberit, Villeroy & Boch, Duravit, Hansgrohe, Grohe et bien d'autres pour composer votre espace idéal.</p>
-          <ul class="univers-sub-list">
-            <li>Baignoires îlot</li>
-            <li>Douches à l'italienne</li>
-            <li>Robinetterie design</li>
-            <li>Vasques & lavabos</li>
-            <li>WC suspendus</li>
-            <li>Meubles de salle de bain</li>
-            <li>Accessoires & miroirs</li>
-          </ul>
-          <a href="rendez-vous.html" class="btn btn-or">Concevoir ma salle de bain</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- PARQUET -->
-  <section id="parquet" class="univers-section" style="background:var(--blanc);">
-    <div class="container">
-      <div class="univers-section-grid">
-        <div class="univers-section-img reveal">
-          <img src="https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=900&q=80&auto=format&fit=crop" alt="Parquet" loading="lazy" />
-        </div>
-        <div class="univers-section-text reveal">
-          <span class="tag">03 — Parquet</span>
-          <h2>Le parquet,<br>chaleur et caractère</h2>
-          <div class="sep"></div>
-          <p>Le parquet transforme instantanément l'atmosphère d'une pièce. Massif, contrecollé ou stratifié — nous sélectionnons des collections qui allient beauté naturelle et durabilité.</p>
-          <p>Chêne huilé, teintes claires ou foncées, formats point de Hongrie ou bâtons rompus : notre gamme vous offre une liberté créative totale.</p>
-          <ul class="univers-sub-list">
-            <li>Parquet massif</li>
-            <li>Parquet contrecollé</li>
-            <li>Parquet stratifié</li>
-            <li>Pose chevron / hongrois</li>
-            <li>Parquet exotique</li>
-            <li>Finitions huilées & vitrifiées</li>
-          </ul>
-          <a href="rendez-vous.html" class="btn btn-or">Choisir mon parquet</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CUISINE -->
-  <section id="cuisine" class="univers-section" style="background:var(--gris-clair);">
-    <div class="container">
-      <div class="univers-section-grid reverse">
-        <div class="univers-section-img reveal">
-          <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=900&q=80&auto=format&fit=crop" alt="Cuisine" loading="lazy" />
-        </div>
-        <div class="univers-section-text reveal">
-          <span class="tag">04 — Cuisine</span>
-          <h2>La cuisine,<br>cœur de votre maison</h2>
-          <div class="sep"></div>
-          <p>Votre cuisine doit être aussi belle qu'efficace. Nos designers vous proposent des conceptions sur mesure qui optimisent chaque centimètre carré tout en reflétant votre personnalité.</p>
-          <p>Plans de travail en quartz, portes laquées, bois naturel, inox — nous travaillons les matières nobles avec des cuisinistes partenaires de référence.</p>
-          <ul class="univers-sub-list">
-            <li>Cuisine sur mesure</li>
-            <li>Plan de travail quartz</li>
-            <li>Cuisine laquée</li>
-            <li>Cuisine bois naturel</li>
-            <li>Îlot central</li>
-            <li>Électroménager intégré</li>
-            <li>Cuisine ouverte</li>
-          </ul>
-          <a href="rendez-vous.html" class="btn btn-or">Concevoir ma cuisine</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- DRESSING -->
-  <section id="dressing" class="univers-section" style="background:var(--blanc); border-bottom:none;">
-    <div class="container">
-      <div class="univers-section-grid">
-        <div class="univers-section-img reveal">
-          <img src="https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=900&q=80&auto=format&fit=crop" alt="Dressing" loading="lazy" />
-        </div>
-        <div class="univers-section-text reveal">
-          <span class="tag">05 — Dressing</span>
-          <h2>Le dressing,<br>l'élégance de l'organisation</h2>
-          <div class="sep"></div>
-          <p>Un dressing bien conçu est bien plus qu'un espace de rangement : c'est un lieu de mise en scène de votre garde-robe, pensé pour votre confort quotidien.</p>
-          <p>Sur mesure ou modulable, nos solutions de dressing s'adaptent à toutes les configurations d'espace, des plus petites chambres aux dressings walk-in de suite parentale.</p>
-          <ul class="univers-sub-list">
-            <li>Dressing sur mesure</li>
-            <li>Walk-in closet</li>
-            <li>Dressing modulable</li>
-            <li>Portes coulissantes</li>
-            <li>Éclairage LED intégré</li>
-            <li>Tiroirs & penderies</li>
-          </ul>
-          <a href="rendez-vous.html" class="btn btn-or">Créer mon dressing</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-</main>
-
-<!-- CTA FINAL -->
-<section style="background:var(--noir); padding:5rem 0;">
-  <div class="container" style="text-align:center;">
-    <span class="tag">Conseil gratuit</span>
-    <h2 style="color:var(--blanc); margin-bottom:1rem;">Votre projet commence ici</h2>
-    <div class="sep sep-center"></div>
-    <p style="color:rgba(250,250,248,0.65); max-width:480px; margin:0 auto 2.5rem;">Nos conseillers sont disponibles pour étudier votre projet et vous guider dans vos choix.</p>
-    <a href="rendez-vous.html" class="btn btn-or">Prendre rendez-vous</a>
   </div>
 </section>
 
+<!-- SALLE DE BAIN -->
+<section id="salle-de-bain" style="background:var(--bg);">
+  <div class="container">
+    <div class="intro-grid">
+      <div class="intro-image reveal">
+        <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=900&q=80&auto=format&fit=crop" alt="Salle de bain et sanitaire" loading="lazy" />
+      </div>
+      <div class="intro-text reveal">
+        <span class="tag">Univers 02</span>
+        <h2>Salle de bain<br>& Sanitaire</h2>
+        <div class="sep"></div>
+        <p>Douches à l'italienne, parois, baignoires, meubles vasques, WC, robinetterie : composez une salle de bain qui vous ressemble, du plus fonctionnel au plus design.</p>
+        <p>Nos conseillers vous aident à optimiser chaque m² et à coordonner revêtements et équipements.</p>
+        <a href="rendez-vous.html" class="btn btn-rouge">Demander conseil</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARQUET -->
+<section id="parquet" style="background:var(--blanc);">
+  <div class="container">
+    <div class="intro-grid">
+      <div class="intro-text reveal">
+        <span class="tag">Univers 03</span>
+        <h2>Parquet</h2>
+        <div class="sep"></div>
+        <p>Stratifié, contrecollé ou massif : le charme du bois pour toutes les pièces et tous les budgets. Chêne naturel, teintes grisées, lames larges ou point de Hongrie.</p>
+        <p>Nous vous guidons sur le choix de la pose, des sous-couches et de l'entretien.</p>
+        <a href="rendez-vous.html" class="btn btn-rouge">Demander conseil</a>
+      </div>
+      <div class="intro-image reveal">
+        <img src="https://images.unsplash.com/photo-1600210492493-0946911123ea?w=900&q=80&auto=format&fit=crop" alt="Parquet chêne naturel" loading="lazy" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CUISINE -->
+<section id="cuisine" style="background:var(--bg);">
+  <div class="container">
+    <div class="intro-grid">
+      <div class="intro-image reveal">
+        <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=900&q=80&auto=format&fit=crop" alt="Cuisine contemporaine" loading="lazy" />
+      </div>
+      <div class="intro-text reveal">
+        <span class="tag">Univers 04</span>
+        <h2>Cuisine</h2>
+        <div class="sep"></div>
+        <p>Meubles, plans de travail, éviers, crédences : concevez une cuisine à la fois belle et pratique, coordonnée avec vos sols et vos murs.</p>
+        <p>Étude personnalisée de votre implantation et devis gratuit sous 48h.</p>
+        <a href="rendez-vous.html" class="btn btn-rouge">Demander conseil</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PIERRE NATURELLE -->
+<section id="pierre-naturelle" style="background:var(--blanc);">
+  <div class="container">
+    <div class="intro-grid">
+      <div class="intro-text reveal">
+        <span class="tag">Univers 05</span>
+        <h2>Pierre naturelle</h2>
+        <div class="sep"></div>
+        <p>Travertin, marbre, ardoise, granit, parements muraux : la noblesse et l'authenticité de la pierre pour vos sols, murs, terrasses et abords de piscine.</p>
+        <p>Chaque pierre est unique — venez voir et toucher les lots en showroom.</p>
+        <a href="rendez-vous.html" class="btn btn-rouge">Demander conseil</a>
+      </div>
+      <div class="intro-image reveal">
+        <img src="https://images.unsplash.com/photo-1524230572899-a752b3835840?w=900&q=80&auto=format&fit=crop" alt="Pierre naturelle" loading="lazy" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OUTILLAGE -->
+<section id="outillage" style="background:var(--bg);">
+  <div class="container">
+    <div class="intro-grid">
+      <div class="intro-image reveal">
+        <img src="https://images.unsplash.com/photo-1504148455328-c376907d081c?w=900&q=80&auto=format&fit=crop" alt="Outillage et accessoires de pose" loading="lazy" />
+      </div>
+      <div class="intro-text reveal">
+        <span class="tag">Univers 06</span>
+        <h2>Outillage<br>& Accessoires</h2>
+        <div class="sep"></div>
+        <p>Colles, joints, croisillons, profilés, systèmes de nivellement, produits d'entretien et petit outillage : tout le nécessaire pour une pose réussie et durable.</p>
+        <p>Les mêmes produits que les professionnels, avec les conseils qui vont avec.</p>
+        <a href="rendez-vous.html" class="btn btn-rouge">Demander conseil</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="background:var(--marine); text-align:center;">
+  <div class="container">
+    <span class="tag" style="color:#FF6B75;">Un projet en tête ?</span>
+    <h2 style="color:#fff; margin-bottom:1rem;">Venez en parler au showroom</h2>
+    <div class="sep sep-center"></div>
+    <p style="color:rgba(255,255,255,0.7); max-width:480px; margin:0 auto 2.5rem;">800 m² d'exposition au 22 avenue de l'Europe à Bailleul. Conseil gratuit, sans rendez-vous ou sur rendez-vous.</p>
+    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+      <a href="rendez-vous.html" class="btn btn-rouge">Prendre rendez-vous</a>
+      <a href="contact.html" class="btn btn-outline">Nous contacter</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
 <footer>
   <div class="container">
     <div class="footer-grid">
       <div class="footer-brand">
-        <div class="nav-logo"><span class="nav-logo-main">Top Carrelage</span><span class="nav-logo-sub">Depuis 1985</span></div>
-        <p>Expert en carrelage, sanitaire, parquet, cuisine et dressing à Bailleul depuis plus de 35 ans.</p>
+        <a href="index.html" class="nav-logo">
+          <div class="logo-badge"><div class="badge-back"></div><div class="badge-front"><span>TOP</span></div></div>
+          <div class="nav-logo-text">
+            <span class="nav-logo-main">Carrelage</span>
+            <span class="nav-logo-sub">Choix · Prix · Qualité</span>
+          </div>
+        </a>
+        <p>Spécialiste du carrelage, sanitaire, parquet, cuisine et pierre naturelle à Bailleul. Qualité, choix et prix exclusifs pour sublimer tous vos espaces.</p>
       </div>
-      <div class="footer-col"><h4>Navigation</h4><ul>
-        <li><a href="univers.html">Nos Univers</a></li>
-        <li><a href="realisations.html">Réalisations</a></li>
-        <li><a href="histoire.html">Notre Histoire</a></li>
-        <li><a href="equipe.html">L'Équipe</a></li>
-        <li><a href="rendez-vous.html">Prendre RDV</a></li>
-        <li><a href="contact.html">Contact</a></li>
-        <li><a href="avis.html">Laisser un avis</a></li>
-      </ul></div>
-      <div class="footer-col"><h4>Nos Univers</h4><ul>
-        <li><a href="#carrelage">Carrelage</a></li>
-        <li><a href="#sanitaire">Sanitaire</a></li>
-        <li><a href="#parquet">Parquet</a></li>
-        <li><a href="#cuisine">Cuisine</a></li>
-        <li><a href="#dressing">Dressing</a></li>
-      </ul></div>
-      <div class="footer-col footer-contact"><h4>Contact</h4>
-        <p><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>22 Av. de l'Europe<br>59270 Bailleul</p>
-        <p><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.4 2 2 0 0 1 3.58 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l1.87-1.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><a href="tel:+33328480808">03 28 48 08 08</a></p>
+      <div class="footer-col">
+        <h4>Nos produits</h4>
+        <ul>
+          <li><a href="univers.html#carrelage">Carrelage intérieur & extérieur</a></li>
+          <li><a href="univers.html#salle-de-bain">Salle de bain & Sanitaire</a></li>
+          <li><a href="univers.html#parquet">Parquet</a></li>
+          <li><a href="univers.html#cuisine">Cuisine</a></li>
+          <li><a href="univers.html#pierre-naturelle">Pierre naturelle</a></li>
+          <li><a href="univers.html#outillage">Outillage & Accessoires</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Nos services</h4>
+        <ul>
+          <li><a href="services.html">Conseils personnalisés</a></li>
+          <li><a href="services.html">Devis gratuit</a></li>
+          <li><a href="rendez-vous.html">Prendre rendez-vous</a></li>
+          <li><a href="realisations.html">Inspirations</a></li>
+          <li><a href="histoire.html">Notre histoire</a></li>
+          <li><a href="equipe.html">L'équipe</a></li>
+          <li><a href="avis.html">Laisser un avis</a></li>
+        </ul>
+      </div>
+      <div class="footer-col footer-contact">
+        <h4>Nous contacter</h4>
+        <p>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF6B75" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          22 Av. de l'Europe<br>59270 Bailleul
+        </p>
+        <p>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF6B75" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.4 2 2 0 0 1 3.58 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l1.87-1.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <a href="tel:+33328480808">03 28 48 08 08</a>
+        </p>
+        <p>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF6B75" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <a href="mailto:topcarrelagebailleul@yahoo.com">topcarrelagebailleul@yahoo.com</a>
+        </p>
+        <p style="font-size:0.8rem;">Lun 14h–18h30 · Mar–Sam 9h–12h & 14h–18h30<br><span style="font-size:0.72rem; opacity:0.7;">Dépôt fermé le lundi</span></p>
+        <a href="https://www.google.com/maps/search/?api=1&query=22+Avenue+de+l'Europe+59270+Bailleul" target="_blank" rel="noopener" class="btn btn-rouge" style="margin-top:0.5rem; font-size:0.66rem; padding:0.7rem 1.2rem;">📍 Nous trouver</a>
       </div>
     </div>
-    <div class="footer-bottom"><span>© 2025 Top Carrelage.</span><span><a href="#">Mentions légales</a></span></div>
+    <div class="footer-bottom">
+      <span>© 2025 Top Carrelage Bailleul. Tous droits réservés.</span>
+      <span><a href="espace-equipe/index.html">Espace équipe</a></span>
+    </div>
   </div>
 </footer>
 
