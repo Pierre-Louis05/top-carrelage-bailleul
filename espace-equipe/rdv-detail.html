@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Détail RDV — Top Carrelage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Top Carrelage</div>
+      <span class="sidebar-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">…</div>
+        <div class="sidebar-user-role" id="sidebarRole"></div>
+      </div>
+    </div>
+        <nav class="sidebar-nav">
+      <div class="sidebar-section">Demandes RDV</div>
+      <a href="dashboard.html" class="sidebar-link active"><span>📅</span> Tableau de bord</a>
+      <div class="sidebar-section">Site web</div>
+      <a href="messages.html" class="sidebar-link"><span>💬</span> Messages de contact</a>
+      <a href="temoignages.html" class="sidebar-link"><span>⭐</span> Témoignages</a>
+      <div class="sidebar-section">Équipe</div>
+      <a href="pointage.html" class="sidebar-link"><span>🕐</span> Mon pointage</a>
+      <a href="conges.html" class="sidebar-link"><span>🏖️</span> Mes congés</a>
+      <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span>👥</span> Présence équipe</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Détail de la demande</div>
+      <div class="topbar-actions">
+        <span class="status-badge" id="topbarStatus"></span>
+      </div>
+    </div>
+
+    <div class="page-content" id="pageContent">
+      <div class="loading"><div class="spinner"></div> Chargement…</div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const EMAILJS_PUBLIC_KEY = 'ZMblo6RSOOYjbAh81';
+const EMAILJS_SERVICE_ID = 'service_u6zi7ut';
+const EMAILJS_TEMPLATE_ID = 'template_bkt7opu';
+emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+const EMPLOYEES = [
+  { id: 'jeremie', name: 'Jérémie Marcuzzi', poste: 'Dirigeant', email: 'pl.quentin1+jeremie@gmail.com' },
+  { id: 'simon', name: 'Simon Marcuzzi', poste: 'Responsable magasin', email: 'pl.quentin1+simon@gmail.com' },
+  { id: 'louise', name: 'Louise Marcuzzi', poste: 'Alternante commerciale', email: 'pl.quentin1+louise@gmail.com' },
+  { id: 'pierre-louis', name: 'Pierre-Louis Quentin', poste: 'Alternant commercial', email: 'pl.quentin1+pierrelouis@gmail.com' },
+  { id: 'louis', name: 'Louis Bouger', poste: 'Alternant commercial', email: 'pl.quentin1+louis@gmail.com' },
+  { id: 'freddy', name: 'Freddy Beaurepaire', poste: 'Commercial', email: 'pl.quentin1+freddy@gmail.com' }
+];
+
+const STATUS_LABELS = {
+  nouveau: 'Nouvelle demande',
+  pris_en_charge: 'Prise en charge',
+  en_attente_confirmation: 'En attente de confirmation',
+  confirme: 'Confirmé',
+  archive: 'Archivé'
+};
+
+let rdv = null;
+let currentUser = null;
+let currentProfile = null;
+
+const rdvId = new URLSearchParams(window.location.search).get('id');
+
+async function init() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
+  currentUser = session.user;
+
+  const { data: profile } = await db
+    .from('employee_profiles')
+    .select('*')
+    .eq('id', currentUser.id)
+    .single();
+
+  if (profile) {
+    currentProfile = profile;
+    document.getElementById('sidebarName').textContent = profile.prenom + ' ' + profile.nom;
+    document.getElementById('sidebarRole').textContent = profile.poste;
+    document.getElementById('sidebarAvatar').textContent = profile.prenom[0] + profile.nom[0];
+    if (profile.poste === 'Dirigeant de la société' || profile.poste === 'Responsable magasin') {
+      document.getElementById('lienPresenceEquipe').style.display = '';
+    }
+  }
+
+  if (!rdvId) { window.location.href = 'dashboard.html'; return; }
+  await loadRdv();
+}
+
+async function loadRdv() {
+  const { data, error } = await db
+    .from('rdv_requests')
+    .select('*')
+    .eq('id', rdvId)
+    .single();
+
+  if (error || !data) { showToast('RDV introuvable', 'error'); return; }
+  rdv = data;
+  renderPage();
+}
+
+function renderPage() {
+  document.getElementById('topbarTitle').textContent = rdv.client_prenom + ' ' + rdv.client_nom;
+  const statusEl = document.getElementById('topbarStatus');
+  statusEl.textContent = STATUS_LABELS[rdv.status];
+  statusEl.className = 'status-badge status-' + rdv.status;
+
+  const myName = currentProfile ? currentProfile.prenom + ' ' + currentProfile.nom : '';
+  const isAssigned = (rdv.assigned_to || []).includes(myName);
+
+  document.getElementById('pageContent').innerHTML = `
+    <div class="detail-grid">
+
+      <!-- INFOS CLIENT -->
+      <div>
+        <div class="detail-section">
+          <h3>Informations client</h3>
+          <div class="detail-row">
+            <div class="detail-field">
+              <label>Prénom</label><p>${rdv.client_prenom}</p>
+            </div>
+            <div class="detail-field">
+              <label>Nom</label><p>${rdv.client_nom}</p>
+            </div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-field">
+              <label>Email</label>
+              <p><a href="mailto:${rdv.client_email}" style="color:var(--or)">${rdv.client_email}</a></p>
+            </div>
+            <div class="detail-field">
+              <label>Téléphone</label>
+              <p><a href="tel:${rdv.client_tel}" style="color:var(--or)">${rdv.client_tel}</a></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Détails du projet</h3>
+          <div class="detail-field">
+            <label>Univers concernés</label>
+            <div class="rdv-univers" style="margin-top:0.3rem;">
+              ${(rdv.univers || []).map(u => `<span class="univers-tag">${u}</span>`).join('')}
+            </div>
+          </div>
+          <div class="detail-field">
+            <label>Avancement du projet</label>
+            <p>${rdv.avancement}</p>
+          </div>
+          ${rdv.description ? `
+          <div class="detail-field">
+            <label>Description</label>
+            <p style="line-height:1.7; color:var(--text-muted);">${rdv.description}</p>
+          </div>` : ''}
+        </div>
+
+        <div class="detail-section">
+          <h3>Date & créneau souhaité</h3>
+          <div class="detail-row">
+            <div class="detail-field">
+              <label>Date souhaitée</label>
+              <p>${rdv.date_souhaitee ? new Date(rdv.date_souhaitee).toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) : 'Non précisé'}</p>
+            </div>
+            <div class="detail-field">
+              <label>Créneau</label>
+              <p>${rdv.creneau === 'matin' ? '🌅 Matin (9h – 12h)' : rdv.creneau === 'apres-midi' ? '☀️ Après-midi (14h – 18h30)' : 'Non précisé'}</p>
+            </div>
+          </div>
+        </div>
+
+        ${rdv.assigned_to && rdv.assigned_to.length > 0 ? `
+        <div class="detail-section">
+          <h3>Commerciaux assignés</h3>
+          <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+            ${rdv.assigned_to.map(name => `
+              <div style="display:flex; align-items:center; gap:0.5rem; padding:0.4rem 0.8rem; background:var(--surface2); border:1px solid rgba(201,168,76,0.2);">
+                <div class="assigned-avatar">${name.split(' ').map(n=>n[0]).join('').substring(0,2)}</div>
+                <span style="font-size:0.85rem;">${name}</span>
+              </div>`).join('')}
+          </div>
+        </div>` : ''}
+
+        ${rdv.confirmed_date ? `
+        <div class="detail-section">
+          <h3>RDV Confirmé</h3>
+          <div class="detail-row">
+            <div class="detail-field">
+              <label>Date confirmée</label>
+              <p style="color:var(--confirme);">${new Date(rdv.confirmed_date).toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}</p>
+            </div>
+            <div class="detail-field">
+              <label>Heure</label>
+              <p style="color:var(--confirme);">${rdv.confirmed_time || '—'}</p>
+            </div>
+          </div>
+          ${rdv.confirmed_by ? `<div class="detail-field"><label>Confirmé par</label><p>${rdv.confirmed_by}</p></div>` : ''}
+        </div>` : ''}
+
+        <!-- Notes internes -->
+        <div class="detail-section">
+          <h3>Notes internes</h3>
+          <div class="notes-form">
+            <textarea id="notesInput" placeholder="Ajouter une note interne (visible uniquement par l'équipe)…">${rdv.notes_internes || ''}</textarea>
+            <button class="btn-sm" onclick="saveNotes()">Enregistrer la note</button>
+          </div>
+        </div>
+
+        <div class="detail-field" style="margin-top:0.5rem;">
+          <label>Demande reçue le</label>
+          <p style="color:var(--text-muted); font-size:0.82rem;">${new Date(rdv.created_at).toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })}</p>
+        </div>
+      </div>
+
+      <!-- PANNEAU ACTIONS -->
+      <div class="action-panel">
+
+        ${rdv.status === 'nouveau' ? `
+        <div class="action-section">
+          <h3>Prendre ce rendez-vous</h3>
+          <button class="btn-action btn-prendre" onclick="prendreSolo()">
+            👤 Je prends seul
+          </button>
+          <button class="btn-action btn-prendre-multi" onclick="toggleMulti()">
+            👥 Prendre à plusieurs
+          </button>
+          <div id="multiPanel" style="display:none; margin-top:0.8rem;">
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.6rem;">Sélectionner les collègues :</p>
+            <div class="collegues-list">
+              ${EMPLOYEES.map(e => `
+                <div class="collegue-item">
+                  <input type="checkbox" id="emp-${e.id}" value="${e.name}" />
+                  <label for="emp-${e.id}">${e.name} <span style="color:var(--text-muted); font-size:0.75rem;">— ${e.poste}</span></label>
+                </div>`).join('')}
+            </div>
+            <button class="btn-action btn-prendre" onclick="prendrePlusieurs()" style="margin-top:0.5rem;">
+              Confirmer la sélection
+            </button>
+          </div>
+          <button class="btn-action btn-refuser" onclick="refuser()" style="margin-top:0.8rem;">
+            ✗ Je ne prends pas ce RDV
+          </button>
+        </div>` : ''}
+
+        ${rdv.status === 'pris_en_charge' ? `
+        <div class="action-section">
+          <h3>Gestion du RDV</h3>
+          <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem;">Appelez le client pour confirmer la date et l'heure du rendez-vous.</p>
+          <div class="confirm-form" id="confirmForm">
+            <div>
+              <label style="font-size:0.68rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.3rem; display:block;">Date confirmée *</label>
+              <input type="date" id="confirmedDate" min="${new Date().toISOString().split('T')[0]}" />
+            </div>
+            <div>
+              <label style="font-size:0.68rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.3rem; display:block;">Heure confirmée *</label>
+              <input type="time" id="confirmedTime" />
+            </div>
+          </div>
+          <button class="btn-action btn-confirmer" onclick="confirmerRdv()" style="margin-top:0.8rem;">
+            ✓ Confirmer le rendez-vous
+          </button>
+          <button class="btn-action btn-refuser" onclick="libererRdv()" style="margin-top:0.4rem;">
+            ↩ Remettre en nouvelles demandes
+          </button>
+        </div>` : ''}
+
+        ${rdv.status === 'en_attente_confirmation' || rdv.status === 'confirme' ? `
+        <div class="action-section">
+          <h3>Actions</h3>
+          ${rdv.status === 'en_attente_confirmation' ? `
+          <button class="btn-action btn-confirmer" onclick="passerConfirme()">
+            ✓ Marquer comme confirmé
+          </button>` : ''}
+          <button class="btn-action btn-archiver" onclick="archiver()">
+            📁 Archiver ce RDV
+          </button>
+        </div>` : ''}
+
+        ${rdv.status === 'archive' ? `
+        <div class="action-section">
+          <h3>Actions</h3>
+          <button class="btn-action btn-prendre" onclick="restaurer()">
+            ↩ Restaurer ce RDV
+          </button>
+        </div>` : ''}
+
+        <div class="action-section">
+          <h3>Zone dangereuse</h3>
+          <button class="btn-action" onclick="supprimerDefinitivement('${rdv.id}')" style="background:transparent; border:1px solid #e25c5c; color:#e25c5c;">
+            🗑️ Supprimer définitivement
+          </button>
+        </div>
+
+        <!-- Infos contact rapide -->
+        <div class="action-section">
+          <h3>Contact rapide</h3>
+          <a href="tel:${rdv.client_tel}" style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; background:var(--surface2); margin-bottom:0.6rem; color:var(--text); font-size:0.85rem;">
+            📞 ${rdv.client_tel}
+          </a>
+          <a href="mailto:${rdv.client_email}" style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; background:var(--surface2); color:var(--text); font-size:0.82rem;">
+            ✉️ ${rdv.client_email}
+          </a>
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
+// ACTIONS
+function toggleMulti() {
+  const p = document.getElementById('multiPanel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+  // Pré-cocher le commercial connecté
+  if (currentProfile) {
+    const myName = currentProfile.prenom + ' ' + currentProfile.nom;
+    document.querySelectorAll('.collegue-item input').forEach(cb => {
+      if (cb.value === myName) cb.checked = true;
+    });
+  }
+}
+
+async function prendreSolo() {
+  const myName = currentProfile ? currentProfile.prenom + ' ' + currentProfile.nom : 'Inconnu';
+  await updateRdv({ status: 'pris_en_charge', assigned_to: [myName] });
+  showToast('RDV pris en charge !', 'success');
+  await loadRdv();
+}
+
+async function prendrePlusieurs() {
+  const selected = Array.from(document.querySelectorAll('.collegue-item input:checked')).map(cb => cb.value);
+  if (selected.length === 0) { showToast('Sélectionnez au moins une personne', 'error'); return; }
+  await updateRdv({ status: 'pris_en_charge', assigned_to: selected });
+  showToast('RDV assigné à ' + selected.join(', '), 'success');
+  await loadRdv();
+}
+
+async function refuser() {
+  if (!confirm('Confirmer que vous ne prenez pas ce rendez-vous ?')) return;
+  await updateRdv({ status: 'archive' });
+  showToast('RDV non pris — archivé', '');
+  setTimeout(() => window.location.href = 'dashboard.html', 1500);
+}
+
+async function libererRdv() {
+  await updateRdv({ status: 'nouveau', assigned_to: [] });
+  showToast('RDV remis dans les nouvelles demandes');
+  await loadRdv();
+}
+
+async function confirmerRdv() {
+  const date = document.getElementById('confirmedDate')?.value;
+  const time = document.getElementById('confirmedTime')?.value;
+  if (!date || !time) { showToast('Veuillez renseigner la date et l\'heure', 'error'); return; }
+  const myName = currentProfile ? currentProfile.prenom + ' ' + currentProfile.nom : 'Inconnu';
+  await updateRdv({
+    status: 'en_attente_confirmation',
+    confirmed_date: date,
+    confirmed_time: time,
+    confirmed_by: myName
+  });
+  showToast('Date enregistrée — en attente de confirmation client', 'success');
+  await loadRdv();
+}
+
+function pad2(n) {
+  return String(n).padStart(2, '0');
+}
+
+function buildGoogleCalendarLink(rdvData) {
+  if (!rdvData.confirmed_date || !rdvData.confirmed_time) return '';
+  const start = new Date(`${rdvData.confirmed_date}T${rdvData.confirmed_time}`);
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+  const toUtcStamp = (d) => d.getUTCFullYear() + pad2(d.getUTCMonth() + 1) + pad2(d.getUTCDate())
+    + 'T' + pad2(d.getUTCHours()) + pad2(d.getUTCMinutes()) + pad2(d.getUTCSeconds()) + 'Z';
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: `RDV Top Carrelage — ${rdvData.client_prenom} ${rdvData.client_nom}`,
+    dates: `${toUtcStamp(start)}/${toUtcStamp(end)}`,
+    details: `Rendez-vous chez Top Carrelage (Top Carrelage), 22 Avenue de l'Europe, 59270 Bailleul.`,
+    location: `22 Avenue de l'Europe, 59270 Bailleul`
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+function formatDateConfirmee(rdvData) {
+  if (!rdvData.confirmed_date) return '';
+  return new Date(`${rdvData.confirmed_date}T00:00:00`).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatHeureConfirmee(time) {
+  if (!time) return '';
+  const [h, m] = time.split(':');
+  return `${h}h${m}`;
+}
+
+function buildUniversLine(rdvData) {
+  if (!rdvData.univers || rdvData.univers.length === 0) return '';
+  const labels = rdvData.univers.map(u => u.charAt(0).toUpperCase() + u.slice(1)).join(', ');
+  return `🏠 Univers concernés : ${labels}`;
+}
+
+async function envoyerEmailsConfirmation(rdvData) {
+  const calLink = buildGoogleCalendarLink(rdvData);
+  const dateAffichee = formatDateConfirmee(rdvData);
+  const heureAffichee = formatHeureConfirmee(rdvData.confirmed_time);
+  const universLine = buildUniversLine(rdvData);
+  const clientNomComplet = `${rdvData.client_prenom} ${rdvData.client_nom}`;
+
+  await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    to_email: rdvData.client_email,
+    title: 'Votre rendez-vous est confirmé !',
+    intro: `Bonjour ${rdvData.client_prenom}, votre rendez-vous chez Top Carrelage est confirmé pour la date suivante :`,
+    date: dateAffichee,
+    heure: heureAffichee,
+    univers_line: universLine,
+    google_cal_link: calLink,
+    signature: `À très bientôt — L'équipe Top Carrelage
+
+En cas d'imprévu, merci de nous appeler au 03 28 48 08 08. Ceci est un email automatique, merci de ne pas y répondre.`
+  });
+
+  const assignedNames = rdvData.assigned_to || [];
+  const collaborateurs = EMPLOYEES.filter(e => assignedNames.includes(e.name));
+  for (const collab of collaborateurs) {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: collab.email,
+      title: `RDV confirmé avec ${clientNomComplet}`,
+      intro: `Bonjour ${collab.name.split(' ')[0]}, le rendez-vous avec ${clientNomComplet} est confirmé pour la date suivante :`,
+      date: dateAffichee,
+      heure: heureAffichee,
+      univers_line: universLine,
+      google_cal_link: calLink,
+      signature: `Pensez à l'ajouter à votre agenda.
+
+En cas d'imprévu, merci d'appeler directement le magasin au 03 28 48 08 08. Ceci est un email automatique, merci de ne pas y répondre.`
+    });
+  }
+}
+
+async function passerConfirme() {
+  await updateRdv({ status: 'confirme' });
+  await loadRdv();
+  showToast('RDV confirmé ! ✓', 'success');
+
+  if (rdv) {
+    try {
+      await envoyerEmailsConfirmation(rdv);
+      showToast('Emails de confirmation envoyés ✓', 'success');
+    } catch (err) {
+      console.error('Erreur envoi emails de confirmation:', err);
+      showToast('RDV confirmé, mais erreur lors de l\'envoi des emails', 'error');
+    }
+  }
+}
+
+async function supprimerDefinitivement(id) {
+  if (!confirm('Supprimer définitivement cette demande de rendez-vous ? Cette action est irréversible et effacera toutes les données liées (notes, confirmation, etc.).')) return;
+
+  const { data, error } = await db.from('rdv_requests').delete().eq('id', id).select();
+
+  if (error) {
+    showToast('Erreur lors de la suppression', 'error');
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    showToast('Suppression refusée par la base de données (permissions). Voir la console pour plus de détails.', 'error');
+    console.warn('Suppression bloquée probablement par une policy RLS Supabase manquante pour DELETE sur rdv_requests. id=', id);
+    return;
+  }
+
+  showToast('Demande supprimée');
+  setTimeout(() => window.location.href = 'dashboard.html', 1200);
+}
+
+async function archiver() {
+  if (!confirm('Archiver ce rendez-vous ?')) return;
+  await updateRdv({ status: 'archive' });
+  showToast('RDV archivé');
+  setTimeout(() => window.location.href = 'dashboard.html', 1500);
+}
+
+async function restaurer() {
+  await updateRdv({ status: 'confirme' });
+  showToast('RDV restauré');
+  await loadRdv();
+}
+
+async function saveNotes() {
+  const notes = document.getElementById('notesInput').value;
+  await updateRdv({ notes_internes: notes });
+  showToast('Note enregistrée', 'success');
+}
+
+async function updateRdv(updates) {
+  const { error } = await db
+    .from('rdv_requests')
+    .update(updates)
+    .eq('id', rdvId);
+  if (error) showToast('Erreur: ' + error.message, 'error');
+}
+
+// Toast
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Déconnexion
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await db.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+init();
+</script>
+<script src="sidebar.js"></script>
+</body>
+</html>

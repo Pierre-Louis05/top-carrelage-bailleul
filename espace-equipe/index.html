@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Espace Équipe — Top Carrelage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+<div class="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-main">Top Carrelage</div>
+      <span class="login-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="login-title">Connexion collaborateur</div>
+
+    <div class="error-msg" id="errorMsg">Email ou mot de passe incorrect.</div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="votre.email@exemple.fr" required autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn-primary" id="loginBtn">Se connecter</button>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+
+let client;
+try {
+  client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+} catch(e) {
+  console.error('Supabase init error:', e);
+}
+
+// Vérifier si déjà connecté
+if (client) {
+  client.auth.getSession().then(({ data }) => {
+    if (data.session) window.location.href = 'dashboard.html';
+  });
+}
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('errorMsg');
+  btn.textContent = 'Connexion…';
+  btn.disabled = true;
+  err.classList.remove('show');
+
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  if (!client) {
+    err.textContent = 'Erreur de connexion au serveur. Rechargez la page.';
+    err.classList.add('show');
+    btn.textContent = 'Se connecter';
+    btn.disabled = false;
+    return;
+  }
+
+  try {
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      err.textContent = 'Email ou mot de passe incorrect.';
+      err.classList.add('show');
+      btn.textContent = 'Se connecter';
+      btn.disabled = false;
+    } else {
+      btn.textContent = 'Connecté ✓';
+      window.location.href = 'dashboard.html';
+    }
+  } catch(e) {
+    err.textContent = 'Erreur réseau. Vérifiez votre connexion.';
+    err.classList.add('show');
+    btn.textContent = 'Se connecter';
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

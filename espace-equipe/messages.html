@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Messages — Espace Équipe Top Carrelage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Top Carrelage</div>
+      <span class="sidebar-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">Chargement…</div>
+        <div class="sidebar-user-role" id="sidebarRole"></div>
+      </div>
+    </div>
+        <nav class="sidebar-nav">
+      <div class="sidebar-section">Demandes RDV</div>
+      <a href="dashboard.html" class="sidebar-link"><span>📅</span> Tableau de bord</a>
+      <div class="sidebar-section">Site web</div>
+      <a href="messages.html" class="sidebar-link active"><span>💬</span> Messages de contact</a>
+      <a href="temoignages.html" class="sidebar-link"><span>⭐</span> Témoignages</a>
+      <div class="sidebar-section">Équipe</div>
+      <a href="pointage.html" class="sidebar-link"><span>🕐</span> Mon pointage</a>
+      <a href="conges.html" class="sidebar-link"><span>🏖️</span> Mes congés</a>
+      <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span>👥</span> Présence équipe</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Nouveaux messages</div>
+      <div class="topbar-actions">
+        <span style="font-size:0.78rem; color:var(--text-muted);" id="lastRefresh"></span>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card nouveau">
+          <div class="stat-number" id="stat-nouveau">—</div>
+          <div class="stat-label">Nouveaux</div>
+        </div>
+        <div class="stat-card confirme">
+          <div class="stat-number" id="stat-traite">—</div>
+          <div class="stat-label">Traités</div>
+        </div>
+        <div class="stat-card archive">
+          <div class="stat-number" id="stat-archive">—</div>
+          <div class="stat-label">Archivés</div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="nouveau">Nouveaux <span class="tab-count" id="tc-nouveau">0</span></button>
+        <button class="tab-btn" data-tab="traite">Traités <span class="tab-count" id="tc-traite">0</span></button>
+        <button class="tab-btn" data-tab="archive">Archives <span class="tab-count" id="tc-archive">0</span></button>
+      </div>
+
+      <!-- LISTE -->
+      <div id="msgList">
+        <div class="loading"><div class="spinner"></div> Chargement des messages…</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentTab = 'nouveau';
+let allMessages = [];
+let currentUser = null;
+let currentProfile = null;
+
+const STATUS_LABELS = {
+  nouveau: 'Nouveau',
+  traite: 'Traité',
+  archive: 'Archivé'
+};
+
+const TAB_TITLES = {
+  nouveau: 'Nouveaux messages',
+  traite: 'Messages traités',
+  archive: 'Messages archivés'
+};
+
+// Auth check
+async function init() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
+  currentUser = session.user;
+
+  const { data: profile } = await db
+    .from('employee_profiles')
+    .select('*')
+    .eq('id', currentUser.id)
+    .single();
+
+  if (profile) {
+    currentProfile = profile;
+    document.getElementById('sidebarName').textContent = profile.prenom + ' ' + profile.nom;
+    document.getElementById('sidebarRole').textContent = profile.poste;
+    document.getElementById('sidebarAvatar').textContent = profile.prenom[0] + profile.nom[0];
+    if (profile.poste === 'Dirigeant de la société' || profile.poste === 'Responsable magasin') {
+      document.getElementById('lienPresenceEquipe').style.display = '';
+    }
+  } else {
+    document.getElementById('sidebarName').textContent = currentUser.email;
+  }
+
+  await loadMessages();
+
+  // Realtime updates
+  db.channel('contact_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_requests' }, () => loadMessages())
+    .subscribe();
+}
+
+async function loadMessages() {
+  const { data, error } = await db
+    .from('contact_requests')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) { showToast('Erreur de chargement', 'error'); return; }
+  allMessages = data || [];
+  updateStats();
+  renderList();
+  document.getElementById('lastRefresh').textContent = 'Mis à jour ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function updateStats() {
+  const counts = { nouveau: 0, traite: 0, archive: 0 };
+  allMessages.forEach(m => { if (counts[m.status] !== undefined) counts[m.status]++; });
+
+  document.getElementById('stat-nouveau').textContent = counts.nouveau;
+  document.getElementById('stat-traite').textContent = counts.traite;
+  document.getElementById('stat-archive').textContent = counts.archive;
+
+  document.getElementById('tc-nouveau').textContent = counts.nouveau;
+  document.getElementById('tc-traite').textContent = counts.traite;
+  document.getElementById('tc-archive').textContent = counts.archive;
+}
+
+function renderList() {
+  const filtered = allMessages.filter(m => m.status === currentTab);
+  const container = document.getElementById('msgList');
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <p>Aucun message dans cette catégorie.</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = '<div class="rdv-list">' + filtered.map(msg => `
+    <div class="rdv-card" style="cursor:default;">
+      <div class="rdv-card-left">
+        <div class="rdv-client-name">${msg.prenom} ${msg.nom} — <span style="color:var(--or); font-weight:400;">${msg.sujet}</span></div>
+        <div class="rdv-meta">
+          <span>✉️ <a href="mailto:${msg.email}" style="color:var(--text-muted);">${msg.email}</a></span>
+          ${msg.tel ? `<span>📞 <a href="tel:${msg.tel}" style="color:var(--text-muted);">${msg.tel}</a></span>` : ''}
+        </div>
+        <p style="font-size:0.85rem; color:var(--text); line-height:1.6; margin-top:0.4rem; max-width:60ch;">${msg.message}</p>
+      </div>
+      <div class="rdv-card-right" style="gap:0.6rem;">
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+          <span class="status-badge status-${msg.status === 'nouveau' ? 'nouveau' : (msg.status === 'traite' ? 'confirme' : 'archive')}">${STATUS_LABELS[msg.status]}</span>
+          <button type="button" title="Supprimer définitivement ce message" onclick="supprimerMessage(event, '${msg.id}')" style="flex-shrink:0; width:28px; height:28px; display:flex; align-items:center; justify-content:center; background:var(--surface2); border:1px solid var(--border); border-radius:50%; color:var(--text-muted); font-size:0.85rem; cursor:pointer; transition:var(--transition);" onmouseover="this.style.background='#e25c5c'; this.style.color='#fff'; this.style.borderColor='#e25c5c';" onmouseout="this.style.background='var(--surface2)'; this.style.color='var(--text-muted)'; this.style.borderColor='var(--border)';">🗑️</button>
+        </div>
+        <span class="rdv-date">${new Date(msg.created_at).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })}</span>
+        <div style="display:flex; flex-direction:column; gap:0.4rem; align-items:flex-end;">
+          ${msg.status === 'nouveau' ? `<button type="button" class="btn-action btn-confirmer" style="width:auto; padding:0.5rem 1rem; font-size:0.78rem;" onclick="changerStatut(event, '${msg.id}', 'traite')">✓ Marquer comme traité</button>` : ''}
+          ${msg.status === 'traite' ? `<button type="button" class="btn-action btn-archiver" style="width:auto; padding:0.5rem 1rem; font-size:0.78rem;" onclick="changerStatut(event, '${msg.id}', 'archive')">📁 Archiver</button>` : ''}
+          ${msg.status === 'archive' ? `<button type="button" class="btn-action btn-prendre" style="width:auto; padding:0.5rem 1rem; font-size:0.78rem;" onclick="changerStatut(event, '${msg.id}', 'nouveau')">↩ Restaurer</button>` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('') + '</div>';
+}
+
+async function changerStatut(event, id, newStatus) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const { error } = await db.from('contact_requests').update({ status: newStatus }).eq('id', id);
+  if (error) { showToast('Erreur lors de la mise à jour', 'error'); return; }
+
+  showToast(newStatus === 'traite' ? 'Message marqué comme traité ✓' : (newStatus === 'archive' ? 'Message archivé' : 'Message restauré'));
+  await loadMessages();
+}
+
+async function supprimerMessage(event, id) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (!confirm('Supprimer définitivement ce message ? Cette action est irréversible.')) return;
+
+  const { data, error } = await db.from('contact_requests').delete().eq('id', id).select();
+
+  if (error) {
+    showToast('Erreur lors de la suppression', 'error');
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    showToast('Suppression refusée par la base de données (permissions)', 'error');
+    console.warn('Suppression bloquée probablement par une policy RLS Supabase manquante pour DELETE sur contact_requests. id=', id);
+    return;
+  }
+
+  showToast('Message supprimé');
+  await loadMessages();
+}
+
+// Navigation tabs
+document.querySelectorAll('[data-tab]').forEach(el => {
+  el.addEventListener('click', (e) => {
+    e.preventDefault();
+    currentTab = el.dataset.tab;
+    document.querySelectorAll('[data-tab]').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll(`[data-tab="${currentTab}"]`).forEach(t => t.classList.add('active'));
+    document.getElementById('topbarTitle').textContent = TAB_TITLES[currentTab];
+    renderList();
+  });
+});
+
+// Déconnexion
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await db.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+// Toast
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+<script src="sidebar.js"></script>
+</body>
+</html>

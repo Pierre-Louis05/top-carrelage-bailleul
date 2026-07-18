@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Présence équipe — Espace Équipe Top Carrelage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+  <style>
+    .presence-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 3rem;
+    }
+    .presence-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .presence-avatar {
+      width: 46px; height: 46px; border-radius: 50%;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:1rem; color:#fff; background:var(--or);
+      flex-shrink:0;
+    }
+    .presence-name { font-weight:600; color:var(--text); font-size:0.92rem; }
+    .presence-poste { font-size:0.74rem; color:var(--text-muted); margin-bottom:0.4rem; }
+    .presence-badge {
+      display:inline-block; padding:0.3rem 0.7rem; border-radius:999px;
+      font-size:0.7rem; font-weight:700; letter-spacing:0.03em;
+    }
+    .presence-badge.attente { background: rgba(245,158,11,0.15); color: var(--attente); }
+    .presence-badge.travail { background: rgba(16,185,129,0.15); color: var(--confirme); }
+    .presence-badge.pause { background: rgba(139,92,246,0.15); color: var(--pris); }
+    .presence-badge.termine { background: rgba(107,114,128,0.2); color: var(--text-muted); }
+    .presence-times { font-size:0.72rem; color:var(--text-muted); margin-top:0.35rem; }
+
+    .historique-table { width:100%; border-collapse: collapse; font-size: 0.85rem; }
+    .historique-table th {
+      text-align:left; padding:0.7rem 1rem; color:var(--text-muted);
+      font-size: 0.72rem; text-transform:uppercase; letter-spacing:0.06em;
+      border-bottom: 1px solid var(--border);
+    }
+    .historique-table td { padding:0.8rem 1rem; color:var(--text); border-bottom: 1px solid var(--border); }
+    .historique-table tr:last-child td { border-bottom:none; }
+    .total-pill {
+      display:inline-block; background:var(--surface2); color:var(--or);
+      padding:0.25rem 0.7rem; border-radius:999px; font-weight:700; font-size:0.78rem;
+    }
+    .filter-bar {
+      display:flex; align-items:center; gap:1rem; margin-bottom:1.2rem; flex-wrap:wrap;
+    }
+    .filter-bar select {
+      background: var(--surface2); border:1px solid var(--border); color:var(--text);
+      padding:0.6rem 1rem; border-radius:8px; font-size:0.85rem;
+    }
+    .week-total { font-size:0.85rem; color:var(--text-muted); }
+    .week-total strong { color:var(--or); }
+
+    .conge-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem 1.3rem;
+      margin-bottom: 0.8rem;
+      display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;
+      flex-wrap: wrap;
+    }
+    .conge-card-name { font-weight:600; color:var(--text); font-size:0.9rem; }
+    .conge-card-dates { font-size:0.82rem; color:var(--text-muted); margin-top:0.2rem; }
+    .conge-card-type {
+      display:inline-block; margin-top:0.4rem; font-size:0.7rem; font-weight:700;
+      padding:0.25rem 0.65rem; border-radius:999px; background: rgba(212,175,55,0.15); color: var(--or);
+    }
+    .conge-card-message { font-size:0.82rem; color:var(--text-muted); margin-top:0.5rem; max-width:46ch; line-height:1.5; }
+    .conge-card-reponse {
+      font-size:0.8rem; color:var(--text); margin-top:0.5rem; padding:0.6rem 0.8rem;
+      background: var(--surface2); border-radius:8px; border-left: 3px solid var(--or); max-width: 46ch;
+    }
+    .conge-card-actions { display:flex; flex-direction:column; align-items:flex-end; gap:0.5rem; }
+    .btn-conge-action {
+      border:none; border-radius:6px; padding:0.5rem 1rem; font-size:0.78rem; font-weight:600;
+      cursor:pointer; transition: var(--transition); white-space:nowrap;
+    }
+    .btn-conge-approuver { background: rgba(16,185,129,0.15); color: var(--confirme); }
+    .btn-conge-approuver:hover { background: var(--confirme); color:#fff; }
+    .btn-conge-refuser { background: rgba(226,92,92,0.15); color: #e25c5c; }
+    .btn-conge-refuser:hover { background: #e25c5c; color:#fff; }
+
+    .export-bar {
+      display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+      background: var(--surface); border:1px solid var(--border); border-radius:12px;
+      padding:1.2rem 1.4rem; margin-bottom:3rem;
+    }
+    .export-bar label {
+      display:flex; flex-direction:column; gap:0.35rem;
+      font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;
+    }
+    .export-bar input, .export-bar select {
+      background: var(--surface2); border:1px solid var(--border); color:var(--text);
+      padding:0.55rem 0.8rem; border-radius:8px; font-size:0.85rem; font-family: inherit;
+    }
+    .btn-export {
+      background: var(--or); color: var(--noir); border:none; border-radius:8px;
+      padding:0.7rem 1.4rem; font-size:0.85rem; font-weight:700; cursor:pointer;
+      transition: var(--transition); margin-left:auto; align-self:flex-end;
+    }
+    .btn-export:hover { opacity:0.85; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Top Carrelage</div>
+      <span class="sidebar-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">Chargement…</div>
+        <div class="sidebar-user-role" id="sidebarRole"></div>
+      </div>
+    </div>
+        <nav class="sidebar-nav">
+      <div class="sidebar-section">Demandes RDV</div>
+      <a href="dashboard.html" class="sidebar-link"><span>📅</span> Tableau de bord</a>
+      <div class="sidebar-section">Site web</div>
+      <a href="messages.html" class="sidebar-link"><span>💬</span> Messages de contact</a>
+      <a href="temoignages.html" class="sidebar-link"><span>⭐</span> Témoignages</a>
+      <div class="sidebar-section">Équipe</div>
+      <a href="pointage.html" class="sidebar-link"><span>🕐</span> Mon pointage</a>
+      <a href="conges.html" class="sidebar-link"><span>🏖️</span> Mes congés</a>
+      <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link active" id="lienPresenceEquipe" style="display:none;"><span>👥</span> Présence équipe</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">Présence équipe</div>
+      <div class="topbar-actions">
+        <span style="font-size:0.78rem; color:var(--text-muted);" id="lastRefresh"></span>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <h3 style="margin-bottom:1rem;">Aujourd'hui — en direct</h3>
+      <div class="presence-grid" id="presenceGrid">
+        <div class="loading"><div class="spinner"></div> Chargement…</div>
+      </div>
+
+      <h3 style="margin-bottom:1rem;">🏖️ Demandes de congés</h3>
+      <div class="tabs" id="congesTabs">
+        <button class="tab-btn active" data-conge-tab="en_attente">En attente <span class="tab-count" id="ctc-attente">0</span></button>
+        <button class="tab-btn" data-conge-tab="approuve">Approuvées <span class="tab-count" id="ctc-approuve">0</span></button>
+        <button class="tab-btn" data-conge-tab="refuse">Refusées <span class="tab-count" id="ctc-refuse">0</span></button>
+      </div>
+      <div id="congesList" style="margin-bottom:3rem;">
+        <div class="loading"><div class="spinner"></div> Chargement des demandes…</div>
+      </div>
+
+      <h3 style="margin-bottom:1rem;">Export pour la comptabilité</h3>
+      <div class="export-bar">
+        <label>Du
+          <input type="date" id="exportFrom">
+        </label>
+        <label>Au
+          <input type="date" id="exportTo">
+        </label>
+        <label>Collaborateur
+          <select id="exportEmployee">
+            <option value="">Toute l'équipe</option>
+          </select>
+        </label>
+        <button class="btn-export" id="exportBtn">📊 Exporter en CSV (Excel / Google Sheets)</button>
+      </div>
+
+      <h3 style="margin-bottom:1rem;">Historique d'un collaborateur</h3>
+      <div class="filter-bar">
+        <select id="employeeSelect"></select>
+        <span class="week-total" id="weekTotal"></span>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden;">
+        <div id="historiqueContainer">
+          <div class="loading"><div class="spinner"></div> Chargement de l'historique…</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let currentProfile = null;
+let allPointagesAujourdhui = [];
+let allConges = [];
+let currentCongeTab = 'en_attente';
+
+const CONGE_STATUS_LABELS = { en_attente: 'En attente', approuve: 'Approuvé', refuse: 'Refusé' };
+
+// Liste de l'équipe (même base que pour l'assignation des RDV)
+const EQUIPE = [
+  { name: 'Jérémie Marcuzzi', poste: 'Dirigeant de la société' },
+  { name: 'Simon Marcuzzi', poste: 'Responsable magasin' },
+  { name: 'Louise Marcuzzi', poste: 'Alternante commerciale' },
+  { name: 'Pierre-Louis Quentin', poste: 'Alternant commercial' },
+  { name: 'Louis Bouger', poste: 'Alternant commercial' },
+  { name: 'Freddy Beaurepaire', poste: 'Commercial' }
+];
+
+const COLORS = ['#4285F4','#34A853','#EA4335','#FBBC05','#9C27B0','#FF7043','#00897B','#E53935'];
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function fmtDateCourt(d) {
+  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+function nbJours(debut, fin) {
+  const diff = (new Date(fin) - new Date(debut)) / (1000 * 3600 * 24);
+  return Math.round(diff) + 1;
+}
+function heureFmt(iso) {
+  if (!iso) return null;
+  return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+function dureeFmt(heuresDecimal) {
+  if (heuresDecimal == null) return '—';
+  const h = Math.floor(heuresDecimal);
+  const m = Math.round((heuresDecimal - h) * 60);
+  return `${h}h${m.toString().padStart(2, '0')}`;
+}
+function calculerHeures(p) {
+  if (!p.arrivee || !p.depart) return null;
+  let total = (new Date(p.depart) - new Date(p.arrivee)) / 3600000;
+  if (p.pause_debut && p.pause_fin) total -= (new Date(p.pause_fin) - new Date(p.pause_debut)) / 3600000;
+  return Math.max(total, 0);
+}
+function statutDe(p) {
+  if (!p || !p.arrivee) return { label: 'Pas encore arrivé(e)', css: 'attente' };
+  if (p.depart) return { label: 'Parti(e)', css: 'termine' };
+  if (p.pause_debut && !p.pause_fin) return { label: 'En pause déjeuner', css: 'pause' };
+  return { label: 'Au travail', css: 'travail' };
+}
+
+// ===== Auth & contrôle d'accès =====
+async function init() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
+  currentUser = session.user;
+
+  const { data: profile } = await db
+    .from('employee_profiles')
+    .select('*')
+    .eq('id', currentUser.id)
+    .single();
+
+  if (!profile || (profile.poste !== 'Dirigeant de la société' && profile.poste !== 'Responsable magasin')) {
+    // Accès réservé — redirection silencieuse
+    window.location.href = 'dashboard.html';
+    return;
+  }
+
+  currentProfile = profile;
+  document.getElementById('sidebarName').textContent = profile.prenom + ' ' + profile.nom;
+  document.getElementById('sidebarRole').textContent = profile.poste;
+  document.getElementById('sidebarAvatar').textContent = profile.prenom[0] + profile.nom[0];
+  document.getElementById('lienPresenceEquipe').style.display = 'flex';
+
+  // Sélecteur d'employé pour l'historique
+  const select = document.getElementById('employeeSelect');
+  select.innerHTML = EQUIPE.map(e => `<option value="${e.name}">${e.name} — ${e.poste}</option>`).join('');
+  select.addEventListener('change', () => loadHistorique(select.value));
+
+  await loadPresenceJour();
+  await loadHistorique(select.value);
+  initExport();
+  await loadDemandesConges();
+
+  // Onglets des demandes de congés
+  document.querySelectorAll('[data-conge-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentCongeTab = btn.dataset.congeTab;
+      document.querySelectorAll('[data-conge-tab]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderDemandesConges();
+    });
+  });
+
+  // Realtime : rafraîchit dès qu'un pointage change
+  db.channel('presence_equipe_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'pointages' }, () => {
+      loadPresenceJour();
+      loadHistorique(document.getElementById('employeeSelect').value);
+    })
+    .subscribe();
+
+  // Realtime : rafraîchit dès qu'une demande de congé change
+  db.channel('conges_manager_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'conges' }, () => loadDemandesConges())
+    .subscribe();
+}
+
+// ===== Demandes de congés =====
+async function loadDemandesConges() {
+  const { data, error } = await db
+    .from('conges')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) { console.error(error); return; }
+  allConges = data || [];
+
+  const counts = { en_attente: 0, approuve: 0, refuse: 0 };
+  allConges.forEach(c => { if (counts[c.status] !== undefined) counts[c.status]++; });
+  document.getElementById('ctc-attente').textContent = counts.en_attente;
+  document.getElementById('ctc-approuve').textContent = counts.approuve;
+  document.getElementById('ctc-refuse').textContent = counts.refuse;
+
+  renderDemandesConges();
+}
+
+function renderDemandesConges() {
+  const filtered = allConges.filter(c => c.status === currentCongeTab);
+  const container = document.getElementById('congesList');
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🏖️</div>
+        <p>Aucune demande dans cette catégorie.</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(c => `
+    <div class="conge-card">
+      <div>
+        <div class="conge-card-name">${c.employee_name}</div>
+        <div class="conge-card-dates">${fmtDateCourt(c.date_debut)} → ${fmtDateCourt(c.date_fin)} · ${nbJours(c.date_debut, c.date_fin)} jour(s)</div>
+        <span class="conge-card-type">${c.type}</span>
+        ${c.message ? `<div class="conge-card-message">"${c.message}"</div>` : ''}
+        ${c.reponse_message ? `<div class="conge-card-reponse">💬 Réponse${c.traite_par ? ' de ' + c.traite_par : ''} : ${c.reponse_message}</div>` : ''}
+      </div>
+      ${c.status === 'en_attente' ? `
+        <div class="conge-card-actions">
+          <button class="btn-conge-action btn-conge-approuver" onclick="traiterDemandeConge('${c.id}', 'approuve')">✓ Approuver</button>
+          <button class="btn-conge-action btn-conge-refuser" onclick="traiterDemandeConge('${c.id}', 'refuse')">✗ Refuser</button>
+        </div>
+      ` : `
+        <span class="status-badge status-${c.status === 'approuve' ? 'confirme' : 'archive'}">${CONGE_STATUS_LABELS[c.status]}</span>
+      `}
+    </div>
+  `).join('');
+}
+
+async function traiterDemandeConge(id, nouveauStatut) {
+  const verbe = nouveauStatut === 'approuve' ? 'approuver' : 'refuser';
+  const reponse = prompt(`Tu peux ajouter un message pour expliquer ta décision (${verbe} la demande) — facultatif :`);
+  if (reponse === null) return; // annulé
+
+  const { error } = await db.from('conges').update({
+    status: nouveauStatut,
+    reponse_message: reponse.trim() || null,
+    traite_par: currentProfile.prenom + ' ' + currentProfile.nom,
+    traite_le: new Date().toISOString()
+  }).eq('id', id);
+
+  if (error) { showToast('Erreur lors du traitement de la demande', 'error'); console.error(error); return; }
+
+  showToast(nouveauStatut === 'approuve' ? 'Demande approuvée ✓' : 'Demande refusée');
+  await loadDemandesConges();
+}
+
+// ===== Présence en direct =====
+async function loadPresenceJour() {
+  const { data, error } = await db
+    .from('pointages')
+    .select('*')
+    .eq('date', todayStr());
+
+  const grid = document.getElementById('presenceGrid');
+  if (error) { grid.innerHTML = `<div class="empty-state"><p>Erreur de chargement.</p></div>`; return; }
+
+  allPointagesAujourdhui = data || [];
+
+  grid.innerHTML = EQUIPE.map((e, i) => {
+    const p = allPointagesAujourdhui.find(x => x.employee_name === e.name);
+    const statut = statutDe(p);
+    const couleur = COLORS[i % COLORS.length];
+    const initiale = e.name.charAt(0).toUpperCase();
+
+    let times = '';
+    if (p) {
+      const parts = [];
+      if (p.arrivee) parts.push(`Arrivée ${heureFmt(p.arrivee)}`);
+      if (p.pause_debut) parts.push(`Pause ${heureFmt(p.pause_debut)}${p.pause_fin ? '–' + heureFmt(p.pause_fin) : '…'}`);
+      if (p.depart) parts.push(`Départ ${heureFmt(p.depart)}`);
+      times = parts.join(' · ');
+    }
+
+    return `
+      <div class="presence-card">
+        <div class="presence-avatar" style="background:${couleur};">${initiale}</div>
+        <div>
+          <div class="presence-name">${e.name}</div>
+          <div class="presence-poste">${e.poste}</div>
+          <span class="presence-badge ${statut.css}">${statut.label}</span>
+          ${times ? `<div class="presence-times">${times}</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('lastRefresh').textContent = 'Mis à jour ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ===== Historique d'un collaborateur =====
+async function loadHistorique(employeeName) {
+  const container = document.getElementById('historiqueContainer');
+  container.innerHTML = `<div class="loading"><div class="spinner"></div> Chargement…</div>`;
+
+  const { data, error } = await db
+    .from('pointages')
+    .select('*')
+    .eq('employee_name', employeeName)
+    .order('date', { ascending: false })
+    .limit(14);
+
+  if (error) {
+    container.innerHTML = `<div class="empty-state"><p>Erreur de chargement de l'historique.</p></div>`;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🕐</div>
+        <p>Aucun pointage enregistré pour ${employeeName}.</p>
+      </div>`;
+    document.getElementById('weekTotal').textContent = '';
+    return;
+  }
+
+  // Total des 7 derniers jours
+  const aujourdhui = new Date();
+  const ilYA7Jours = new Date(aujourdhui); ilYA7Jours.setDate(aujourdhui.getDate() - 7);
+  const totalSemaine = data
+    .filter(p => new Date(p.date) >= ilYA7Jours)
+    .reduce((acc, p) => acc + (calculerHeures(p) || 0), 0);
+  document.getElementById('weekTotal').innerHTML = `7 derniers jours : <strong>${dureeFmt(totalSemaine)}</strong> travaillées`;
+
+  container.innerHTML = `
+    <table class="historique-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Arrivée</th>
+          <th>Pause déjeuner</th>
+          <th>Départ</th>
+          <th>Total travaillé</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.map(p => `
+          <tr>
+            <td style="text-transform:capitalize;">${new Date(p.date).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}</td>
+            <td>${heureFmt(p.arrivee) || '—'}</td>
+            <td>${p.pause_debut && p.pause_fin ? `${heureFmt(p.pause_debut)} – ${heureFmt(p.pause_fin)}` : (p.pause_debut ? `${heureFmt(p.pause_debut)} – …` : '—')}</td>
+            <td>${heureFmt(p.depart) || '—'}</td>
+            <td><span class="total-pill">${dureeFmt(calculerHeures(p))}</span></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+// ===== Export comptabilité (CSV pour Excel / Google Sheets) =====
+function premierJourMois() {
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
+function dernierJourMois() {
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth() + 1, 0);
+}
+function dateInputStr(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function initExport() {
+  // Pré-remplit avec le mois en cours
+  document.getElementById('exportFrom').value = dateInputStr(premierJourMois());
+  document.getElementById('exportTo').value = dateInputStr(dernierJourMois());
+
+  const select = document.getElementById('exportEmployee');
+  EQUIPE.forEach(e => {
+    const opt = document.createElement('option');
+    opt.value = e.name;
+    opt.textContent = `${e.name} — ${e.poste}`;
+    select.appendChild(opt);
+  });
+
+  document.getElementById('exportBtn').addEventListener('click', exporterCSV);
+}
+
+async function exporterCSV() {
+  const from = document.getElementById('exportFrom').value;
+  const to = document.getElementById('exportTo').value;
+  const employee = document.getElementById('exportEmployee').value;
+
+  if (!from || !to) { showToast('Choisis une période valide', 'error'); return; }
+  if (from > to) { showToast('La date de début doit précéder la date de fin', 'error'); return; }
+
+  const btn = document.getElementById('exportBtn');
+  btn.disabled = true;
+  btn.textContent = 'Export en cours…';
+
+  try {
+    let query = db
+      .from('pointages')
+      .select('*')
+      .gte('date', from)
+      .lte('date', to)
+      .order('employee_name', { ascending: true })
+      .order('date', { ascending: true });
+
+    if (employee) query = query.eq('employee_name', employee);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      showToast('Aucun pointage trouvé sur cette période', 'error');
+      return;
+    }
+
+    // En-têtes CSV — séparateur ";" pour une compatibilité optimale avec Excel/Sheets en français
+    const lignes = [
+      ['Collaborateur', 'Poste', 'Date', 'Arrivée', 'Début pause déjeuner', 'Fin pause déjeuner', 'Départ', 'Total travaillé (h:min)', 'Total travaillé (heures décimales)']
+    ];
+
+    data.forEach(p => {
+      const membre = EQUIPE.find(e => e.name === p.employee_name);
+      const heures = calculerHeures(p);
+      lignes.push([
+        p.employee_name,
+        membre ? membre.poste : '',
+        new Date(p.date).toLocaleDateString('fr-FR'),
+        heureFmt(p.arrivee) || '',
+        heureFmt(p.pause_debut) || '',
+        heureFmt(p.pause_fin) || '',
+        heureFmt(p.depart) || '',
+        heures != null ? dureeFmt(heures) : '',
+        heures != null ? heures.toFixed(2).replace('.', ',') : ''
+      ]);
+    });
+
+    const csv = lignes.map(ligne =>
+      ligne.map(champ => {
+        const valeur = String(champ ?? '');
+        // Échappe les guillemets et entoure de guillemets si nécessaire
+        if (valeur.includes(';') || valeur.includes('"') || valeur.includes('\n')) {
+          return '"' + valeur.replace(/"/g, '""') + '"';
+        }
+        return valeur;
+      }).join(';')
+    ).join('\r\n');
+
+    // Ajout du BOM UTF-8 pour un affichage correct des accents dans Excel
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const nomFichier = `pointages_${from}_au_${to}${employee ? '_' + employee.replace(/\s+/g, '-') : '_equipe'}.csv`;
+
+    const lien = document.createElement('a');
+    lien.href = url;
+    lien.download = nomFichier;
+    document.body.appendChild(lien);
+    lien.click();
+    document.body.removeChild(lien);
+    URL.revokeObjectURL(url);
+
+    showToast(`Export téléchargé : ${nomFichier} ✓`);
+  } catch (err) {
+    showToast('Erreur lors de l\'export', 'error');
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📊 Exporter en CSV (Excel / Google Sheets)';
+  }
+}
+
+// Déconnexion
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await db.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+// Toast
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+<script src="sidebar.js"></script>
+</body>
+</html>

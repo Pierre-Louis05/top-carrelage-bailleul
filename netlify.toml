@@ -1,0 +1,44 @@
+[functions]
+  directory = "netlify/functions"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+
+# Redirects sans extension .html
+[[redirects]]
+  from = "/univers"
+  to = "/univers.html"
+  status = 200
+
+[[redirects]]
+  from = "/realisations"
+  to = "/realisations.html"
+  status = 200
+
+[[redirects]]
+  from = "/histoire"
+  to = "/histoire.html"
+  status = 200
+
+[[redirects]]
+  from = "/equipe"
+  to = "/equipe.html"
+  status = 200
+
+[[redirects]]
+  from = "/rendez-vous"
+  to = "/rendez-vous.html"
+  status = 200
+
+[[redirects]]
+  from = "/contact"
+  to = "/contact.html"
+  status = 200
+
+[[redirects]]
+  from = "/espace-equipe"
+  to = "/espace-equipe/index.html"
+  status = 200

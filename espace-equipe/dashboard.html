@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Espace Équipe Top Carrelage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Top Carrelage</div>
+      <span class="sidebar-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">Chargement…</div>
+        <div class="sidebar-user-role" id="sidebarRole"></div>
+      </div>
+    </div>
+        <nav class="sidebar-nav">
+      <div class="sidebar-section">Demandes RDV</div>
+      <a href="dashboard.html" class="sidebar-link active"><span>📅</span> Tableau de bord<span class="sidebar-badge" id="badge-nouveau" style="display:none;">0</span></a>
+      <div class="sidebar-section">Site web</div>
+      <a href="messages.html" class="sidebar-link"><span>💬</span> Messages de contact</a>
+      <a href="temoignages.html" class="sidebar-link"><span>⭐</span> Témoignages</a>
+      <div class="sidebar-section">Équipe</div>
+      <a href="pointage.html" class="sidebar-link"><span>🕐</span> Mon pointage</a>
+      <a href="conges.html" class="sidebar-link"><span>🏖️</span> Mes congés</a>
+      <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span>👥</span> Présence équipe</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Nouvelles demandes</div>
+      <div class="topbar-actions">
+        <span style="font-size:0.78rem; color:var(--text-muted);" id="lastRefresh"></span>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card nouveau">
+          <div class="stat-number" id="stat-nouveau">—</div>
+          <div class="stat-label">Nouvelles</div>
+        </div>
+        <div class="stat-card pris">
+          <div class="stat-number" id="stat-pris">—</div>
+          <div class="stat-label">En cours</div>
+        </div>
+        <div class="stat-card attente">
+          <div class="stat-number" id="stat-attente">—</div>
+          <div class="stat-label">En attente</div>
+        </div>
+        <div class="stat-card confirme">
+          <div class="stat-number" id="stat-confirme">—</div>
+          <div class="stat-label">Confirmés</div>
+        </div>
+        <div class="stat-card archive">
+          <div class="stat-number" id="stat-archive">—</div>
+          <div class="stat-label">Archivés</div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="nouveau">Nouvelles <span class="tab-count" id="tc-nouveau">0</span></button>
+        <button class="tab-btn" data-tab="pris_en_charge">En cours <span class="tab-count" id="tc-pris">0</span></button>
+        <button class="tab-btn" data-tab="en_attente_confirmation">En attente <span class="tab-count" id="tc-attente">0</span></button>
+        <button class="tab-btn" data-tab="confirme">Confirmés <span class="tab-count" id="tc-confirme">0</span></button>
+        <button class="tab-btn" data-tab="archive">Archives <span class="tab-count" id="tc-archive">0</span></button>
+      </div>
+
+      <!-- LISTE -->
+      <div id="rdvList">
+        <div class="loading"><div class="spinner"></div> Chargement des demandes…</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentTab = 'nouveau';
+let allRdvs = [];
+let currentUser = null;
+let currentProfile = null;
+
+const STATUS_LABELS = {
+  nouveau: 'Nouvelle demande',
+  pris_en_charge: 'Prise en charge',
+  en_attente_confirmation: 'En attente de confirmation',
+  confirme: 'Confirmé',
+  archive: 'Archivé'
+};
+
+const TAB_TITLES = {
+  nouveau: 'Nouvelles demandes',
+  pris_en_charge: 'Prises en charge',
+  en_attente_confirmation: 'En attente de confirmation',
+  confirme: 'RDV Confirmés',
+  archive: 'Archives'
+};
+
+// Auth check
+async function init() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
+  currentUser = session.user;
+
+  // Charger profil
+  const { data: profile } = await db
+    .from('employee_profiles')
+    .select('*')
+    .eq('id', currentUser.id)
+    .single();
+
+  if (profile) {
+    currentProfile = profile;
+    document.getElementById('sidebarName').textContent = profile.prenom + ' ' + profile.nom;
+    document.getElementById('sidebarRole').textContent = profile.poste;
+    document.getElementById('sidebarAvatar').textContent = profile.prenom[0] + profile.nom[0];
+    if (profile.poste === 'Dirigeant de la société' || profile.poste === 'Responsable magasin') {
+      document.getElementById('lienPresenceEquipe').style.display = '';
+    }
+  } else {
+    document.getElementById('sidebarName').textContent = currentUser.email;
+  }
+
+  await loadRdvs();
+
+  // Realtime updates
+  db.channel('rdv_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'rdv_requests' }, () => loadRdvs())
+    .subscribe();
+}
+
+async function loadRdvs() {
+  const { data, error } = await db
+    .from('rdv_requests')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) { showToast('Erreur de chargement', 'error'); return; }
+  allRdvs = data || [];
+  updateStats();
+  renderList();
+  document.getElementById('lastRefresh').textContent = 'Mis à jour ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function updateStats() {
+  const counts = { nouveau: 0, pris_en_charge: 0, en_attente_confirmation: 0, confirme: 0, archive: 0 };
+  allRdvs.forEach(r => { if (counts[r.status] !== undefined) counts[r.status]++; });
+
+  document.getElementById('stat-nouveau').textContent = counts.nouveau;
+  document.getElementById('stat-pris').textContent = counts.pris_en_charge;
+  document.getElementById('stat-attente').textContent = counts.en_attente_confirmation;
+  document.getElementById('stat-confirme').textContent = counts.confirme;
+  document.getElementById('stat-archive').textContent = counts.archive;
+
+  // Badge sidebar : total des demandes actives (hors archives)
+  const totalActif = counts.nouveau + counts.pris_en_charge + counts.en_attente_confirmation + counts.confirme;
+  const badgeSidebar = document.getElementById('badge-nouveau');
+  if (badgeSidebar) {
+    badgeSidebar.textContent = totalActif;
+    badgeSidebar.style.display = totalActif > 0 ? '' : 'none';
+  }
+  // Badges des tabs
+  const tcIds = { nouveau: 'nouveau', pris_en_charge: 'pris', en_attente_confirmation: 'attente', confirme: 'confirme', archive: 'archive' };
+  Object.entries(tcIds).forEach(([status, key]) => {
+    const tc = document.getElementById('tc-' + key);
+    if (tc) tc.textContent = counts[status];
+  });
+}
+
+function renderList() {
+  const filtered = allRdvs.filter(r => r.status === currentTab);
+  const container = document.getElementById('rdvList');
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <p>Aucune demande dans cette catégorie.</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = '<div class="rdv-list">' + filtered.map(rdv => `
+    <a href="rdv-detail.html?id=${rdv.id}" class="rdv-card">
+      <div class="rdv-card-left">
+        <div class="rdv-client-name">${rdv.client_prenom} ${rdv.client_nom}</div>
+        <div class="rdv-meta">
+          <span>📞 ${rdv.client_tel}</span>
+          <span>✉️ ${rdv.client_email}</span>
+          ${rdv.date_souhaitee ? `<span>📅 ${new Date(rdv.date_souhaitee).toLocaleDateString('fr-FR')} ${rdv.creneau ? '— ' + (rdv.creneau === 'matin' ? 'Matin' : 'Après-midi') : ''}</span>` : ''}
+          <span>📋 ${rdv.avancement}</span>
+        </div>
+        <div class="rdv-univers">
+          ${(rdv.univers || []).map(u => `<span class="univers-tag">${u}</span>`).join('')}
+        </div>
+      </div>
+      <div class="rdv-card-right">
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+          <span class="status-badge status-${rdv.status}">${STATUS_LABELS[rdv.status]}</span>
+          <button type="button" title="Supprimer définitivement cette demande" onclick="supprimerRdv(event, '${rdv.id}')" style="flex-shrink:0; width:28px; height:28px; display:flex; align-items:center; justify-content:center; background:var(--surface2); border:1px solid var(--border); border-radius:50%; color:var(--text-muted); font-size:0.85rem; cursor:pointer; transition:var(--transition);" onmouseover="this.style.background='#e25c5c'; this.style.color='#fff'; this.style.borderColor='#e25c5c';" onmouseout="this.style.background='var(--surface2)'; this.style.color='var(--text-muted)'; this.style.borderColor='var(--border)';">🗑️</button>
+        </div>
+        <span class="rdv-date">${new Date(rdv.created_at).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })}</span>
+        ${rdv.assigned_to && rdv.assigned_to.length > 0 ? `
+          <div class="assigned-avatars">
+            ${rdv.assigned_to.map(name => `<div class="assigned-avatar" title="${name}">${name.split(' ').map(n=>n[0]).join('').substring(0,2)}</div>`).join('')}
+          </div>` : ''}
+      </div>
+    </a>
+  `).join('') + '</div>';
+}
+
+async function supprimerRdv(event, id) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (!confirm('Supprimer définitivement cette demande de rendez-vous ? Cette action est irréversible.')) return;
+
+  const { data, error } = await db.from('rdv_requests').delete().eq('id', id).select();
+
+  if (error) {
+    showToast('Erreur lors de la suppression', 'error');
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    showToast('Suppression refusée par la base de données (permissions). Voir la console pour plus de détails.', 'error');
+    console.warn('Suppression bloquée probablement par une policy RLS Supabase manquante pour DELETE sur rdv_requests. id=', id);
+    return;
+  }
+
+  showToast('Demande supprimée');
+  await loadRdvs();
+}
+
+// Navigation tabs
+document.querySelectorAll('[data-tab]').forEach(el => {
+  el.addEventListener('click', (e) => {
+    e.preventDefault();
+    currentTab = el.dataset.tab;
+    document.querySelectorAll('[data-tab]').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll(`[data-tab="${currentTab}"]`).forEach(t => t.classList.add('active'));
+    document.getElementById('topbarTitle').textContent = TAB_TITLES[currentTab];
+    renderList();
+  });
+});
+
+// Déconnexion
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await db.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+// Toast
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+<script src="sidebar.js"></script>
+</body>
+</html>

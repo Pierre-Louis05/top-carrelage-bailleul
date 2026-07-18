@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mon pointage — Espace Équipe Top Carrelage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+  <style>
+    .clock-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2.5rem;
+      text-align: center;
+      max-width: 560px;
+      margin: 0 auto 2.5rem;
+    }
+    .clock-time {
+      font-family: var(--font-titre, 'Playfair Display', serif);
+      font-size: 3rem;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    .clock-date {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: capitalize;
+      margin-bottom: 1.6rem;
+    }
+    .clock-status {
+      display: inline-block;
+      padding: 0.5rem 1.2rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      margin-bottom: 2rem;
+    }
+    .clock-status.attente { background: rgba(245,158,11,0.15); color: var(--attente); }
+    .clock-status.travail { background: rgba(16,185,129,0.15); color: var(--confirme); }
+    .clock-status.pause { background: rgba(139,92,246,0.15); color: var(--pris); }
+    .clock-status.termine { background: rgba(107,114,128,0.2); color: var(--text-muted); }
+
+    .clock-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.8rem;
+    }
+    .clock-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1.2rem 0.6rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .clock-step-icon { font-size: 1.4rem; }
+    .clock-step-label { font-size: 0.74rem; color: var(--text-muted); text-align:center; line-height:1.3; }
+    .clock-step-time { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+    .clock-step.done { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.06); }
+    .clock-step.active button {
+      background: var(--or);
+      color: var(--noir);
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 0.9rem;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      letter-spacing: 0.03em;
+    }
+    .clock-step.active button:hover { background: var(--or-clair); }
+    .clock-step.disabled { opacity: 0.4; }
+
+    .historique-table { width:100%; border-collapse: collapse; font-size: 0.85rem; }
+    .historique-table th {
+      text-align:left; padding:0.7rem 1rem; color:var(--text-muted);
+      font-size: 0.72rem; text-transform:uppercase; letter-spacing:0.06em;
+      border-bottom: 1px solid var(--border);
+    }
+    .historique-table td {
+      padding:0.8rem 1rem; color:var(--text); border-bottom: 1px solid var(--border);
+    }
+    .historique-table tr:last-child td { border-bottom:none; }
+    .total-pill {
+      display:inline-block; background:var(--surface2); color:var(--or);
+      padding:0.25rem 0.7rem; border-radius:999px; font-weight:700; font-size:0.78rem;
+    }
+
+    @media (max-width: 720px) {
+      .clock-steps { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Top Carrelage</div>
+      <span class="sidebar-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">Chargement…</div>
+        <div class="sidebar-user-role" id="sidebarRole"></div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav">
+      <div class="sidebar-section">Navigation</div>
+      <a href="dashboard.html" class="sidebar-link">
+        <span>📅</span> Demandes RDV
+      </a>
+      <a href="messages.html" class="sidebar-link">
+        <span>💬</span> Messages de contact
+      </a>
+      <a href="temoignages.html" class="sidebar-link">
+        <span>⭐</span> Témoignages
+      </a>
+      <div class="sidebar-section">Équipe</div>
+      <a href="pointage.html" class="sidebar-link active">
+        <span>🕐</span> Mon pointage
+      </a>
+      <a href="conges.html" class="sidebar-link">
+        <span>🏖️</span> Mes congés
+      </a>
+      <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span>👥</span> Présence équipe</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">Mon pointage</div>
+      <div class="topbar-actions">
+        <span style="font-size:0.78rem; color:var(--text-muted);" id="lastRefresh"></span>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- WIDGET DE POINTAGE DU JOUR -->
+      <div class="clock-card">
+        <div class="clock-time" id="clockTime">--:--</div>
+        <div class="clock-date" id="clockDate"></div>
+        <div class="clock-status attente" id="clockStatus">Chargement…</div>
+
+        <div class="clock-steps" id="clockSteps">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- HISTORIQUE PERSONNEL -->
+      <div style="max-width:900px; margin:0 auto;">
+        <h3 style="margin-bottom:1rem;">Mon historique récent</h3>
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden;">
+          <div id="historiqueContainer">
+            <div class="loading"><div class="spinner"></div> Chargement de l'historique…</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let currentProfile = null;
+let todayRecord = null;
+
+const STEPS = [
+  { champ: 'arrivee',     icon: '🟢', label: 'Arrivée',              actionLabel: 'Pointer mon arrivée' },
+  { champ: 'pause_debut', icon: '🍽️', label: 'Début pause déjeuner', actionLabel: 'Pointer le début de pause' },
+  { champ: 'pause_fin',   icon: '▶️', label: 'Fin de pause',         actionLabel: 'Pointer la fin de pause' },
+  { champ: 'depart',      icon: '🔴', label: 'Départ',               actionLabel: 'Pointer mon départ' }
+];
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function heureFmt(iso) {
+  if (!iso) return null;
+  return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function dureeFmt(heuresDecimal) {
+  if (heuresDecimal == null) return '—';
+  const h = Math.floor(heuresDecimal);
+  const m = Math.round((heuresDecimal - h) * 60);
+  return `${h}h${m.toString().padStart(2, '0')}`;
+}
+
+function calculerHeures(p) {
+  if (!p.arrivee || !p.depart) return null;
+  let total = (new Date(p.depart) - new Date(p.arrivee)) / 3600000;
+  if (p.pause_debut && p.pause_fin) {
+    total -= (new Date(p.pause_fin) - new Date(p.pause_debut)) / 3600000;
+  }
+  return Math.max(total, 0);
+}
+
+// ===== Horloge en direct =====
+function tickClock() {
+  const now = new Date();
+  document.getElementById('clockTime').textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  document.getElementById('clockDate').textContent = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+setInterval(tickClock, 1000);
+tickClock();
+
+// ===== Auth & init =====
+async function init() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
+  currentUser = session.user;
+
+  const { data: profile } = await db
+    .from('employee_profiles')
+    .select('*')
+    .eq('id', currentUser.id)
+    .single();
+
+  if (profile) {
+    currentProfile = profile;
+    document.getElementById('sidebarName').textContent = profile.prenom + ' ' + profile.nom;
+    document.getElementById('sidebarRole').textContent = profile.poste;
+    document.getElementById('sidebarAvatar').textContent = profile.prenom[0] + profile.nom[0];
+
+    if (profile.poste === 'Dirigeant de la société' || profile.poste === 'Responsable magasin') {
+      document.getElementById('lienPresenceEquipe').style.display = 'flex';
+    }
+  } else {
+    document.getElementById('sidebarName').textContent = currentUser.email;
+  }
+
+  await loadToday();
+  await loadHistorique();
+
+  // Realtime : si le pointage est mis à jour ailleurs (ex: ouvert sur 2 appareils)
+  db.channel('mon_pointage_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'pointages', filter: `employee_id=eq.${currentUser.id}` }, () => {
+      loadToday();
+      loadHistorique();
+    })
+    .subscribe();
+}
+
+// ===== Pointage du jour =====
+async function loadToday() {
+  const { data, error } = await db
+    .from('pointages')
+    .select('*')
+    .eq('employee_id', currentUser.id)
+    .eq('date', todayStr())
+    .maybeSingle();
+
+  if (error) {
+    console.error('Erreur pointage:', error);
+    document.getElementById('clockStatus').textContent = 'Erreur de connexion';
+    document.getElementById('clockSteps').innerHTML =
+      `<p style="color:var(--text-muted);font-size:0.85rem;text-align:center;padding:1rem;">
+        Impossible de charger le pointage.<br>Vérifiez votre connexion ou contactez l'administrateur.
+      </p>`;
+    return;
+  }
+  todayRecord = data;
+  renderSteps();
+}
+
+function statutDuJour() {
+  if (!todayRecord || !todayRecord.arrivee) return { label: 'Pas encore arrivé(e)', css: 'attente' };
+  if (todayRecord.depart) return { label: 'Journée terminée', css: 'termine' };
+  if (todayRecord.pause_debut && !todayRecord.pause_fin) return { label: 'En pause déjeuner', css: 'pause' };
+  return { label: 'Au travail', css: 'travail' };
+}
+
+function renderSteps() {
+  const statut = statutDuJour();
+  const badge = document.getElementById('clockStatus');
+  badge.textContent = statut.label;
+  badge.className = 'clock-status ' + statut.css;
+
+  // Détermine l'étape active : la première dont le champ n'est pas encore rempli
+  let activeIndex = STEPS.findIndex(s => !todayRecord || !todayRecord[s.champ]);
+  if (activeIndex === -1) activeIndex = STEPS.length; // tout est fait
+
+  const container = document.getElementById('clockSteps');
+  container.innerHTML = STEPS.map((s, i) => {
+    const value = todayRecord ? todayRecord[s.champ] : null;
+    let cls = 'clock-step';
+    let inner = '';
+    if (value) {
+      cls += ' done';
+      inner = `<div class="clock-step-icon">${s.icon}</div><div class="clock-step-label">${s.label}</div><div class="clock-step-time">${heureFmt(value)}</div>`;
+    } else if (i === activeIndex) {
+      cls += ' active';
+      inner = `<div class="clock-step-icon">${s.icon}</div><div class="clock-step-label">${s.label}</div><button onclick="pointer('${s.champ}')">${s.actionLabel}</button>`;
+    } else {
+      cls += ' disabled';
+      inner = `<div class="clock-step-icon">${s.icon}</div><div class="clock-step-label">${s.label}</div><div class="clock-step-time">—</div>`;
+    }
+    return `<div class="${cls}">${inner}</div>`;
+  }).join('');
+}
+
+async function pointer(champ) {
+  const iso = new Date().toISOString();
+  const stepInfo = STEPS.find(s => s.champ === champ);
+
+  try {
+    if (!todayRecord) {
+      const { data, error } = await db.from('pointages').insert({
+        employee_id: currentUser.id,
+        employee_name: currentProfile.prenom + ' ' + currentProfile.nom,
+        date: todayStr(),
+        [champ]: iso
+      }).select().single();
+      if (error) throw error;
+      todayRecord = data;
+    } else {
+      const { data, error } = await db.from('pointages').update({ [champ]: iso }).eq('id', todayRecord.id).select().single();
+      if (error) throw error;
+      todayRecord = data;
+    }
+
+    showToast(`${stepInfo.label} enregistré${champ === 'arrivee' || champ === 'depart' ? '' : 'e'} à ${heureFmt(iso)} ✓`);
+    renderSteps();
+    await loadHistorique();
+  } catch (err) {
+    showToast('Erreur lors de l\'enregistrement du pointage', 'error');
+    console.error(err);
+  }
+}
+
+// ===== Historique personnel =====
+async function loadHistorique() {
+  const { data, error } = await db
+    .from('pointages')
+    .select('*')
+    .eq('employee_id', currentUser.id)
+    .order('date', { ascending: false })
+    .limit(14);
+
+  const container = document.getElementById('historiqueContainer');
+  if (error) {
+    container.innerHTML = `<div class="empty-state"><p>Erreur de chargement de l'historique.</p></div>`;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🕐</div>
+        <p>Aucun pointage enregistré pour le moment.</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <table class="historique-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Arrivée</th>
+          <th>Pause déjeuner</th>
+          <th>Départ</th>
+          <th>Total travaillé</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.map(p => `
+          <tr>
+            <td style="text-transform:capitalize;">${new Date(p.date).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}</td>
+            <td>${heureFmt(p.arrivee) || '—'}</td>
+            <td>${p.pause_debut && p.pause_fin ? `${heureFmt(p.pause_debut)} – ${heureFmt(p.pause_fin)}` : (p.pause_debut ? `${heureFmt(p.pause_debut)} – …` : '—')}</td>
+            <td>${heureFmt(p.depart) || '—'}</td>
+            <td><span class="total-pill">${dureeFmt(calculerHeures(p))}</span></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+
+  document.getElementById('lastRefresh').textContent = 'Mis à jour ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+// Déconnexion
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await db.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+// Toast
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+<script src="sidebar.js"></script>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prendre Rendez-vous — Top Carrelage Bailleul</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 2.5rem;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gris-texte);
+    }
+    .step.active { color: var(--noir); }
+    .step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+    }
+    .step.active .step-num {
+      background: var(--or);
+      border-color: var(--or);
+      color: var(--noir);
+    }
+    .step-line {
+      flex: 1;
+      height: 1px;
+      background: rgba(0,0,0,0.12);
+      margin: 0 1rem;
+    }
+    .univers-select-grid {
+      display: grid;
+      grid-template-columns: repeat(5,1fr);
+      gap: 0.8rem;
+      margin-bottom: 1.5rem;
+    }
+    .univers-opt {
+      position: relative;
+    }
+    .univers-opt input[type=checkbox] {
+      position: absolute;
+      opacity: 0;
+      width: 0; height: 0;
+    }
+    .univers-opt label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem 0.5rem;
+      border: 1px solid rgba(0,0,0,0.12);
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gris-texte);
+    }
+    .univers-opt label svg { color: var(--gris-texte); transition: var(--transition); }
+    .univers-opt input:checked + label {
+      border-color: var(--or);
+      background: rgba(201,168,76,0.07);
+      color: var(--noir);
+    }
+    .univers-opt input:checked + label svg { color: var(--or); }
+    .univers-opt label:hover { border-color: rgba(201,168,76,0.4); }
+    .form-submit-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+    .form-notice {
+      font-size: 0.78rem;
+      color: var(--gris-texte);
+    }
+  </style>
+</head>
+<body>
+
+<nav id="navbar">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo"><span class="nav-logo-main">Top Carrelage</span><span class="nav-logo-sub">Bailleul · Depuis 1985</span></a>
+    <ul class="nav-links">
+      <li><a href="univers.html">Nos Univers</a></li>
+      <li><a href="realisations.html">Réalisations</a></li>
+      <li><a href="histoire.html">Notre Histoire</a></li>
+      <li><a href="equipe.html">L'Équipe</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <a href="rendez-vous.html" class="btn btn-or nav-cta">Prendre RDV</a>
+    <button class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="nav-mobile" id="mobileMenu">
+  <button class="nav-mobile-close" id="mobileClose">✕</button>
+  <a href="index.html">Accueil</a><a href="univers.html">Nos Univers</a><a href="realisations.html">Réalisations</a><a href="histoire.html">Notre Histoire</a><a href="equipe.html">L'Équipe</a><a href="contact.html">Contact</a>
+  <a href="rendez-vous.html" class="btn btn-or" style="margin-top:1rem;">Prendre RDV</a>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=1920&q=80&auto=format&fit=crop');"></div>
+  <div class="page-hero-overlay"></div>
+  <div class="container">
+    <div class="page-hero-content">
+      <div class="breadcrumb"><a href="index.html">Accueil</a> <span>/</span> Prendre rendez-vous</div>
+      <h1>Prendre rendez-vous</h1>
+      <div class="sep"></div>
+      <p style="color:rgba(250,250,248,0.7);">Conseil personnalisé, gratuit et sans engagement.</p>
+    </div>
+  </div>
+</div>
+
+<section style="background:var(--blanc);">
+  <div class="container">
+    <div class="rdv-grid">
+
+      <!-- FORMULAIRE -->
+      <div class="rdv-form reveal">
+        <h3>Votre demande de rendez-vous</h3>
+
+        <div class="step-indicator">
+          <div class="step active"><div class="step-num">1</div> Votre projet</div>
+          <div class="step-line"></div>
+          <div class="step active"><div class="step-num">2</div> Vos coordonnées</div>
+          <div class="step-line"></div>
+          <div class="step active"><div class="step-num">3</div> Date souhaitée</div>
+        </div>
+
+        <form action="#" method="post" onsubmit="handleSubmit(event)">
+
+          <!-- Univers -->
+          <div class="form-group">
+            <label>Univers concerné(s) *</label>
+            <div class="univers-select-grid">
+              <div class="univers-opt">
+                <input type="checkbox" id="u-carrelage" name="univers" value="carrelage" />
+                <label for="u-carrelage">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/></svg>
+                  Carrelage
+                </label>
+              </div>
+              <div class="univers-opt">
+                <input type="checkbox" id="u-sanitaire" name="univers" value="sanitaire" />
+                <label for="u-sanitaire">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12h16"/><path d="M4 12a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2"/><path d="M12 2v10"/></svg>
+                  Sanitaire
+                </label>
+              </div>
+              <div class="univers-opt">
+                <input type="checkbox" id="u-parquet" name="univers" value="parquet" />
+                <label for="u-parquet">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 6h20M2 12h20M2 18h20"/></svg>
+                  Parquet
+                </label>
+              </div>
+              <div class="univers-opt">
+                <input type="checkbox" id="u-cuisine" name="univers" value="cuisine" />
+                <label for="u-cuisine">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6h5zM16 22h5"/></svg>
+                  Cuisine
+                </label>
+              </div>
+              <div class="univers-opt">
+                <input type="checkbox" id="u-dressing" name="univers" value="dressing" />
+                <label for="u-dressing">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="18" rx="1"/><path d="M12 3v18M8 7h1M8 12h1M15 7h1M15 12h1"/></svg>
+                  Dressing
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Avancement projet -->
+          <div class="form-group">
+            <label for="avancement">Avancement de votre projet *</label>
+            <select id="avancement" name="avancement" required>
+              <option value="">Sélectionnez…</option>
+              <option>Réflexion initiale</option>
+              <option>Projet défini, recherche de produits</option>
+              <option>Prêt à commander</option>
+              <option>Chantier en cours</option>
+            </select>
+          </div>
+
+          <!-- Coordonnées -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="prenom">Prénom *</label>
+              <input type="text" id="prenom" name="prenom" required autocomplete="given-name" />
+            </div>
+            <div class="form-group">
+              <label for="nom">Nom *</label>
+              <input type="text" id="nom" name="nom" required autocomplete="family-name" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email *</label>
+              <input type="email" id="email" name="email" required autocomplete="email" />
+            </div>
+            <div class="form-group">
+              <label for="tel">Téléphone *</label>
+              <input type="tel" id="tel" name="tel" required autocomplete="tel" />
+            </div>
+          </div>
+
+          <!-- Date -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="date">Date souhaitée</label>
+              <input type="date" id="date" name="date" />
+            </div>
+            <div class="form-group">
+              <label for="creneau">Créneau préféré</label>
+              <select id="creneau" name="creneau">
+                <option value="">Indifférent</option>
+                <option>Matin (9h – 12h)</option>
+                <option>Après-midi (14h – 18h30)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Message -->
+          <div class="form-group">
+            <label for="message">Décrivez votre projet (optionnel)</label>
+            <textarea id="message" name="message" placeholder="Surface approximative, style souhaité, contraintes particulières…"></textarea>
+          </div>
+
+          <div class="form-submit-row">
+            <p class="form-notice">* Champs obligatoires. Réponse sous 24h.</p>
+            <button type="submit" class="btn btn-or">Envoyer ma demande →</button>
+          </div>
+        </form>
+
+        <!-- Confirmation -->
+        <div id="confirmation" style="display:none; text-align:center; padding:3rem 1rem;">
+          <div style="font-size:3rem; color:var(--or); margin-bottom:1rem;">✓</div>
+          <h3 style="margin-bottom:0.8rem;">Demande envoyée !</h3>
+          <p style="color:var(--gris-texte);">Nous vous recontactons dans les 24h pour confirmer votre rendez-vous.</p>
+        </div>
+      </div>
+
+      <!-- INFOS -->
+      <div class="rdv-info reveal">
+        <h3>Informations pratiques</h3>
+
+        <div class="info-block">
+          <h4>Horaires d'ouverture</h4>
+          <div class="horaire-row"><span>Lundi</span><span>14h00 – 18h30</span></div>
+          <div class="horaire-row"><span>Mardi</span><span>9h – 12h &nbsp;|&nbsp; 14h – 18h30</span></div>
+          <div class="horaire-row"><span>Mercredi</span><span>9h – 12h &nbsp;|&nbsp; 14h – 18h30</span></div>
+          <div class="horaire-row"><span>Jeudi</span><span>9h – 12h &nbsp;|&nbsp; 14h – 18h30</span></div>
+          <div class="horaire-row"><span>Vendredi</span><span>9h – 12h &nbsp;|&nbsp; 14h – 18h30</span></div>
+          <div class="horaire-row"><span>Samedi</span><span>9h – 12h &nbsp;|&nbsp; 14h – 18h30</span></div>
+          <div class="horaire-row fermé"><span>Dimanche</span><span>Fermé</span></div>
+        </div>
+
+        <div class="info-block">
+          <h4>Nous trouver</h4>
+          <p>22 Avenue de l'Europe<br>59270 Bailleul</p>
+          <p style="margin-top:0.8rem;"><a href="tel:+33328480808" style="color:var(--or);">03 28 48 08 08</a></p>
+        </div>
+
+        <div class="info-block">
+          <h4>Ce qui vous attend</h4>
+          <ul>
+            <li>✓ &nbsp;Accueil personnalisé par un spécialiste</li>
+            <li>✓ &nbsp;Visite de nos 800 m² d'exposition</li>
+            <li>✓ &nbsp;Conseil adapté à votre budget</li>
+            <li>✓ &nbsp;Devis détaillé offert</li>
+            <li>✓ &nbsp;Sans engagement, sans pression</li>
+          </ul>
+        </div>
+
+        <div style="margin-top:1.5rem; padding:1.5rem; background:var(--gris-clair); border-left:2px solid var(--or);">
+          <p style="font-size:0.88rem; color:var(--gris-texte); font-style:italic;">"Notre objectif n'est pas de vendre, mais de vous aider à trouver la solution parfaite pour votre projet."</p>
+          <p style="font-size:0.75rem; color:var(--or); margin-top:0.8rem; letter-spacing:0.1em; text-transform:uppercase;">— L'équipe Top Carrelage</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand"><div class="nav-logo"><span class="nav-logo-main">Top Carrelage</span><span class="nav-logo-sub">Depuis 1985</span></div><p>Expert en carrelage, sanitaire, parquet, cuisine et dressing à Bailleul.</p></div>
+      <div class="footer-col"><h4>Navigation</h4><ul><li><a href="univers.html">Nos Univers</a></li><li><a href="realisations.html">Réalisations</a></li><li><a href="histoire.html">Notre Histoire</a></li><li><a href="equipe.html">L'Équipe</a></li><li><a href="rendez-vous.html">Prendre RDV</a></li><li><a href="contact.html">Contact</a></li><li><a href="avis.html">Laisser un avis</a></li></ul></div>
+      <div class="footer-col"><h4>Nos Univers</h4><ul><li><a href="univers.html#carrelage">Carrelage</a></li><li><a href="univers.html#sanitaire">Sanitaire</a></li><li><a href="univers.html#parquet">Parquet</a></li><li><a href="univers.html#cuisine">Cuisine</a></li><li><a href="univers.html#dressing">Dressing</a></li></ul></div>
+      <div class="footer-col footer-contact"><h4>Contact</h4><p><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>22 Av. de l'Europe, 59270 Bailleul</p><p><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.4 2 2 0 0 1 3.58 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l1.87-1.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><a href="tel:+33328480808">03 28 48 08 08</a></p></div>
+    </div>
+    <div class="footer-bottom"><span>© 2025 Top Carrelage.</span><span><a href="#">Mentions légales</a></span></div>
+  </div>
+</footer>
+
+<script src="nav.js"></script>
+<script>
+// Utilise fetch direct sans SDK Supabase pour éviter tout conflit auth
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+
+async function handleSubmit(e) {
+  e.preventDefault();
+
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.textContent = 'Envoi en cours…';
+  btn.disabled = true;
+
+  const univers = Array.from(document.querySelectorAll('input[name="univers"]:checked')).map(cb => cb.value);
+
+  const data = {
+    client_prenom: document.getElementById('prenom').value.trim(),
+    client_nom: document.getElementById('nom').value.trim(),
+    client_email: document.getElementById('email').value.trim(),
+    client_tel: document.getElementById('tel').value.trim(),
+    univers: univers.length > 0 ? univers : ['Non précisé'],
+    avancement: document.getElementById('avancement').value,
+    date_souhaitee: document.getElementById('date').value || null,
+    creneau: document.getElementById('creneau').value || null,
+    description: document.getElementById('message').value.trim() || null,
+    status: 'nouveau'
+  };
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rdv_requests`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (!res.ok) throw new Error('Erreur serveur');
+
+    // Afficher confirmation
+    document.querySelector('.rdv-form form').style.display = 'none';
+    document.querySelector('.step-indicator').style.display = 'none';
+    document.querySelector('h3').style.display = 'none';
+    document.getElementById('confirmation').style.display = 'block';
+
+  } catch(err) {
+    alert('Une erreur est survenue. Veuillez réessayer ou nous appeler au 03 28 48 08 08.');
+    btn.textContent = 'Envoyer ma demande →';
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>

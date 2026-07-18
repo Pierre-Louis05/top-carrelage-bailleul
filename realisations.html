@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Réalisations — Top Carrelage Bailleul</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .filter-bar {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      margin-bottom: 3rem;
+    }
+    .filter-btn {
+      padding: 0.5rem 1.4rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: 1px solid rgba(0,0,0,0.15);
+      background: transparent;
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: var(--font-texte);
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--noir);
+      color: var(--blanc);
+      border-color: var(--noir);
+    }
+    .filter-btn.active { background: var(--or); border-color: var(--or); color: var(--noir); }
+  </style>
+</head>
+<body>
+
+<nav id="navbar">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo"><span class="nav-logo-main">Top Carrelage</span><span class="nav-logo-sub">Bailleul · Depuis 1985</span></a>
+    <ul class="nav-links">
+      <li><a href="univers.html">Nos Univers</a></li>
+      <li><a href="realisations.html" class="active">Réalisations</a></li>
+      <li><a href="histoire.html">Notre Histoire</a></li>
+      <li><a href="equipe.html">L'Équipe</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <a href="rendez-vous.html" class="btn btn-or nav-cta">Prendre RDV</a>
+    <button class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="nav-mobile" id="mobileMenu">
+  <button class="nav-mobile-close" id="mobileClose">✕</button>
+  <a href="index.html">Accueil</a><a href="univers.html">Nos Univers</a><a href="realisations.html">Réalisations</a><a href="histoire.html">Notre Histoire</a><a href="equipe.html">L'Équipe</a><a href="contact.html">Contact</a>
+  <a href="rendez-vous.html" class="btn btn-or" style="margin-top:1rem;">Prendre RDV</a>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=1920&q=80&auto=format&fit=crop');"></div>
+  <div class="page-hero-overlay"></div>
+  <div class="container">
+    <div class="page-hero-content">
+      <div class="breadcrumb"><a href="index.html">Accueil</a> <span>/</span> Réalisations</div>
+      <h1>Nos Réalisations</h1>
+      <div class="sep"></div>
+      <p style="color:rgba(250,250,248,0.7);">Chaque projet est une histoire unique.</p>
+    </div>
+  </div>
+</div>
+
+<section>
+  <div class="container">
+    <div class="section-header reveal" style="text-align:left; margin-bottom:2rem;">
+      <span class="tag">Galerie clients</span>
+      <h2>3000+ projets réalisés</h2>
+      <div class="sep"></div>
+      <p style="color:var(--gris-texte); max-width:600px;">Découvrez une sélection de nos plus belles réalisations, du carrelage d'entrée à la cuisine complète, en passant par les salles de bain de rêve.</p>
+    </div>
+
+    <div class="filter-bar reveal">
+      <button class="filter-btn active" data-filter="all">Tous</button>
+      <button class="filter-btn" data-filter="carrelage">Carrelage</button>
+      <button class="filter-btn" data-filter="sanitaire">Sanitaire</button>
+      <button class="filter-btn" data-filter="parquet">Parquet</button>
+      <button class="filter-btn" data-filter="cuisine">Cuisine</button>
+      <button class="filter-btn" data-filter="dressing">Dressing</button>
+    </div>
+
+    <div class="galerie-grid">
+
+      <div class="galerie-item reveal" data-cat="sanitaire">
+        <img src="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=700&q=80&auto=format&fit=crop" alt="SDB marbre" loading="lazy" />
+        <div class="galerie-item-overlay"><span>Sanitaire</span><p>Salle de bain marbre blanc</p></div>
+      </div>
+
+      <div class="galerie-item reveal" data-cat="cuisine">
+        <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=700&q=80&auto=format&fit=crop" alt="Cuisine moderne" loading="lazy" />
+        <div class="galerie-item-overlay"><span>Cuisine</span><p>Cuisine ouverte contemporaine</p></div>
+      </div>
+
+      <div class="galerie-item reveal" data-cat="parquet">
+        <img src="https://images.unsplash.com/photo-1600210492493-0946911123ea?w=700&q=80&auto=format&fit=crop" alt="Parquet séjour" loading="lazy" />
+        <div class="galerie-item-overlay"><span>Parquet</span><p>Séjour chêne naturel</p></div>
+      </div>
+
+      <div class="galerie-item reveal" data-cat="carrelage">
+        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=80&auto=format&fit=crop" alt="Carrelage entrée" loading="lazy" />
+        <div class="galerie-item-overlay"><span>Carrelage</span><p>Entrée grand format</p></div>
+      </div>
+
+      <div class="galerie-item reveal" data-cat="dressing">
+        <img src="https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=700&q=80&auto=format&fit=crop" alt="Dressing suite parentale" loading="lazy" />
+        <div class="galerie-item-overlay"><span>Dressing</span><p>Suite parentale walk-in</p></div>
+      </div>
+
+      <div class="galerie-item reveal" data-cat="sanitaire">
+        <img src="https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=700&q=80&auto=format&fit=crop" alt="Douche italienne" loading="lazy" />
+        <div class="galerie-item-overlay"><span>Sanitaire</span><p>Douche à l'italienne</p></div>
+      </div>
+
+      <div class="galerie-item reveal" data-cat="carrelage">
+        <img src="https://images.unsplash.com/photo-1586105251261-72a756497a11?w=700&q=80&auto=format&fit=crop" alt="Terrasse carrelage" loading="lazy" />
+        <div class="galerie-item-overlay"><span>Carrelage</span><p>Terrasse extérieure</p></div>
+      </div>
+
+      <div class="galerie-item reveal" data-cat="cuisine">
+        <img src="https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=700&q=80&auto=format&fit=crop" alt="Cuisine bois" loading="lazy" />
+        <div class="galerie-item-overlay"><span>Cuisine</span><p>Cuisine bois & béton</p></div>
+      </div>
+
+      <div class="galerie-item reveal" data-cat="parquet">
+        <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=700&q=80&auto=format&fit=crop" alt="Salon parquet" loading="lazy" />
+        <div class="galerie-item-overlay"><span>Parquet</span><p>Salon point de Hongrie</p></div>
+      </div>
+
+      <div class="galerie-item reveal" data-cat="sanitaire">
+        <img src="https://images.unsplash.com/photo-1620626011761-996317702b8e?w=700&q=80&auto=format&fit=crop" alt="Baignoire ilot" loading="lazy" />
+        <div class="galerie-item-overlay"><span>Sanitaire</span><p>Baignoire îlot</p></div>
+      </div>
+
+      <div class="galerie-item reveal" data-cat="carrelage">
+        <img src="https://images.unsplash.com/photo-1507089947368-19c1da9775ae?w=700&q=80&auto=format&fit=crop" alt="Cuisine carrelage" loading="lazy" />
+        <div class="galerie-item-overlay"><span>Carrelage</span><p>Crédence cuisine metro</p></div>
+      </div>
+
+      <div class="galerie-item reveal" data-cat="dressing">
+        <img src="https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=700&q=80&auto=format&fit=crop" alt="Dressing blanc" loading="lazy" />
+        <div class="galerie-item-overlay"><span>Dressing</span><p>Dressing laqué blanc</p></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="background:var(--gris-clair); padding:5rem 0; text-align:center;">
+  <div class="container">
+    <span class="tag">Votre projet</span>
+    <h2 style="margin-bottom:1rem;">Inspiré ? Parlons de votre projet</h2>
+    <div class="sep sep-center"></div>
+    <p style="color:var(--gris-texte); max-width:480px; margin:0 auto 2.5rem;">Chaque réalisation commence par une conversation. Prenez rendez-vous avec nos conseillers.</p>
+    <a href="rendez-vous.html" class="btn btn-or">Prendre rendez-vous</a>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand"><div class="nav-logo"><span class="nav-logo-main">Top Carrelage</span><span class="nav-logo-sub">Depuis 1985</span></div><p>Expert en carrelage, sanitaire, parquet, cuisine et dressing à Bailleul.</p></div>
+      <div class="footer-col"><h4>Navigation</h4><ul><li><a href="univers.html">Nos Univers</a></li><li><a href="realisations.html">Réalisations</a></li><li><a href="histoire.html">Notre Histoire</a></li><li><a href="equipe.html">L'Équipe</a></li><li><a href="rendez-vous.html">Prendre RDV</a></li><li><a href="contact.html">Contact</a></li><li><a href="avis.html">Laisser un avis</a></li></ul></div>
+      <div class="footer-col"><h4>Nos Univers</h4><ul><li><a href="univers.html#carrelage">Carrelage</a></li><li><a href="univers.html#sanitaire">Sanitaire</a></li><li><a href="univers.html#parquet">Parquet</a></li><li><a href="univers.html#cuisine">Cuisine</a></li><li><a href="univers.html#dressing">Dressing</a></li></ul></div>
+      <div class="footer-col footer-contact"><h4>Contact</h4><p><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>22 Av. de l'Europe, 59270 Bailleul</p><p><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.4 2 2 0 0 1 3.58 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l1.87-1.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><a href="tel:+33328480808">03 28 48 08 08</a></p></div>
+    </div>
+    <div class="footer-bottom"><span>© 2025 Top Carrelage.</span><span><a href="#">Mentions légales</a></span></div>
+  </div>
+</footer>
+
+<script src="nav.js"></script>
+<script>
+  // Filter gallery
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const items = document.querySelectorAll('.galerie-item');
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.filter;
+      items.forEach(item => {
+        const show = f === 'all' || item.dataset.cat === f;
+        item.style.display = show ? 'block' : 'none';
+      });
+    });
+  });
+</script>
+</body>
+</html>

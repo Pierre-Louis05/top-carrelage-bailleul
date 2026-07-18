@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Commandes — Espace Équipe Top Carrelage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+  <style>
+    /* ── Contrôles ─────────────────────────────────── */
+    .cmd-topbar {
+      display: flex; align-items: center; gap: 0.8rem;
+      flex-wrap: wrap; margin-bottom: 1.1rem;
+    }
+    .cmd-search {
+      flex: 1; min-width: 200px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); padding: 0.58rem 1rem; border-radius: 8px;
+      font-size: 0.86rem; font-family: inherit;
+    }
+    .cmd-search:focus { outline: none; border-color: var(--or); }
+    .btn-nouvelle {
+      background: var(--or); color: var(--noir); border: none;
+      border-radius: 8px; padding: 0.6rem 1.2rem;
+      font-size: 0.86rem; font-weight: 700; cursor: pointer;
+      white-space: nowrap; transition: var(--transition);
+    }
+    .btn-nouvelle:hover { opacity: 0.85; }
+    .btn-sec {
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text-muted); border-radius: 8px; padding: 0.6rem 1rem;
+      font-size: 0.82rem; cursor: pointer; white-space: nowrap;
+      transition: var(--transition);
+    }
+    .btn-sec:hover { border-color: var(--or); color: var(--or); }
+
+    /* ── Onglets pays ──────────────────────────────── */
+    .cmd-tabs {
+      display: flex; gap: 0; flex-wrap: wrap;
+      border-bottom: 2px solid var(--border); margin-bottom: 0.9rem;
+    }
+    .cmd-tab {
+      background: none; border: none; border-bottom: 2px solid transparent;
+      padding: 0.55rem 1rem; font-size: 0.8rem; font-weight: 600;
+      color: var(--text-muted); cursor: pointer; transition: var(--transition);
+      display: flex; align-items: center; gap: 0.35rem; margin-bottom: -2px;
+    }
+    .cmd-tab:hover { color: var(--text); }
+    .cmd-tab.active { color: var(--or); border-bottom-color: var(--or); }
+    .tab-n {
+      background: var(--surface2); border-radius: 999px;
+      font-size: 0.68rem; font-weight: 700; padding: 0.08rem 0.42rem;
+      color: var(--text-muted); min-width: 18px; text-align: center;
+    }
+    .cmd-tab.active .tab-n { background: rgba(212,175,55,0.18); color: var(--or); }
+
+    /* ── Chips statut ──────────────────────────────── */
+    .status-chips {
+      display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.9rem;
+    }
+    .schip {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 999px; padding: 0.22rem 0.75rem;
+      font-size: 0.71rem; font-weight: 700; cursor: pointer;
+      transition: var(--transition); color: var(--text-muted);
+    }
+    .schip:hover { border-color: var(--or); color: var(--or); }
+    .schip.active { color: #fff; border-color: transparent; }
+    .schip[data-s="TOUS"].active                        { background:#D4AC0D; color:var(--noir); }
+    .schip[data-s="À PAYER AVANT PRÉPARATION"].active   { background:#B7440A; }
+    .schip[data-s="PAYÉ"].active                        { background:#1A5276; }
+    .schip[data-s="DEMANDE DE CHARGEMENT"].active       { background:#9A7D0A; }
+    .schip[data-s="EN PRÉPARATION"].active              { background:#6C3483; }
+    .schip[data-s="CHARGÉ"].active                      { background:#1E8449; }
+    .schip[data-s="LIVRAISON"].active                   { background:#E67E22; }
+    .schip[data-s="REÇU / LIVRÉ"].active                { background:#5D6D7E; }
+
+    /* ── Blocs par pays ────────────────────────────── */
+    .pays-bloc { margin-bottom: 1.4rem; }
+    .pays-titre {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--text-muted);
+      padding: 0.3rem 0; margin-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    /* ── Bloc fournisseur ──────────────────────────── */
+    .four-bloc { margin-bottom: 1rem; }
+    .four-titre {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--or);
+      padding: 0.35rem 0.8rem;
+      background: rgba(212,175,55,0.07);
+      border-radius: 6px; margin-bottom: 0.3rem;
+      border-left: 3px solid var(--or);
+    }
+
+    /* ── Lignes commande ───────────────────────────── */
+    .cmd-row {
+      display: grid;
+      grid-template-columns: 1fr 130px 170px 80px;
+      gap: 0; align-items: center;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; margin-bottom: 0.3rem;
+      padding: 0.55rem 0.9rem; transition: var(--transition);
+      min-height: 52px;
+    }
+    .cmd-row:hover { border-color: rgba(212,175,55,0.4); background: var(--surface2); }
+
+    .cmd-cell-main { min-width: 0; padding-right: 0.8rem; }
+    .cmd-client { font-weight: 700; font-size: 0.86rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cmd-num { font-size: 0.7rem; color: var(--text-muted); font-family: monospace; margin-top: 0.1rem; }
+    .cmd-comment-line { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.12rem; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .cmd-cell-date { font-size: 0.78rem; color: var(--text); padding-right: 0.6rem; }
+    .cmd-date-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+
+    .cmd-cell-status { padding-right: 0.5rem; }
+    .cmd-cell-actions { display: flex; gap: 0.3rem; justify-content: flex-end; align-items: center; }
+
+    @media (max-width: 700px) {
+      .cmd-row { grid-template-columns: 1fr 150px 60px; }
+      .cmd-cell-date { display: none; }
+    }
+    @media (max-width: 480px) {
+      .cmd-row { grid-template-columns: 1fr 130px 50px; }
+    }
+
+    /* ── Badge statut ──────────────────────────────── */
+    .sbadge {
+      display: inline-flex; align-items: center; gap: 0.25rem;
+      border-radius: 6px; padding: 0.22rem 0.6rem;
+      font-size: 0.68rem; font-weight: 700; white-space: nowrap;
+      cursor: pointer; transition: var(--transition); border: none;
+      letter-spacing: 0.01em;
+    }
+    .sbadge:hover { filter: brightness(1.1); }
+    .s-apayer    { background:#FFF3E0; color:#B7440A; }
+    .s-paye      { background:#EBF5FB; color:#1A5276; }
+    .s-chargmnt  { background:#FEF9E7; color:#9A7D0A; }
+    .s-enprep    { background:#F5EEF8; color:#6C3483; }
+    .s-charge    { background:#EAFAF1; color:#1E8449; }
+    .s-livraison { background:#FEF5E7; color:#E67E22; }
+    .s-recu      { background:#F4F6F7; color:#5D6D7E; }
+
+    /* ── Boutons action ────────────────────────────── */
+    .btn-act {
+      background: none; border: none; cursor: pointer;
+      padding: 0.28rem 0.4rem; border-radius: 5px;
+      font-size: 0.85rem; transition: var(--transition); color: var(--text-muted);
+    }
+    .btn-act:hover { background: var(--surface2); color: var(--or); }
+    .btn-del:hover { background: rgba(226,92,92,0.1); color: #e25c5c; }
+
+    /* ── Info résultats ────────────────────────────── */
+    .results-info { font-size: 0.73rem; color: var(--text-muted); margin-bottom: 0.6rem; }
+
+    /* ── Zone vide ─────────────────────────────────── */
+    .cmd-empty {
+      text-align: center; padding: 3rem 1rem;
+      color: var(--text-muted); font-size: 0.86rem;
+    }
+    .cmd-empty-icon { font-size: 2.2rem; margin-bottom: 0.6rem; }
+
+    /* ── Popup statut ──────────────────────────────── */
+    .status-popup {
+      position: fixed; z-index: 9999;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 0.5rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+      display: none; min-width: 240px;
+    }
+    .status-popup.visible { display: block; }
+    .popup-ttl {
+      font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-muted); padding: 0.3rem 0.6rem 0.55rem; font-weight: 700;
+    }
+    .popup-opt {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.48rem 0.7rem; border-radius: 8px; cursor: pointer;
+      font-size: 0.8rem; font-weight: 600; transition: var(--transition);
+      color: var(--text);
+    }
+    .popup-opt:hover { background: var(--surface2); }
+    .popup-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .popup-x {
+      position: absolute; top: 6px; right: 8px;
+      background: none; border: none; color: var(--text-muted);
+      cursor: pointer; font-size: 1rem; line-height: 1;
+    }
+
+    /* ── MODAL ─────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+      z-index: 1000; display: none; align-items: center;
+      justify-content: center; padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--surface); border-radius: 16px;
+      width: 100%; max-width: 600px; max-height: 92vh;
+      overflow-y: auto; padding: 1.8rem; position: relative;
+    }
+    .modal-ttl { font-size: 1.05rem; font-weight: 700; margin-bottom: 1.3rem; }
+    .modal-x {
+      position: absolute; top: 1.2rem; right: 1.2rem;
+      background: none; border: none; color: var(--text-muted);
+      cursor: pointer; font-size: 1.25rem; line-height: 1;
+    }
+    .mgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+    .mfull { grid-column: 1 / -1; }
+    @media (max-width: 540px) { .mgrid { grid-template-columns: 1fr; } }
+    .ff label {
+      display: block; font-size: 0.68rem; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 0.3rem; font-weight: 700;
+    }
+    .ff input, .ff select, .ff textarea {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 0.6rem 0.85rem; border-radius: 8px;
+      font-size: 0.84rem; font-family: inherit; transition: var(--transition);
+    }
+    .ff input:focus, .ff select:focus, .ff textarea:focus { outline: none; border-color: var(--or); }
+    .ff textarea { resize: vertical; min-height: 60px; }
+    .modal-foot {
+      display: flex; justify-content: flex-end; gap: 0.7rem;
+      margin-top: 1.4rem; padding-top: 1.1rem; border-top: 1px solid var(--border);
+    }
+    .btn-annuler {
+      background: none; border: 1px solid var(--border); color: var(--text-muted);
+      border-radius: 8px; padding: 0.6rem 1.2rem; font-size: 0.84rem; cursor: pointer; transition: var(--transition);
+    }
+    .btn-annuler:hover { color: var(--text); border-color: var(--text-muted); }
+    .btn-sauver {
+      background: var(--or); color: var(--noir); border: none;
+      border-radius: 8px; padding: 0.6rem 1.5rem; font-size: 0.84rem;
+      font-weight: 700; cursor: pointer; transition: var(--transition);
+    }
+    .btn-sauver:hover { opacity: 0.85; }
+    .btn-sauver:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* ── Transport ─────────────────────────────────── */
+    .transport-wrap {
+      margin-top: 2rem; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+    }
+    .transport-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.3rem; cursor: pointer; user-select: none;
+      transition: var(--transition);
+    }
+    .transport-head:hover { background: var(--surface2); }
+    .transport-head-l { display: flex; align-items: center; gap: 0.7rem; }
+    .tr-title { font-size: 0.92rem; font-weight: 700; }
+    .tr-sub { font-size: 0.75rem; color: var(--text-muted); }
+    .tr-chev { color: var(--text-muted); transition: transform 0.2s; font-size: 0.8rem; }
+    .tr-chev.open { transform: rotate(180deg); }
+    .transport-body { display: none; padding: 1.2rem; border-top: 1px solid var(--border); }
+    .transport-body.open { display: block; }
+    .tr-controls { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1rem; align-items: flex-end; }
+    .tr-field label {
+      display: block; font-size: 0.65rem; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 0.28rem; font-weight: 700;
+    }
+    .tr-field select, .tr-field input {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 0.55rem 0.8rem; border-radius: 8px;
+      font-size: 0.83rem; font-family: inherit;
+    }
+    .tr-table { width: 100%; border-collapse: collapse; font-size: 0.81rem; }
+    .tr-table th {
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--text-muted);
+      padding: 0.5rem 0.7rem; text-align: left;
+      background: var(--surface2); border-bottom: 1px solid var(--border);
+    }
+    .tr-table td { padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .tr-table tr:last-child td { border-bottom: none; }
+    .tr-table tr.sel td { background: rgba(212,175,55,0.07); }
+    .tr-cb { width: 16px; height: 16px; cursor: pointer; accent-color: var(--or); }
+    .tr-totals { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+    .tr-card { background: var(--surface2); border-radius: 10px; padding: 0.85rem 1.2rem; flex: 1; min-width: 130px; }
+    .tr-card-lbl { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); font-weight: 700; margin-bottom: 0.25rem; }
+    .tr-card-val { font-size: 1.2rem; font-weight: 700; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Top Carrelage</div>
+      <span class="sidebar-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">Chargement…</div>
+        <div class="sidebar-user-role" id="sidebarRole"></div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">Demandes RDV</div>
+      <a href="dashboard.html" class="sidebar-link"><span>📅</span> Tableau de bord</a>
+      <div class="sidebar-section">Site web</div>
+      <a href="messages.html" class="sidebar-link"><span>💬</span> Messages de contact</a>
+      <a href="temoignages.html" class="sidebar-link"><span>⭐</span> Témoignages</a>
+      <div class="sidebar-section">Équipe</div>
+      <a href="pointage.html" class="sidebar-link"><span>🕐</span> Mon pointage</a>
+      <a href="conges.html" class="sidebar-link"><span>🏖️</span> Mes congés</a>
+      <a href="commandes.html" class="sidebar-link active"><span>📦</span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;">
+        <span>👥</span> Présence équipe
+      </a>
+    </nav>
+    <button class="sidebar-deconnexion" id="btnDeconnexion">Déconnexion</button>
+  </aside>
+
+  <!-- CONTENU -->
+  <main class="main-content">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;margin-bottom:1.2rem;">
+      <div>
+        <h2 style="margin:0 0 0.15rem;">📦 Commandes</h2>
+        <p style="margin:0;font-size:0.79rem;color:var(--text-muted);">Mis à jour en temps réel · cliquez sur un statut pour le changer</p>
+      </div>
+    </div>
+
+    <!-- Barre du haut -->
+    <div class="cmd-topbar">
+      <input type="search" id="searchClient" class="cmd-search"
+             placeholder="🔍  Client, fournisseur, n° de commande…" />
+      <button class="btn-sec" id="btnTransport">🚛 Transport</button>
+      <button class="btn-nouvelle" id="btnNouvelle">+ Nouvelle</button>
+    </div>
+
+    <!-- Onglets pays -->
+    <div class="cmd-tabs" id="cmdTabs">
+      <button class="cmd-tab active" data-pays="TOUS">Toutes <span class="tab-n" id="cnt-tous">0</span></button>
+      <button class="cmd-tab" data-pays="ESPAGNE">🇪🇸 Espagne <span class="tab-n" id="cnt-es">0</span></button>
+      <button class="cmd-tab" data-pays="ITALIE">🇮🇹 Italie <span class="tab-n" id="cnt-it">0</span></button>
+      <button class="cmd-tab" data-pays="PORTUGAL">🇵🇹 Portugal <span class="tab-n" id="cnt-pt">0</span></button>
+      <button class="cmd-tab" data-pays="PARQUET">🌲 Parquet <span class="tab-n" id="cnt-pq">0</span></button>
+      <button class="cmd-tab" data-pays="SANITAIRE">🚿 Sanitaire <span class="tab-n" id="cnt-sn">0</span></button>
+    </div>
+
+    <!-- Chips statut -->
+    <div class="status-chips">
+      <button class="schip active" data-s="TOUS">Tous</button>
+      <button class="schip" data-s="À PAYER AVANT PRÉPARATION">🟠 À payer</button>
+      <button class="schip" data-s="PAYÉ">🔵 Payé</button>
+      <button class="schip" data-s="DEMANDE DE CHARGEMENT">🟡 Chargement</button>
+      <button class="schip" data-s="EN PRÉPARATION">🟣 En prép.</button>
+      <button class="schip" data-s="CHARGÉ">🟢 Chargé</button>
+      <button class="schip" data-s="LIVRAISON">🟤 Livraison</button>
+      <button class="schip" data-s="REÇU / LIVRÉ">⚫ Reçu</button>
+    </div>
+
+    <div class="results-info" id="resultsInfo"></div>
+
+    <!-- Liste des commandes -->
+    <div id="cmdList">
+      <div class="cmd-empty"><div class="cmd-empty-icon">⏳</div>Chargement…</div>
+    </div>
+
+    <!-- Transport -->
+    <div class="transport-wrap" id="transportWrap" style="display:none;">
+      <div class="transport-head" id="trHead">
+        <div class="transport-head-l">
+          <span style="font-size:1.3rem;">🚛</span>
+          <div>
+            <div class="tr-title">Optimisation transport</div>
+            <div class="tr-sub">Cochez les commandes à inclure — poids et coût calculés automatiquement</div>
+          </div>
+        </div>
+        <span class="tr-chev open" id="trChev">▼</span>
+      </div>
+      <div class="transport-body open" id="trBody">
+        <div class="tr-controls">
+          <div class="tr-field">
+            <label>Pays</label>
+            <select id="tPays">
+              <option value="">Tous</option>
+              <option value="ESPAGNE">🇪🇸 Espagne</option>
+              <option value="ITALIE">🇮🇹 Italie</option>
+              <option value="PORTUGAL">🇵🇹 Portugal</option>
+              <option value="PARQUET">🌲 Parquet</option>
+            </select>
+          </div>
+          <div class="tr-field">
+            <label>Statut</label>
+            <select id="tStatut">
+              <option value="">Tous (avec poids)</option>
+              <option value="À PAYER AVANT PRÉPARATION">À payer</option>
+              <option value="PAYÉ">Payé</option>
+              <option value="DEMANDE DE CHARGEMENT">Demande chargement</option>
+              <option value="CHARGÉ">Chargé</option>
+            </select>
+          </div>
+          <div class="tr-field">
+            <label>Tarif €/kg</label>
+            <input type="number" id="tTarif" value="0.18" step="0.01" min="0" style="width:100px;" />
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="tr-table">
+            <thead>
+              <tr>
+                <th>✓</th><th>Pays</th><th>Fournisseur</th><th>Client</th>
+                <th>Date chantier</th><th>Statut</th><th style="text-align:right">Poids kg</th>
+              </tr>
+            </thead>
+            <tbody id="tBody"></tbody>
+          </table>
+        </div>
+        <div class="tr-totals">
+          <div class="tr-card">
+            <div class="tr-card-lbl">Sélectionnées</div>
+            <div class="tr-card-val" id="tNb" style="color:#2E86AB;">0</div>
+          </div>
+          <div class="tr-card">
+            <div class="tr-card-lbl">Poids total</div>
+            <div class="tr-card-val" id="tPoids" style="color:#27AE60;">0 kg</div>
+          </div>
+          <div class="tr-card">
+            <div class="tr-card-lbl">Coût estimé</div>
+            <div class="tr-card-val" id="tCout" style="color:#E67E22;">0,00 €</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- POPUP STATUT -->
+<div class="status-popup" id="statusPopup">
+  <div class="popup-ttl">Changer le statut</div>
+  <button class="popup-x" id="popupX">✕</button>
+  <div id="popupOpts"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="cmdModal">
+  <div class="modal-box">
+    <div class="modal-ttl" id="modalTtl">Nouvelle commande</div>
+    <button class="modal-x" id="modalX">✕</button>
+    <form id="cmdForm" autocomplete="off">
+      <input type="hidden" id="editId" />
+      <div class="mgrid">
+        <div class="ff">
+          <label>Pays *</label>
+          <select id="fPays" required>
+            <option value="">— Choisir —</option>
+            <option value="ESPAGNE">🇪🇸 Espagne</option>
+            <option value="ITALIE">🇮🇹 Italie</option>
+            <option value="PORTUGAL">🇵🇹 Portugal</option>
+            <option value="PARQUET">🌲 Parquet</option>
+            <option value="SANITAIRE">🚿 Sanitaire</option>
+          </select>
+        </div>
+        <div class="ff">
+          <label>Fournisseur *</label>
+          <select id="fFour" required>
+            <option value="">— Choisir le pays d'abord —</option>
+          </select>
+        </div>
+        <div class="ff">
+          <label>N° de commande</label>
+          <input type="text" id="fNum" placeholder="AM02XXX, MAIL 01/06…" />
+        </div>
+        <div class="ff">
+          <label>Client *</label>
+          <input type="text" id="fClient" required placeholder="Nom du client" />
+        </div>
+        <div class="ff">
+          <label>Date chantier</label>
+          <input type="text" id="fDate" placeholder="FIN JUIN, A CHARGER, URGENT…" />
+        </div>
+        <div class="ff">
+          <label>Poids (kg)</label>
+          <input type="number" id="fPoids" step="0.01" min="0" />
+        </div>
+        <div class="ff">
+          <label>Statut</label>
+          <select id="fStatut">
+            <option value="À PAYER AVANT PRÉPARATION">À payer avant préparation</option>
+            <option value="PAYÉ">Payé</option>
+            <option value="DEMANDE DE CHARGEMENT">Demande de chargement</option>
+            <option value="EN PRÉPARATION">En préparation</option>
+            <option value="CHARGÉ">Chargé</option>
+            <option value="LIVRAISON">Livraison</option>
+            <option value="REÇU / LIVRÉ">Reçu / livré</option>
+          </select>
+        </div>
+        <div class="ff">
+          <label>Réception prévisionnelle</label>
+          <input type="text" id="fRecept" placeholder="S27, FIN JUIN, 25/06…" />
+        </div>
+        <div class="ff">
+          <label>N° enlèvement</label>
+          <input type="text" id="fEnl" />
+        </div>
+        <div class="ff">
+          <label>Délai production</label>
+          <input type="text" id="fDelai" placeholder="SEMAINE 23…" />
+        </div>
+        <div class="ff mfull">
+          <label>Commentaire</label>
+          <textarea id="fComment" placeholder="Notes importantes, infos complémentaires…"></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn-annuler" id="modalCancel">Annuler</button>
+        <button type="submit" class="btn-sauver" id="modalSave">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toasts" style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:0.45rem;"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentProfile = null;
+let allCommandes   = [];
+let currentPays    = 'TOUS';
+let currentStatut  = 'TOUS';
+let currentSearch  = '';
+let isManager      = false;
+
+const FOURNISSEURS = {
+  ESPAGNE:   ['AB','BATI-ORIENT','CERLAT','CRISTACER','FANAL','IBERO','MAINZU','NAVARTI',
+               'PAMESA','PDG','PERONDA / MUSEUM / HARMONY','PORCELANITEDOS','REVOIR PARIS','RIBESALBES'],
+  ITALIE:    ['ALFALUX','ASTOR EDIMAX','CAESAR','CAPRI','CIR','COEM','FAP','FIORANESE',
+               'FLAVIKER','LATICRETE','RONDINE','SINTESI','SUPERGRES','TUSCANIA'],
+  PORTUGAL:  ['ALELUIA','DOMINO','KERION','LOVE','MARGRES / LOVE'],
+  PARQUET:   ['BERRY ALLOC','LAMETT','LMS'],
+  SANITAIRE: ['B10','HIDRONATUR','IRSAP','OTTOFOND','RELAX','TRES','VISOBATH'],
+};
+
+const STATUTS = [
+  { val:'À PAYER AVANT PRÉPARATION', cls:'s-apayer',   dot:'#E67E22' },
+  { val:'PAYÉ',                       cls:'s-paye',     dot:'#2980B9' },
+  { val:'DEMANDE DE CHARGEMENT',      cls:'s-chargmnt', dot:'#D4AC0D' },
+  { val:'EN PRÉPARATION',             cls:'s-enprep',   dot:'#8E44AD' },
+  { val:'CHARGÉ',                     cls:'s-charge',   dot:'#27AE60' },
+  { val:'LIVRAISON',                  cls:'s-livraison',dot:'#E67E22' },
+  { val:'REÇU / LIVRÉ',               cls:'s-recu',     dot:'#95A5A6' },
+];
+const SHORT = {
+  'À PAYER AVANT PRÉPARATION':'À PAYER','PAYÉ':'PAYÉ',
+  'DEMANDE DE CHARGEMENT':'CHARGEMENT','EN PRÉPARATION':'EN PRÉP.',
+  'CHARGÉ':'CHARGÉ','LIVRAISON':'LIVRAISON','REÇU / LIVRÉ':'REÇU',
+};
+const FLAGS = {ESPAGNE:'🇪🇸',ITALIE:'🇮🇹',PORTUGAL:'🇵🇹',PARQUET:'🌲',SANITAIRE:'🚿'};
+
+function sCls(v){ const s=STATUTS.find(x=>x.val===v); return s?s.cls:'s-recu'; }
+function sDot(v){ const s=STATUTS.find(x=>x.val===v); return s?s.dot:'#95A5A6'; }
+
+function toast(msg, type='success'){
+  const el=document.createElement('div');
+  const c={success:'#1E8449',error:'#C0392B',info:'#1A5276'};
+  el.style.cssText=`background:${c[type]||c.success};color:#fff;padding:0.7rem 1.1rem;
+    border-radius:10px;font-size:0.82rem;font-weight:600;
+    box-shadow:0 4px 20px rgba(0,0,0,0.3);`;
+  el.textContent=msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>el.remove(),3000);
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Init ──────────────────────────────────────────────────────────
+async function init(){
+  const {data:{session}} = await db.auth.getSession();
+  if(!session){ window.location.href='index.html'; return; }
+
+  const {data:profile} = await db.from('employee_profiles').select('*').eq('id',session.user.id).single();
+  if(!profile){ await db.auth.signOut(); window.location.href='index.html'; return; }
+
+  currentProfile = profile;
+  document.getElementById('sidebarName').textContent  = profile.prenom+' '+profile.nom;
+  document.getElementById('sidebarRole').textContent   = profile.poste;
+  document.getElementById('sidebarAvatar').textContent = profile.prenom[0]+profile.nom[0];
+  isManager = profile.poste==='Dirigeant de la société'||profile.poste==='Responsable magasin';
+  if(isManager) document.getElementById('lienPresenceEquipe').style.display='flex';
+
+  document.getElementById('btnDeconnexion').addEventListener('click',async()=>{
+    await db.auth.signOut(); window.location.href='index.html';
+  });
+
+  await loadCommandes();
+
+  db.channel('cmd_rt')
+    .on('postgres_changes',{event:'*',schema:'public',table:'commandes'},()=>loadCommandes())
+    .subscribe();
+}
+
+// ── Chargement ────────────────────────────────────────────────────
+async function loadCommandes(){
+  const {data,error} = await db.from('commandes').select('*')
+    .order('pays').order('fournisseur').order('created_at');
+  if(error){ console.error(error); return; }
+  allCommandes = data||[];
+  updateCounts();
+  renderList();
+  renderTransport();
+}
+
+function updateCounts(){
+  const active = allCommandes.filter(c=>c.statut!=='REÇU / LIVRÉ');
+  document.getElementById('cnt-tous').textContent = active.length;
+  const map={ESPAGNE:'es',ITALIE:'it',PORTUGAL:'pt',PARQUET:'pq',SANITAIRE:'sn'};
+  Object.entries(map).forEach(([pays,key])=>{
+    const el=document.getElementById('cnt-'+key);
+    if(el) el.textContent=active.filter(c=>c.pays===pays).length;
+  });
+}
+
+// ── Filtrage ──────────────────────────────────────────────────────
+function filterData(){
+  let data = allCommandes;
+  if(currentPays!=='TOUS') data=data.filter(c=>c.pays===currentPays);
+  if(currentStatut!=='TOUS') data=data.filter(c=>c.statut===currentStatut);
+  else data=data.filter(c=>c.statut!=='REÇU / LIVRÉ');
+  if(currentSearch){
+    const q=currentSearch.toLowerCase();
+    data=data.filter(c=>
+      (c.client||'').toLowerCase().includes(q)||
+      (c.fournisseur||'').toLowerCase().includes(q)||
+      (c.numero_commande||'').toLowerCase().includes(q)||
+      (c.commentaire||'').toLowerCase().includes(q)
+    );
+  }
+  return data;
+}
+
+// ── Rendu principal ───────────────────────────────────────────────
+function renderList(){
+  const data = filterData();
+  const container = document.getElementById('cmdList');
+
+  document.getElementById('resultsInfo').textContent =
+    data.length===0 ? '' :
+    `${data.length} commande${data.length>1?'s':''} affichée${data.length>1?'s':''}` +
+    (currentStatut==='TOUS' ? ' · commandes reçues masquées' : '');
+
+  if(data.length===0){
+    container.innerHTML=`<div class="cmd-empty"><div class="cmd-empty-icon">📭</div>Aucune commande trouvée</div>`;
+    return;
+  }
+
+  // Grouper par pays puis fournisseur
+  const byPays = {};
+  data.forEach(c=>{
+    if(!byPays[c.pays]) byPays[c.pays]=[];
+    byPays[c.pays].push(c);
+  });
+
+  let html='';
+  const paysOrder=['ESPAGNE','ITALIE','PORTUGAL','PARQUET','SANITAIRE'];
+
+  paysOrder.forEach(pays=>{
+    if(!byPays[pays]) return;
+    const cmds = byPays[pays];
+
+    // Si on affiche plusieurs pays, montrer le titre du pays
+    if(currentPays==='TOUS'){
+      html+=`<div class="pays-titre">${FLAGS[pays]||''} ${pays} <span style="font-weight:400;opacity:0.6;">(${cmds.length})</span></div>`;
+    }
+
+    // Grouper par fournisseur
+    const byFour={};
+    cmds.forEach(c=>{
+      if(!byFour[c.fournisseur]) byFour[c.fournisseur]=[];
+      byFour[c.fournisseur].push(c);
+    });
+
+    html+=`<div class="pays-bloc">`;
+    Object.entries(byFour).forEach(([four,rows])=>{
+      html+=`<div class="four-bloc">
+        <div class="four-titre">${esc(four)} <span style="font-weight:400;opacity:0.6;font-size:0.65rem;">(${rows.length})</span></div>`;
+
+      rows.forEach(c=>{
+        const cls=sCls(c.statut);
+        const shortLbl=SHORT[c.statut]||c.statut;
+        const poidsStr=c.poids_kg ? Number(c.poids_kg).toLocaleString('fr-FR')+' kg' : '';
+        const delBtn=isManager
+          ? `<button class="btn-act btn-del" onclick="deleteCmd('${c.id}')" title="Supprimer">🗑</button>`:'';
+
+        html+=`<div class="cmd-row">
+          <div class="cmd-cell-main">
+            <div class="cmd-client">${esc(c.client||'—')}</div>
+            ${c.numero_commande ? `<div class="cmd-num">${esc(c.numero_commande)}</div>`:'' }
+            ${c.commentaire ? `<div class="cmd-comment-line">${esc(c.commentaire)}</div>`:''}
+          </div>
+          <div class="cmd-cell-date">
+            ${c.date_chantier ? `<div class="cmd-date-label">Chantier</div><div>${esc(c.date_chantier)}</div>` :
+              c.reception_prev ? `<div class="cmd-date-label">Réception</div><div>${esc(c.reception_prev)}</div>` :
+              '<span style="color:var(--text-muted);font-size:0.78rem;">—</span>'}
+          </div>
+          <div class="cmd-cell-status">
+            <button class="sbadge ${cls}" onclick="openPopup('${c.id}','${c.statut}',this)">${shortLbl}</button>
+            ${poidsStr ? `<div style="font-size:0.68rem;color:var(--text-muted);margin-top:0.2rem;text-align:center;">${poidsStr}</div>`:''}
+          </div>
+          <div class="cmd-cell-actions">
+            <button class="btn-act" onclick="openEdit('${c.id}')" title="Modifier">✏️</button>
+            ${delBtn}
+          </div>
+        </div>`;
+      });
+      html+=`</div>`;
+    });
+    html+=`</div>`;
+  });
+
+  container.innerHTML=html;
+}
+
+// ── Popup statut ──────────────────────────────────────────────────
+function openPopup(id, current, badgeEl){
+  const popup=document.getElementById('statusPopup');
+  document.getElementById('popupOpts').innerHTML = STATUTS.map(s=>`
+    <div class="popup-opt" onclick="changeStatut('${id}','${s.val}')">
+      <span class="popup-dot" style="background:${s.dot}"></span>
+      <span>${s.val}</span>
+      ${s.val===current?'<span style="margin-left:auto;color:var(--or);font-size:0.8rem;">✓</span>':''}
+    </div>`).join('');
+  const r=badgeEl.getBoundingClientRect();
+  const top=Math.min(r.bottom+6+window.scrollY, window.scrollY+window.innerHeight-320);
+  const left=Math.min(r.left+window.scrollX, window.scrollX+window.innerWidth-260);
+  popup.style.top=top+'px'; popup.style.left=left+'px';
+  popup.classList.add('visible');
+}
+document.getElementById('popupX').addEventListener('click',()=>document.getElementById('statusPopup').classList.remove('visible'));
+document.addEventListener('click',e=>{
+  const p=document.getElementById('statusPopup');
+  if(p.classList.contains('visible')&&!p.contains(e.target)&&!e.target.classList.contains('sbadge'))
+    p.classList.remove('visible');
+});
+
+async function changeStatut(id,newStatut){
+  document.getElementById('statusPopup').classList.remove('visible');
+  const {error}=await db.from('commandes').update({
+    statut:newStatut, updated_by_name:currentProfile.prenom+' '+currentProfile.nom
+  }).eq('id',id);
+  if(error){toast('Erreur','error');return;}
+  toast('Statut mis à jour ✓');
+}
+
+// ── Supprimer ─────────────────────────────────────────────────────
+async function deleteCmd(id){
+  if(!confirm('Supprimer cette commande ?')) return;
+  const {error}=await db.from('commandes').delete().eq('id',id);
+  if(error){toast('Erreur','error');return;}
+  toast('Commande supprimée');
+}
+
+// ── Onglets & filtres ─────────────────────────────────────────────
+document.getElementById('cmdTabs').addEventListener('click',e=>{
+  const tab=e.target.closest('.cmd-tab'); if(!tab) return;
+  document.querySelectorAll('.cmd-tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active'); currentPays=tab.dataset.pays; renderList();
+});
+document.querySelectorAll('.schip').forEach(chip=>{
+  chip.addEventListener('click',()=>{
+    document.querySelectorAll('.schip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active'); currentStatut=chip.dataset.s; renderList();
+  });
+});
+let st;
+document.getElementById('searchClient').addEventListener('input',e=>{
+  clearTimeout(st); st=setTimeout(()=>{currentSearch=e.target.value.trim();renderList();},200);
+});
+
+// ── Modal ─────────────────────────────────────────────────────────
+const modal=document.getElementById('cmdModal');
+document.getElementById('fPays').addEventListener('change',e=>updateFours(e.target.value));
+function updateFours(pays,cur){
+  const list=FOURNISSEURS[pays]||[];
+  document.getElementById('fFour').innerHTML='<option value="">— Choisir —</option>'
+    +list.map(f=>`<option value="${f}"${f===cur?' selected':''}>${f}</option>`).join('');
+}
+document.getElementById('btnNouvelle').addEventListener('click',()=>openModal());
+document.getElementById('modalX').addEventListener('click',closeModal);
+document.getElementById('modalCancel').addEventListener('click',closeModal);
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+
+function openModal(cmd){
+  document.getElementById('editId').value=cmd?cmd.id:'';
+  document.getElementById('modalTtl').textContent=cmd?'Modifier la commande':'Nouvelle commande';
+  document.getElementById('fPays').value=cmd?cmd.pays:'';
+  updateFours(cmd?cmd.pays:'',cmd?cmd.fournisseur:'');
+  document.getElementById('fNum').value=cmd?cmd.numero_commande||'':'';
+  document.getElementById('fClient').value=cmd?cmd.client||'':'';
+  document.getElementById('fDate').value=cmd?cmd.date_chantier||'':'';
+  document.getElementById('fPoids').value=cmd?cmd.poids_kg||'':'';
+  document.getElementById('fStatut').value=cmd?cmd.statut:'À PAYER AVANT PRÉPARATION';
+  document.getElementById('fRecept').value=cmd?cmd.reception_prev||'':'';
+  document.getElementById('fEnl').value=cmd?cmd.numero_enlevement||'':'';
+  document.getElementById('fDelai').value=cmd?cmd.delai_prod||'':'';
+  document.getElementById('fComment').value=cmd?cmd.commentaire||'':'';
+  modal.classList.add('open');
+}
+function closeModal(){modal.classList.remove('open');}
+function openEdit(id){const c=allCommandes.find(x=>x.id===id);if(c)openModal(c);}
+
+document.getElementById('cmdForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const btn=document.getElementById('modalSave');
+  btn.disabled=true; btn.textContent='Enregistrement…';
+  const id=document.getElementById('editId').value;
+  const pays=document.getElementById('fPays').value;
+  const four=document.getElementById('fFour').value;
+  const client=document.getElementById('fClient').value.trim();
+  if(!pays||!four||!client){
+    toast('Pays, fournisseur et client sont obligatoires','error');
+    btn.disabled=false;btn.textContent='Enregistrer';return;
+  }
+  const payload={
+    pays,fournisseur:four,
+    numero_commande:document.getElementById('fNum').value.trim()||null,
+    client,
+    date_chantier:document.getElementById('fDate').value.trim()||null,
+    poids_kg:parseFloat(document.getElementById('fPoids').value)||null,
+    statut:document.getElementById('fStatut').value,
+    reception_prev:document.getElementById('fRecept').value.trim()||null,
+    numero_enlevement:document.getElementById('fEnl').value.trim()||null,
+    delai_prod:document.getElementById('fDelai').value.trim()||null,
+    commentaire:document.getElementById('fComment').value.trim()||null,
+    updated_by_name:currentProfile.prenom+' '+currentProfile.nom,
+  };
+  let error;
+  if(id){
+    ({error}=await db.from('commandes').update(payload).eq('id',id));
+  } else {
+    payload.created_by=currentProfile.id;
+    payload.created_by_name=currentProfile.prenom+' '+currentProfile.nom;
+    ({error}=await db.from('commandes').insert(payload));
+  }
+  btn.disabled=false;btn.textContent='Enregistrer';
+  if(error){toast('Erreur : '+error.message,'error');return;}
+  toast(id?'Commande mise à jour ✓':'Commande ajoutée ✓');
+  closeModal();
+});
+
+// ── Transport ─────────────────────────────────────────────────────
+document.getElementById('btnTransport').addEventListener('click',()=>{
+  const w=document.getElementById('transportWrap');
+  const show=w.style.display==='none';
+  w.style.display=show?'block':'none';
+  if(show){renderTransport();w.scrollIntoView({behavior:'smooth',block:'nearest'});}
+});
+document.getElementById('trHead').addEventListener('click',()=>{
+  const body=document.getElementById('trBody');
+  const chev=document.getElementById('trChev');
+  body.classList.toggle('open');chev.classList.toggle('open');
+});
+['tPays','tStatut'].forEach(id=>document.getElementById(id).addEventListener('change',renderTransport));
+document.getElementById('tTarif').addEventListener('input',updateTotals);
+
+function renderTransport(){
+  const pays=document.getElementById('tPays').value;
+  const statut=document.getElementById('tStatut').value;
+  let data=allCommandes.filter(c=>c.poids_kg&&c.poids_kg>0&&c.statut!=='REÇU / LIVRÉ');
+  if(pays) data=data.filter(c=>c.pays===pays);
+  if(statut) data=data.filter(c=>c.statut===statut);
+  const tbody=document.getElementById('tBody');
+  if(!data.length){
+    tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:1.2rem;font-size:0.8rem;">Aucune commande avec poids</td></tr>`;
+    updateTotals();return;
+  }
+  tbody.innerHTML=data.map(c=>`
+    <tr id="tr-${c.id}">
+      <td><input type="checkbox" class="tr-cb" id="cb-${c.id}" onchange="updateTotals()"/></td>
+      <td style="font-size:0.78rem;">${FLAGS[c.pays]||''} ${c.pays}</td>
+      <td style="font-size:0.78rem;font-weight:600;">${esc(c.fournisseur)}</td>
+      <td style="font-weight:600;">${esc(c.client||'—')}</td>
+      <td style="font-size:0.76rem;color:var(--text-muted);">${esc(c.date_chantier||'—')}</td>
+      <td><span class="sbadge ${sCls(c.statut)}" style="cursor:default;pointer-events:none;">${SHORT[c.statut]||c.statut}</span></td>
+      <td style="text-align:right;font-weight:700;">${Number(c.poids_kg).toLocaleString('fr-FR')} kg</td>
+    </tr>`).join('');
+  updateTotals();
+}
+function updateTotals(){
+  const tarif=parseFloat(document.getElementById('tTarif').value)||0;
+  let poids=0,nb=0;
+  document.querySelectorAll('.tr-cb').forEach(cb=>{
+    const id=cb.id.replace('cb-','');
+    const row=document.getElementById('tr-'+id);
+    if(cb.checked){
+      const c=allCommandes.find(x=>x.id===id);
+      if(c&&c.poids_kg){poids+=Number(c.poids_kg);nb++;}
+      row?.classList.add('sel');
+    } else row?.classList.remove('sel');
+  });
+  document.getElementById('tNb').textContent=nb;
+  document.getElementById('tPoids').textContent=poids.toLocaleString('fr-FR')+' kg';
+  document.getElementById('tCout').textContent=(poids*tarif).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+}
+
+init();
+</script>
+<script src="sidebar.js"></script>
+</body>
+</html>

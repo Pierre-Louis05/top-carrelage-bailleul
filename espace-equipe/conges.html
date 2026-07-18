@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mes congés — Espace Équipe Top Carrelage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+  <style>
+    .conges-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 1.6rem;
+      align-items: start;
+      margin-bottom: 3rem;
+    }
+    @media (max-width: 1100px) {
+      .conges-layout { grid-template-columns: 1fr; }
+    }
+    .conges-form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.6rem;
+    }
+    .conges-form-card h3 { margin-bottom: 1.2rem; }
+    .form-row { margin-bottom: 1.1rem; }
+    .form-row label {
+      display:block; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em;
+      color: var(--text-muted); margin-bottom: 0.4rem;
+    }
+    .form-row input, .form-row select, .form-row textarea {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 0.65rem 0.9rem; border-radius: 8px;
+      font-size: 0.88rem; font-family: inherit;
+    }
+    .form-row textarea { resize: vertical; min-height: 70px; }
+    .form-dates { display:flex; gap:1rem; }
+    .form-dates > div { flex:1; }
+    .btn-envoyer {
+      background: var(--or); color: var(--noir); border:none; border-radius:8px;
+      padding:0.75rem 1.6rem; font-size:0.88rem; font-weight:700; cursor:pointer;
+      transition: var(--transition); width:100%;
+    }
+    .btn-envoyer:hover { opacity:0.85; }
+    .btn-envoyer:disabled { opacity:0.5; cursor:not-allowed; }
+
+    .conges-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem 1.3rem;
+      margin-bottom: 0.8rem;
+      display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;
+    }
+    .conges-card-dates { font-weight:600; color:var(--text); font-size:0.9rem; }
+    .conges-card-type { font-size:0.76rem; color:var(--or); margin-top:0.15rem; }
+    .conges-card-message { font-size:0.82rem; color:var(--text-muted); margin-top:0.45rem; max-width:46ch; line-height:1.5; }
+    .conges-card-reponse {
+      font-size:0.8rem; color:var(--text); margin-top:0.5rem; padding:0.6rem 0.8rem;
+      background: var(--surface2); border-radius:8px; border-left: 3px solid var(--or);
+    }
+    .conges-card-right { display:flex; flex-direction:column; align-items:flex-end; gap:0.5rem; flex-shrink:0; }
+    .btn-annuler {
+      background:none; border:1px solid var(--border); color:var(--text-muted);
+      border-radius:6px; padding:0.35rem 0.8rem; font-size:0.72rem; cursor:pointer; transition: var(--transition);
+    }
+    .btn-annuler:hover { background:#e25c5c; color:#fff; border-color:#e25c5c; }
+
+    .planning-mois { margin-bottom: 1.6rem; }
+    .planning-mois-titre {
+      font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-muted); margin-bottom: 0.7rem;
+    }
+    .planning-item {
+      display:flex; align-items:center; gap:0.9rem;
+      background: var(--surface); border:1px solid var(--border); border-radius:10px;
+      padding:0.8rem 1.1rem; margin-bottom:0.6rem;
+    }
+    .planning-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:0.85rem; color:#fff; flex-shrink:0;
+    }
+    .planning-name { font-weight:600; color:var(--text); font-size:0.86rem; }
+    .planning-dates { font-size:0.78rem; color:var(--text-muted); }
+    .planning-type {
+      margin-left:auto; font-size:0.7rem; font-weight:700; letter-spacing:0.03em;
+      padding:0.3rem 0.7rem; border-radius:999px; background: rgba(212,175,55,0.15); color: var(--or);
+      white-space:nowrap;
+    }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Top Carrelage</div>
+      <span class="sidebar-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">Chargement…</div>
+        <div class="sidebar-user-role" id="sidebarRole"></div>
+      </div>
+    </div>
+        <nav class="sidebar-nav">
+      <div class="sidebar-section">Demandes RDV</div>
+      <a href="dashboard.html" class="sidebar-link"><span>📅</span> Tableau de bord</a>
+      <div class="sidebar-section">Site web</div>
+      <a href="messages.html" class="sidebar-link"><span>💬</span> Messages de contact</a>
+      <a href="temoignages.html" class="sidebar-link"><span>⭐</span> Témoignages</a>
+      <div class="sidebar-section">Équipe</div>
+      <a href="pointage.html" class="sidebar-link"><span>🕐</span> Mon pointage</a>
+      <a href="conges.html" class="sidebar-link active"><span>🏖️</span> Mes congés</a>
+      <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span>👥</span> Présence équipe</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">Mes congés</div>
+      <div class="topbar-actions">
+        <span style="font-size:0.78rem; color:var(--text-muted);" id="lastRefresh"></span>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <div class="conges-layout">
+        <div class="conges-form-card">
+          <h3>Faire une demande de congé</h3>
+          <form id="congeForm">
+            <div class="form-row form-dates">
+              <div>
+                <label for="dateDebut">Du</label>
+                <input type="date" id="dateDebut" required>
+              </div>
+              <div>
+                <label for="dateFin">Au</label>
+                <input type="date" id="dateFin" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <label for="typeConge">Motif</label>
+              <select id="typeConge">
+                <option>Congés payés</option>
+                <option>RTT</option>
+                <option>Sans solde</option>
+                <option>Arrêt maladie</option>
+                <option>Autre</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="messageConge">Message (facultatif)</label>
+              <textarea id="messageConge" placeholder="Une précision à apporter à ton responsable ?"></textarea>
+            </div>
+            <button type="submit" class="btn-envoyer" id="btnEnvoyer">Envoyer la demande</button>
+          </form>
+        </div>
+
+        <div>
+          <h3 style="margin-bottom:1rem;">Mes demandes</h3>
+          <div id="mesCongesList">
+            <div class="loading"><div class="spinner"></div> Chargement…</div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin-bottom:1rem;">📅 Planning de l'équipe — congés à venir</h3>
+      <div id="planningEquipe">
+        <div class="loading"><div class="spinner"></div> Chargement du planning…</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let currentProfile = null;
+
+const STATUS_LABELS = { en_attente: 'En attente', approuve: 'Approuvé', refuse: 'Refusé' };
+const STATUS_BADGE_CLASS = { en_attente: 'nouveau', approuve: 'confirme', refuse: 'archive' };
+
+const COLORS = ['#4285F4','#34A853','#EA4335','#FBBC05','#9C27B0','#FF7043','#00897B','#E53935'];
+const EQUIPE = [
+  'Jérémie Marcuzzi', 'Simon Marcuzzi', 'Louise Marcuzzi',
+  'Pierre-Louis Quentin', 'Louis Bouger', 'Freddy Beaurepaire'
+];
+
+function fmtDate(d) {
+  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+function fmtDateCourt(d) {
+  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+}
+function nbJours(debut, fin) {
+  const diff = (new Date(fin) - new Date(debut)) / (1000 * 3600 * 24);
+  return Math.round(diff) + 1;
+}
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function avatarColor(name) {
+  const idx = EQUIPE.indexOf(name);
+  return COLORS[idx >= 0 ? idx % COLORS.length : 0];
+}
+
+// ===== Auth =====
+async function init() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
+  currentUser = session.user;
+
+  const { data: profile } = await db
+    .from('employee_profiles')
+    .select('*')
+    .eq('id', currentUser.id)
+    .single();
+
+  if (profile) {
+    currentProfile = profile;
+    document.getElementById('sidebarName').textContent = profile.prenom + ' ' + profile.nom;
+    document.getElementById('sidebarRole').textContent = profile.poste;
+    document.getElementById('sidebarAvatar').textContent = profile.prenom[0] + profile.nom[0];
+    if (profile.poste === 'Dirigeant de la société' || profile.poste === 'Responsable magasin') {
+      document.getElementById('lienPresenceEquipe').style.display = '';
+    }
+  }
+
+  // Date min = aujourd'hui
+  document.getElementById('dateDebut').min = todayStr();
+  document.getElementById('dateFin').min = todayStr();
+  document.getElementById('dateDebut').addEventListener('change', () => {
+    document.getElementById('dateFin').min = document.getElementById('dateDebut').value;
+  });
+
+  document.getElementById('congeForm').addEventListener('submit', envoyerDemande);
+
+  await loadMesConges();
+  await loadPlanningEquipe();
+
+  // Realtime
+  db.channel('conges_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'conges' }, () => {
+      loadMesConges();
+      loadPlanningEquipe();
+    })
+    .subscribe();
+}
+
+// ===== Envoi d'une demande =====
+async function envoyerDemande(e) {
+  e.preventDefault();
+  const dateDebut = document.getElementById('dateDebut').value;
+  const dateFin = document.getElementById('dateFin').value;
+  const type = document.getElementById('typeConge').value;
+  const message = document.getElementById('messageConge').value.trim();
+
+  if (!dateDebut || !dateFin) { showToast('Merci de renseigner les deux dates', 'error'); return; }
+  if (dateFin < dateDebut) { showToast('La date de fin doit être après la date de début', 'error'); return; }
+
+  const btn = document.getElementById('btnEnvoyer');
+  btn.disabled = true;
+  btn.textContent = 'Envoi en cours…';
+
+  const { error } = await db.from('conges').insert({
+    employee_id: currentUser.id,
+    employee_name: currentProfile.prenom + ' ' + currentProfile.nom,
+    date_debut: dateDebut,
+    date_fin: dateFin,
+    type,
+    message: message || null
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Envoyer la demande';
+
+  if (error) { showToast('Erreur lors de l\'envoi de la demande', 'error'); console.error(error); return; }
+
+  showToast('Demande envoyée — ton responsable va l\'examiner ✓');
+  document.getElementById('congeForm').reset();
+  await loadMesConges();
+}
+
+// ===== Mes demandes =====
+async function loadMesConges() {
+  const { data, error } = await db
+    .from('conges')
+    .select('*')
+    .eq('employee_id', currentUser.id)
+    .order('created_at', { ascending: false });
+
+  const container = document.getElementById('mesCongesList');
+  if (error) { container.innerHTML = `<div class="empty-state"><p>Erreur de chargement.</p></div>`; return; }
+
+  if (!data || data.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🏖️</div>
+        <p>Tu n'as encore fait aucune demande de congé.</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = data.map(c => `
+    <div class="conges-card">
+      <div>
+        <div class="conges-card-dates">${fmtDate(c.date_debut)} → ${fmtDate(c.date_fin)} <span style="color:var(--text-muted); font-weight:400; font-size:0.78rem;">(${nbJours(c.date_debut, c.date_fin)} j.)</span></div>
+        <div class="conges-card-type">${c.type}</div>
+        ${c.message ? `<div class="conges-card-message">"${c.message}"</div>` : ''}
+        ${c.reponse_message ? `<div class="conges-card-reponse">💬 Réponse${c.traite_par ? ' de ' + c.traite_par : ''} : ${c.reponse_message}</div>` : ''}
+      </div>
+      <div class="conges-card-right">
+        <span class="status-badge status-${STATUS_BADGE_CLASS[c.status]}">${STATUS_LABELS[c.status]}</span>
+        ${c.status === 'en_attente' ? `<button class="btn-annuler" onclick="annulerDemande('${c.id}')">Annuler</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function annulerDemande(id) {
+  if (!confirm('Annuler cette demande de congé ?')) return;
+  const { error } = await db.from('conges').delete().eq('id', id);
+  if (error) { showToast('Erreur lors de l\'annulation', 'error'); return; }
+  showToast('Demande annulée');
+  await loadMesConges();
+}
+
+// ===== Planning partagé de l'équipe (congés approuvés) =====
+async function loadPlanningEquipe() {
+  const { data, error } = await db
+    .from('conges')
+    .select('*')
+    .eq('status', 'approuve')
+    .gte('date_fin', todayStr())
+    .order('date_debut', { ascending: true });
+
+  const container = document.getElementById('planningEquipe');
+  if (error) { container.innerHTML = `<div class="empty-state"><p>Erreur de chargement du planning.</p></div>`; return; }
+
+  if (!data || data.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📅</div>
+        <p>Aucun congé à venir pour le moment dans l'équipe.</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = '<div>' + data.map(c => `
+    <div class="planning-item">
+      <div class="planning-avatar" style="background:${avatarColor(c.employee_name)};">${c.employee_name.charAt(0)}</div>
+      <div>
+        <div class="planning-name">${c.employee_name}</div>
+        <div class="planning-dates">${fmtDateCourt(c.date_debut)} → ${fmtDateCourt(c.date_fin)} · ${nbJours(c.date_debut, c.date_fin)} jour(s)</div>
+      </div>
+      <span class="planning-type">${c.type}</span>
+    </div>
+  `).join('') + '</div>';
+
+  document.getElementById('lastRefresh').textContent = 'Mis à jour ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+// Déconnexion
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await db.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+// Toast
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+<script src="sidebar.js"></script>
+</body>
+</html>
