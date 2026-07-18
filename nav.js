@@ -33,14 +33,15 @@ function closeMobile() {
   document.body.style.overflow = '';
 }
 
-// Reveal on scroll
-const reveals = document.querySelectorAll('.reveal');
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.classList.add('visible');
-      observer.unobserve(e.target);
-    }
+// Reveal on scroll (getBoundingClientRect : fiable partout)
+function revealCheck() {
+  document.querySelectorAll('.reveal:not(.visible)').forEach(el => {
+    const r = el.getBoundingClientRect();
+    if (r.top < window.innerHeight - 40 && r.bottom > 0) el.classList.add('visible');
   });
-}, { threshold: 0.1 });
-reveals.forEach(r => observer.observe(r));
+}
+window.addEventListener('scroll', revealCheck, { passive: true });
+window.addEventListener('resize', revealCheck);
+document.addEventListener('DOMContentLoaded', revealCheck);
+revealCheck();
+setInterval(revealCheck, 800);
