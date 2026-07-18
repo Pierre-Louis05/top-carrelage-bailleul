@@ -416,7 +416,8 @@ function initCarousel(allCards) {
 async function chargerAvis() {
   const carousel = document.getElementById('avisCarousel');
   try {
-    const res = await fetch('/.netlify/functions/reviews');
+    // Fonction hébergée sur le site Marcuzzi (même magasin, clé API déjà configurée là-bas)
+    const res = await fetch('https://resplendent-unicorn-da1705.netlify.app/.netlify/functions/reviews');
     const data = await res.json();
 
     if (data.error || !data.reviews || data.reviews.length === 0) {
