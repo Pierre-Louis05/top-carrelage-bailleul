@@ -14,11 +14,12 @@ links.forEach(l => {
   }
 });
 
-// Hamburger menu
+// Menu mobile
 const hamburger = document.getElementById('hamburger');
 const mobileMenu = document.getElementById('mobileMenu');
 const mobileClose = document.getElementById('mobileClose');
 const mobileLinks = document.querySelectorAll('.nav-mobile a');
+const mobileGroups = document.querySelectorAll('.nav-mobile-group');
 
 hamburger?.addEventListener('click', () => {
   hamburger.classList.toggle('open');
@@ -27,11 +28,37 @@ hamburger?.addEventListener('click', () => {
 });
 mobileClose?.addEventListener('click', closeMobile);
 mobileLinks.forEach(l => l.addEventListener('click', closeMobile));
+
+// Fermeture au clavier
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && mobileMenu?.classList.contains('open')) closeMobile();
+});
+
 function closeMobile() {
   hamburger.classList.remove('open');
   mobileMenu.classList.remove('open');
   document.body.style.overflow = '';
+  refermerAccordeons();
 }
+
+// Accordéons du menu mobile : un seul ouvert à la fois
+function refermerAccordeons() {
+  mobileGroups.forEach(g => {
+    g.classList.remove('ouvert');
+    g.querySelector('.nav-mobile-toggle')?.setAttribute('aria-expanded', 'false');
+  });
+}
+mobileGroups.forEach(groupe => {
+  const bouton = groupe.querySelector('.nav-mobile-toggle');
+  bouton?.addEventListener('click', () => {
+    const etaitOuvert = groupe.classList.contains('ouvert');
+    refermerAccordeons();
+    if (!etaitOuvert) {
+      groupe.classList.add('ouvert');
+      bouton.setAttribute('aria-expanded', 'true');
+    }
+  });
+});
 
 // Reveal on scroll (getBoundingClientRect : fiable partout)
 function revealCheck() {
