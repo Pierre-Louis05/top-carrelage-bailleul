@@ -128,23 +128,83 @@ section { padding: 5rem 0; }
 }
 .nav-links > li > a:hover, .nav-links > li > a.active { color: var(--rouge); border-bottom-color: var(--rouge); }
 
-/* Dropdowns */
-.has-dropdown > a::after { content: ' ▾'; font-size: 0.6rem; }
+/* ============ MENUS DÉROULANTS ============ */
+.nav-links > li.has-dropdown > a { display: flex; align-items: center; gap: 0.34rem; }
+
+/* Chevron dessiné en CSS, pivote à l'ouverture */
+.has-dropdown > a::after {
+  content: ''; width: 5px; height: 5px; flex-shrink: 0;
+  border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.has-dropdown:hover > a::after,
+.has-dropdown:focus-within > a::after { transform: translateY(1px) rotate(-135deg); }
+
 .dropdown {
-  position: absolute; top: 100%; left: 0; min-width: 225px;
-  background: var(--blanc); border: 1px solid var(--ligne); border-top: 3px solid var(--rouge);
-  box-shadow: var(--shadow); border-radius: 0 0 var(--radius) var(--radius);
-  opacity: 0; visibility: hidden; transform: translateY(8px);
-  transition: var(--transition); z-index: 1002; padding: 0.3rem 0;
+  position: absolute; top: calc(100% + 13px); left: -0.5rem; min-width: 252px;
+  background: var(--blanc);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(16,31,56,0.05), 0 14px 38px rgba(16,31,56,0.15);
+  padding: 0.45rem;
+  opacity: 0; visibility: hidden;
+  transform: translateY(-8px) scale(0.975);
+  transform-origin: top left;
+  transition: opacity 0.26s ease,
+              transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+              visibility 0.34s;
+  z-index: 1002;
 }
-.has-dropdown:hover .dropdown, .has-dropdown:focus-within .dropdown {
-  opacity: 1; visibility: visible; transform: translateY(0);
+
+/* Pont invisible : garde le survol actif au passage de l'espace */
+.dropdown::before {
+  content: ''; position: absolute; left: 0; right: 0; top: -15px; height: 15px;
 }
+
+/* Pointe qui relie le panneau à l'entrée de menu */
+.dropdown::after {
+  content: ''; position: absolute; left: 1.5rem; top: -5px;
+  width: 11px; height: 11px; background: var(--blanc);
+  transform: rotate(45deg); border-radius: 2px 0 0 0;
+}
+
+.has-dropdown:hover .dropdown,
+.has-dropdown:focus-within .dropdown {
+  opacity: 1; visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
 .dropdown a {
-  display: block; padding: 0.6rem 1rem; font-size: 0.82rem; color: var(--texte);
-  transition: var(--transition);
+  position: relative; display: block;
+  padding: 0.6rem 0.9rem 0.6rem 1.15rem;
+  font-size: 0.82rem; font-weight: 500; letter-spacing: 0;
+  text-transform: none; color: var(--texte);
+  border-radius: 6px;
+  opacity: 0; transform: translateX(-5px);
+  transition: color 0.22s ease, background-color 0.22s ease,
+              opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.dropdown a:hover { background: var(--bg); color: var(--rouge); padding-left: 1.25rem; }
+.has-dropdown:hover .dropdown a,
+.has-dropdown:focus-within .dropdown a { opacity: 1; transform: translateX(0); }
+.has-dropdown:hover .dropdown a:nth-child(1) { transition-delay: 0.04s; }
+.has-dropdown:hover .dropdown a:nth-child(2) { transition-delay: 0.08s; }
+.has-dropdown:hover .dropdown a:nth-child(3) { transition-delay: 0.12s; }
+.has-dropdown:hover .dropdown a:nth-child(4) { transition-delay: 0.16s; }
+
+/* Repère rouge qui se déploie à la verticale */
+.dropdown a::before {
+  content: ''; position: absolute; left: 0.5rem; top: 50%;
+  width: 3px; height: 0; background: var(--rouge); border-radius: 2px;
+  transform: translateY(-50%);
+  transition: height 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.dropdown a:hover, .dropdown a:focus-visible { background: var(--bg); color: var(--rouge); }
+.dropdown a:hover::before, .dropdown a:focus-visible::before { height: 58%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dropdown, .dropdown a, .has-dropdown > a::after { transition-duration: 0.01ms; }
+  .dropdown a { transition-delay: 0s !important; }
+}
 
 .nav-cta { flex-shrink: 0; }
 
