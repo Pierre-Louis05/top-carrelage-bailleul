@@ -659,7 +659,18 @@ footer { background: var(--marine-fonce); color: rgba(255,255,255,0.7); padding:
 .subcat-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
 .subcat-card ul { margin-top: 0.7rem; display: flex; flex-direction: column; gap: 0.35rem; }
 .subcat-card li { font-size: 0.82rem; color: var(--texte); padding-left: 1.2rem; position: relative; }
-.subcat-card li::before { content: '—'; position: absolute; left: 0; color: var(--rouge); font-weight: 700; }
+.subcat-card li::before {
+  content: ''; position: absolute; left: 0; top: 0.55em;
+  width: 6px; height: 6px; border-radius: 1px; background: var(--rouge);
+}
+
+/* Listes a puces (pages produits) */
+.liste-puces { display: flex; flex-direction: column; gap: 0.45rem; font-size: 0.9rem; margin-top: 0.3rem; }
+.liste-puces li { position: relative; padding-left: 1.2rem; color: var(--texte); }
+.liste-puces li::before {
+  content: ''; position: absolute; left: 0; top: 0.55em;
+  width: 6px; height: 6px; border-radius: 1px; background: var(--rouge);
+}
 @media (max-width: 900px) { .subcat-grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 560px) { .subcat-grid { grid-template-columns: 1fr; } }
 
