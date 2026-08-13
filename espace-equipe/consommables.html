@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock consommables — Espace Équipe Top Aménagement</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+  <style>
+    /* ---- Barre d'outils ---- */
+    .toolbar { display:flex; gap:0.8rem; flex-wrap:wrap; align-items:center; margin-bottom:1.4rem; }
+    .search-box { position:relative; flex:1; min-width:220px; }
+    .search-box input {
+      width:100%; padding:0.7rem 1rem 0.7rem 2.4rem; background:var(--surface2);
+      border:1px solid var(--border); border-radius:var(--radius); color:var(--text);
+      font-family:var(--font); font-size:0.88rem; transition:var(--transition);
+    }
+    .search-box input:focus { outline:none; border-color:var(--or); }
+    .search-box svg { position:absolute; left:0.8rem; top:50%; transform:translateY(-50%); color:var(--text-muted); }
+    .select-filtre {
+      padding:0.7rem 1rem; background:var(--surface2); border:1px solid var(--border);
+      border-radius:var(--radius); color:var(--text); font-family:var(--font); font-size:0.85rem; cursor:pointer;
+    }
+    .select-filtre:focus { outline:none; border-color:var(--or); }
+
+    /* ---- Lignes d'enlèvement ---- */
+    .enl-list { display:flex; flex-direction:column; gap:0.7rem; }
+    .enl-card {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+      padding:1.1rem 1.3rem; display:grid; grid-template-columns:1fr auto; gap:1.2rem;
+      align-items:center; transition:var(--transition);
+    }
+    .enl-card:hover { border-color:rgba(201,168,76,0.35); }
+    .enl-card.retard { border-left:3px solid var(--attente); }
+    .enl-client { font-size:0.98rem; font-weight:700; color:var(--text); margin-bottom:0.15rem; }
+    .enl-produit { font-size:0.86rem; color:var(--or); margin-bottom:0.45rem; }
+    .enl-meta { display:flex; flex-wrap:wrap; gap:0.5rem 1.1rem; font-size:0.78rem; color:var(--text-muted); }
+    .enl-meta b { color:var(--text); font-weight:600; }
+    .enl-right { display:flex; flex-direction:column; align-items:flex-end; gap:0.55rem; }
+    .enl-reste {
+      font-family:var(--font-titre); font-size:1.5rem; color:var(--text); line-height:1;
+    }
+    .enl-reste small { font-size:0.72rem; font-family:var(--font); color:var(--text-muted); }
+    .enl-actions { display:flex; gap:0.4rem; flex-wrap:wrap; justify-content:flex-end; }
+
+    /* ---- Jauge de retrait ---- */
+    .jauge { width:110px; height:5px; background:var(--surface2); border-radius:3px; overflow:hidden; }
+    .jauge span { display:block; height:100%; background:var(--confirme); border-radius:3px; transition:width .3s ease; }
+
+    /* ---- Tableau ---- */
+    .table-wrap { overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius); }
+    table.tbl { width:100%; border-collapse:collapse; font-size:0.86rem; background:var(--surface); }
+    table.tbl th {
+      background:var(--surface2); text-align:left; padding:0.8rem 1rem; font-size:0.72rem;
+      letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); font-weight:700; white-space:nowrap;
+    }
+    table.tbl td { padding:0.8rem 1rem; border-top:1px solid var(--border); color:var(--text); vertical-align:middle; }
+    table.tbl tr:hover td { background:rgba(255,255,255,0.02); }
+    table.tbl td.num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+    .cat-pill {
+      display:inline-block; padding:0.2rem 0.6rem; border-radius:20px; font-size:0.68rem;
+      font-weight:700; letter-spacing:0.05em; text-transform:uppercase;
+    }
+    .cat-colle      { background:rgba(59,130,246,0.15);  color:#7cb0ff; }
+    .cat-joint      { background:rgba(16,185,129,0.15);  color:#5fd6ab; }
+    .cat-croisillon { background:rgba(245,158,11,0.15);  color:#f0b354; }
+    .cat-plot       { background:rgba(139,92,246,0.15);  color:#b39bf5; }
+    .cat-autre      { background:rgba(107,114,128,0.18); color:#a3a9b5; }
+
+    .stock-input {
+      width:80px; padding:0.4rem 0.55rem; background:var(--surface2); border:1px solid var(--border);
+      border-radius:4px; color:var(--text); font-family:var(--font); font-size:0.85rem; text-align:right;
+    }
+    .stock-input:focus { outline:none; border-color:var(--or); }
+    .ecart-plus { color:var(--attente); font-weight:700; }
+    .ecart-zero { color:var(--text-muted); }
+
+    /* ---- Fenêtre modale ---- */
+    .modal-fond {
+      position:fixed; inset:0; background:rgba(0,0,0,0.72); z-index:3000;
+      display:flex; align-items:center; justify-content:center; padding:1.5rem;
+      opacity:0; visibility:hidden; transition:var(--transition);
+    }
+    .modal-fond.open { opacity:1; visibility:visible; }
+    .modal {
+      background:var(--surface); border:1px solid var(--border); border-radius:10px;
+      width:100%; max-width:520px; max-height:90vh; overflow-y:auto;
+      box-shadow:0 24px 60px rgba(0,0,0,0.6);
+      transform:translateY(14px) scale(0.98); transition:transform .3s cubic-bezier(0.22,1,0.36,1);
+    }
+    .modal-fond.open .modal { transform:none; }
+    .modal-head {
+      padding:1.3rem 1.5rem; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    }
+    .modal-head h3 { font-family:var(--font-titre); font-size:1.15rem; color:var(--text); }
+    .modal-close {
+      width:32px; height:32px; border-radius:6px; background:var(--surface2); border:none;
+      color:var(--text-muted); cursor:pointer; font-size:1.1rem; line-height:1; transition:var(--transition);
+    }
+    .modal-close:hover { background:#e25c5c; color:#fff; }
+    .modal-body { padding:1.4rem 1.5rem; }
+    .modal-foot {
+      padding:1rem 1.5rem 1.4rem; display:flex; gap:0.7rem; justify-content:flex-end; flex-wrap:wrap;
+    }
+    .modal .form-group { margin-bottom:1rem; }
+    .modal label {
+      display:block; font-size:0.72rem; font-weight:700; letter-spacing:0.07em;
+      text-transform:uppercase; color:var(--text-muted); margin-bottom:0.35rem;
+    }
+    .modal input, .modal select, .modal textarea {
+      width:100%; padding:0.7rem 0.9rem; background:var(--surface2); border:1px solid var(--border);
+      border-radius:var(--radius); color:var(--text); font-family:var(--font); font-size:0.9rem;
+    }
+    .modal input:focus, .modal select:focus, .modal textarea:focus { outline:none; border-color:var(--or); }
+    .form-2col { display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; }
+    .rappel {
+      background:var(--surface2); border-left:3px solid var(--or); border-radius:4px;
+      padding:0.8rem 1rem; font-size:0.82rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem;
+    }
+    .rappel b { color:var(--text); }
+
+    .btn-ghost {
+      padding:0.65rem 1.2rem; background:transparent; border:1px solid var(--border);
+      border-radius:var(--radius); color:var(--text-muted); font-family:var(--font);
+      font-size:0.8rem; font-weight:600; cursor:pointer; transition:var(--transition);
+    }
+    .btn-ghost:hover { border-color:var(--text-muted); color:var(--text); }
+
+    .mvt-row { display:flex; align-items:center; gap:0.9rem; padding:0.75rem 0; border-bottom:1px solid var(--border); }
+    .mvt-ico {
+      width:32px; height:32px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center; font-size:0.9rem; font-weight:700;
+    }
+    .mvt-retrait { background:rgba(16,185,129,0.15); color:#5fd6ab; }
+    .mvt-retour  { background:rgba(245,158,11,0.15); color:#f0b354; }
+    .mvt-ajust   { background:rgba(107,114,128,0.2); color:#a3a9b5; }
+    .mvt-txt { flex:1; font-size:0.85rem; }
+    .mvt-txt b { color:var(--text); }
+    .mvt-date { font-size:0.74rem; color:var(--text-muted); white-space:nowrap; }
+
+    @media (max-width:760px) {
+      .enl-card { grid-template-columns:1fr; }
+      .enl-right { align-items:flex-start; }
+      .enl-actions { justify-content:flex-start; }
+      .form-2col { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Top Aménagement</div>
+      <span class="sidebar-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">Chargement…</div>
+        <div class="sidebar-user-role" id="sidebarRole"></div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">Demandes RDV</div>
+      <a href="dashboard.html" class="sidebar-link"><span>📅</span> Tableau de bord</a>
+      <div class="sidebar-section">Site web</div>
+      <a href="messages.html" class="sidebar-link"><span>💬</span> Messages de contact</a>
+      <a href="temoignages.html" class="sidebar-link"><span>⭐</span> Témoignages</a>
+      <div class="sidebar-section">Dépôt</div>
+      <a href="consommables.html" class="sidebar-link active"><span>🧱</span> Stock consommables</a>
+      <div class="sidebar-section">Équipe</div>
+      <a href="pointage.html" class="sidebar-link"><span>🕐</span> Mon pointage</a>
+      <a href="conges.html" class="sidebar-link"><span>🏖️</span> Mes congés</a>
+      <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span>👥</span> Présence équipe</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">En attente de retrait</div>
+      <div class="topbar-actions">
+        <span style="font-size:0.78rem; color:var(--text-muted);" id="lastRefresh"></span>
+        <button class="btn-action btn-confirmer" style="width:auto; padding:0.6rem 1.1rem; font-size:0.78rem;" id="btnNouveau">+ Nouvel enlèvement</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card nouveau">
+          <div class="stat-number" id="stat-attente">—</div>
+          <div class="stat-label">Lignes en attente</div>
+        </div>
+        <div class="stat-card confirme">
+          <div class="stat-number" id="stat-clients">—</div>
+          <div class="stat-label">Clients concernés</div>
+        </div>
+        <div class="stat-card archive">
+          <div class="stat-number" id="stat-ancien">—</div>
+          <div class="stat-label">Attente la plus ancienne</div>
+        </div>
+        <div class="stat-card confirme">
+          <div class="stat-number" id="stat-refs">—</div>
+          <div class="stat-label">Références suivies</div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab-btn active" data-onglet="attente">En attente <span class="tab-count" id="tc-attente">0</span></button>
+        <button class="tab-btn" data-onglet="ecarts">Écarts de stock</button>
+        <button class="tab-btn" data-onglet="journal">Journal</button>
+        <button class="tab-btn" data-onglet="produits">Produits</button>
+      </div>
+
+      <!-- BARRE D'OUTILS -->
+      <div class="toolbar" id="toolbar">
+        <div class="search-box">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="search" id="recherche" placeholder="Rechercher un client, un n° de document, un produit…" />
+        </div>
+        <select class="select-filtre" id="filtreCategorie">
+          <option value="">Toutes les catégories</option>
+          <option value="colle">Colles</option>
+          <option value="joint">Joints</option>
+          <option value="croisillon">Croisillons</option>
+          <option value="plot">Plots</option>
+          <option value="autre">Autres</option>
+        </select>
+        <button class="btn-ghost" id="btnRetour">Enregistrer un retour client</button>
+      </div>
+
+      <!-- CONTENU -->
+      <div id="contenu">
+        <div class="loading"><div class="spinner"></div> Chargement…</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODALE -->
+<div class="modal-fond" id="modalFond">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <h3 id="modalTitre">Titre</h3>
+      <button class="modal-close" id="modalClose" aria-label="Fermer">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let ongletActuel = 'attente';
+let utilisateur = null, profil = null;
+let produits = [], enlevements = [], mouvements = [];
+
+const TITRES = {
+  attente:  'En attente de retrait',
+  ecarts:   'Écarts de stock',
+  journal:  'Journal des mouvements',
+  produits: 'Catalogue des consommables'
+};
+const CAT_LABEL = { colle:'Colle', joint:'Joint', croisillon:'Croisillon', plot:'Plot', autre:'Autre' };
+
+/* ========== OUTILS ========== */
+const echap = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nombre = (n) => {
+  const v = Number(n) || 0;
+  return Number.isInteger(v) ? v.toLocaleString('fr-FR') : v.toLocaleString('fr-FR', { maximumFractionDigits: 2 });
+};
+const dateCourte = (d) => new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'2-digit' });
+const joursDepuis = (d) => Math.floor((Date.now() - new Date(d).getTime()) / 86400000);
+
+function toast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+/* ========== MODALE ========== */
+const modalFond = document.getElementById('modalFond');
+function ouvrirModal(titre, corps, boutons) {
+  document.getElementById('modalTitre').textContent = titre;
+  document.getElementById('modalBody').innerHTML = corps;
+  const pied = document.getElementById('modalFoot');
+  pied.innerHTML = '';
+  boutons.forEach(b => {
+    const el = document.createElement('button');
+    el.className = b.classe || 'btn-ghost';
+    el.textContent = b.texte;
+    el.addEventListener('click', b.action);
+    pied.appendChild(el);
+  });
+  modalFond.classList.add('open');
+  setTimeout(() => document.querySelector('#modalBody input, #modalBody select')?.focus(), 120);
+}
+function fermerModal() { modalFond.classList.remove('open'); }
+document.getElementById('modalClose').addEventListener('click', fermerModal);
+modalFond.addEventListener('click', e => { if (e.target === modalFond) fermerModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fermerModal(); });
+
+/* ========== DÉMARRAGE ========== */
+async function init() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
+  utilisateur = session.user;
+
+  const { data: p } = await db.from('employee_profiles').select('*').eq('id', utilisateur.id).single();
+  if (p) {
+    profil = p;
+    document.getElementById('sidebarName').textContent = p.prenom + ' ' + p.nom;
+    document.getElementById('sidebarRole').textContent = p.poste;
+    document.getElementById('sidebarAvatar').textContent = (p.prenom[0] || '') + (p.nom[0] || '');
+    if (p.poste === 'Dirigeant de la société' || p.poste === 'Responsable magasin') {
+      const lien = document.getElementById('lienPresenceEquipe');
+      if (lien) lien.style.display = '';
+    }
+  } else {
+    document.getElementById('sidebarName').textContent = utilisateur.email;
+  }
+
+  await charger();
+
+  db.channel('consommables_live')
+    .on('postgres_changes', { event:'*', schema:'public', table:'enlevements' }, () => charger())
+    .on('postgres_changes', { event:'*', schema:'public', table:'consommables' }, () => charger())
+    .on('postgres_changes', { event:'*', schema:'public', table:'mouvements_consommables' }, () => charger())
+    .subscribe();
+}
+
+async function charger() {
+  const conteneur = document.getElementById('contenu');
+  const [rProd, rEnl, rMvt] = await Promise.all([
+    db.from('consommables').select('*').eq('actif', true).order('categorie').order('designation'),
+    db.from('enlevements').select('*').order('date_vente', { ascending: true }),
+    db.from('mouvements_consommables').select('*').order('created_at', { ascending: false }).limit(200)
+  ]);
+
+  if (rProd.error || rEnl.error) {
+    const manquant = /relation .* does not exist/i.test((rProd.error || rEnl.error).message || '');
+    conteneur.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon">⚠️</div>
+      <p><b>${manquant ? 'Les tables ne sont pas encore créées.' : 'Erreur de chargement.'}</b></p>
+      <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.6rem;">
+        ${manquant
+          ? "Exécutez le fichier <code>sql/consommables_setup.sql</code> dans l’éditeur SQL de Supabase, puis rechargez cette page."
+          : echap((rProd.error || rEnl.error).message)}
+      </p></div>`;
+    return;
+  }
+
+  produits = rProd.data || [];
+  enlevements = rEnl.data || [];
+  mouvements = rMvt.data || [];
+
+  majStats();
+  rendre();
+  document.getElementById('lastRefresh').textContent =
+    'Mis à jour ' + new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+}
+
+/* ========== STATISTIQUES ========== */
+const enAttente = () => enlevements.filter(e => e.statut === 'en_attente' || e.statut === 'partiel');
+
+function majStats() {
+  const att = enAttente();
+  const clients = new Set(att.map(e => (e.client_nom || '').toLowerCase().trim()));
+  const plusAncien = att.length ? Math.max(...att.map(e => joursDepuis(e.date_vente))) : 0;
+
+  document.getElementById('stat-attente').textContent = att.length;
+  document.getElementById('stat-clients').textContent = clients.size;
+  document.getElementById('stat-ancien').textContent = att.length ? plusAncien + ' j' : '—';
+  document.getElementById('stat-refs').textContent = produits.length;
+  document.getElementById('tc-attente').textContent = att.length;
+}
+
+/* ========== RENDU ========== */
+function rendre() {
+  document.getElementById('topbarTitle').textContent = TITRES[ongletActuel];
+  document.getElementById('toolbar').style.display = (ongletActuel === 'journal') ? 'none' : 'flex';
+  document.getElementById('btnRetour').style.display = (ongletActuel === 'attente' || ongletActuel === 'ecarts') ? '' : 'none';
+
+  if (ongletActuel === 'attente')  return rendreAttente();
+  if (ongletActuel === 'ecarts')   return rendreEcarts();
+  if (ongletActuel === 'journal')  return rendreJournal();
+  if (ongletActuel === 'produits') return rendreProduits();
+}
+
+function filtres() {
+  return {
+    q: (document.getElementById('recherche').value || '').toLowerCase().trim(),
+    cat: document.getElementById('filtreCategorie').value
+  };
+}
+const produitDe = (id) => produits.find(p => p.id === id);
+
+function rendreAttente() {
+  const { q, cat } = filtres();
+  const lignes = enAttente().filter(e => {
+    const p = produitDe(e.consommable_id);
+    if (cat && p?.categorie !== cat) return false;
+    if (!q) return true;
+    return [e.client_nom, e.document_ref, p?.designation, p?.reference]
+      .some(v => (v || '').toLowerCase().includes(q));
+  });
+
+  const c = document.getElementById('contenu');
+  if (!lignes.length) {
+    c.innerHTML = `<div class="empty-state"><div class="empty-state-icon">✅</div>
+      <p>${q || cat ? 'Aucun résultat pour cette recherche.' : 'Rien en attente : tout a été retiré.'}</p></div>`;
+    return;
+  }
+
+  c.innerHTML = '<div class="enl-list">' + lignes.map(e => {
+    const p = produitDe(e.consommable_id);
+    const reste = Number(e.quantite_vendue) - Number(e.quantite_retiree);
+    const pct = Math.round((Number(e.quantite_retiree) / Number(e.quantite_vendue)) * 100);
+    const jours = joursDepuis(e.date_vente);
+    return `
+    <div class="enl-card ${jours > 30 ? 'retard' : ''}">
+      <div>
+        <div class="enl-client">${echap(e.client_nom)}${e.client_tel ? ` <a href="tel:${echap(e.client_tel)}" style="font-size:0.78rem; font-weight:400; color:var(--text-muted);">${echap(e.client_tel)}</a>` : ''}</div>
+        <div class="enl-produit">${echap(p?.designation || 'Produit supprimé')}${p?.conditionnement ? ` · ${echap(p.conditionnement)}` : ''}</div>
+        <div class="enl-meta">
+          <span>${echap(e.document_type)}${e.document_ref ? ` <b>${echap(e.document_ref)}</b>` : ''}</span>
+          <span>Vendu le <b>${dateCourte(e.date_vente)}</b></span>
+          <span${jours > 30 ? ' style="color:var(--attente);"' : ''}>${jours} jour${jours > 1 ? 's' : ''} d'attente</span>
+          ${e.note ? `<span>${echap(e.note)}</span>` : ''}
+        </div>
+        ${Number(e.quantite_retiree) > 0 ? `
+          <div style="display:flex; align-items:center; gap:0.6rem; margin-top:0.6rem;">
+            <div class="jauge"><span style="width:${pct}%"></span></div>
+            <span style="font-size:0.75rem; color:var(--text-muted);">${nombre(e.quantite_retiree)} / ${nombre(e.quantite_vendue)} retiré${Number(e.quantite_retiree) > 1 ? 's' : ''}</span>
+          </div>` : ''}
+      </div>
+      <div class="enl-right">
+        <div class="enl-reste">${nombre(reste)} <small>${echap(p?.unite || '')}${reste > 1 ? 's' : ''} à retirer</small></div>
+        <div class="enl-actions">
+          <button class="btn-action btn-confirmer" style="width:auto; padding:0.45rem 0.9rem; font-size:0.75rem;"
+                  onclick="retraitTotal('${e.id}')">Tout retirer</button>
+          <button class="btn-action btn-prendre" style="width:auto; padding:0.45rem 0.9rem; font-size:0.75rem;"
+                  onclick="demanderRetraitPartiel('${e.id}')">Partiel</button>
+          <button class="btn-action btn-archiver" style="width:auto; padding:0.45rem 0.9rem; font-size:0.75rem;"
+                  onclick="annulerEnlevement('${e.id}')">Annuler</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+function rendreEcarts() {
+  const { q, cat } = filtres();
+  const att = enAttente();
+  const retours = {};
+  mouvements.filter(m => m.type === 'retour').forEach(m => {
+    retours[m.consommable_id] = (retours[m.consommable_id] || 0) + Number(m.quantite);
+  });
+
+  const lignes = produits.filter(p => {
+    if (cat && p.categorie !== cat) return false;
+    if (!q) return true;
+    return [p.designation, p.reference, p.conditionnement].some(v => (v || '').toLowerCase().includes(q));
+  }).map(p => {
+    const attente = att.filter(e => e.consommable_id === p.id)
+      .reduce((s, e) => s + (Number(e.quantite_vendue) - Number(e.quantite_retiree)), 0);
+    const ret = retours[p.id] || 0;
+    return { p, attente, ret, physique: Number(p.stock_logiciel) + attente + ret };
+  });
+
+  const c = document.getElementById('contenu');
+  if (!lignes.length) { c.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📭</div><p>Aucun produit.</p></div>`; return; }
+
+  c.innerHTML = `
+    <div class="rappel" style="margin-bottom:1.2rem;">
+      <b>Comment lire ce tableau.</b> Le logiciel décompte la marchandise dès la facturation, alors que le client
+      vient la chercher plus tard. Le stock réel du dépôt est donc plus élevé que celui du logiciel :<br>
+      <b>Stock physique = stock logiciel + en attente de retrait + retours clients</b>
+    </div>
+    <div class="table-wrap"><table class="tbl">
+      <thead><tr>
+        <th>Catégorie</th><th>Produit</th>
+        <th style="text-align:right;">Stock logiciel</th>
+        <th style="text-align:right;">En attente</th>
+        <th style="text-align:right;">Retours</th>
+        <th style="text-align:right;">Stock physique estimé</th>
+      </tr></thead>
+      <tbody>${lignes.map(({ p, attente, ret, physique }) => `
+        <tr>
+          <td><span class="cat-pill cat-${p.categorie}">${CAT_LABEL[p.categorie]}</span></td>
+          <td><b>${echap(p.designation)}</b>${p.conditionnement ? `<br><span style="font-size:0.76rem; color:var(--text-muted);">${echap(p.conditionnement)}</span>` : ''}</td>
+          <td class="num">
+            <input class="stock-input" type="number" step="any" value="${Number(p.stock_logiciel)}"
+                   onchange="majStockLogiciel('${p.id}', this.value)" title="Recopiez ici le stock affiché par votre logiciel" />
+          </td>
+          <td class="num ${attente > 0 ? 'ecart-plus' : 'ecart-zero'}">${attente > 0 ? '+' + nombre(attente) : '—'}</td>
+          <td class="num ${ret > 0 ? 'ecart-plus' : 'ecart-zero'}">${ret > 0 ? '+' + nombre(ret) : '—'}</td>
+          <td class="num" style="font-size:1rem; font-weight:700;">${nombre(physique)} <span style="font-size:0.74rem; color:var(--text-muted); font-weight:400;">${echap(p.unite)}${physique > 1 ? 's' : ''}</span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+function rendreJournal() {
+  const c = document.getElementById('contenu');
+  if (!mouvements.length) {
+    c.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📭</div><p>Aucun mouvement enregistré.</p></div>`;
+    return;
+  }
+  const ico = { retrait:['mvt-retrait','↓'], retour:['mvt-retour','↑'], ajustement:['mvt-ajust','=' ] };
+  c.innerHTML = '<div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:0.4rem 1.3rem;">' +
+    mouvements.map(m => {
+      const p = produitDe(m.consommable_id);
+      const [cls, sig] = ico[m.type] || ico.ajustement;
+      const libelle = { retrait:'Retrait', retour:'Retour client', ajustement:'Ajustement' }[m.type];
+      return `<div class="mvt-row">
+        <div class="mvt-ico ${cls}">${sig}</div>
+        <div class="mvt-txt">
+          <b>${libelle} · ${nombre(m.quantite)} ${echap(p?.unite || '')}${Number(m.quantite) > 1 ? 's' : ''}</b>
+          — ${echap(p?.designation || 'Produit supprimé')}
+          ${m.client_nom ? `<br><span style="color:var(--text-muted); font-size:0.79rem;">${echap(m.client_nom)}${m.note ? ' · ' + echap(m.note) : ''}</span>` : (m.note ? `<br><span style="color:var(--text-muted); font-size:0.79rem;">${echap(m.note)}</span>` : '')}
+        </div>
+        <div class="mvt-date">${new Date(m.created_at).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}${m.par_nom ? '<br>' + echap(m.par_nom) : ''}</div>
+      </div>`;
+    }).join('') + '</div>';
+}
+
+function rendreProduits() {
+  const { q, cat } = filtres();
+  const lignes = produits.filter(p => {
+    if (cat && p.categorie !== cat) return false;
+    if (!q) return true;
+    return [p.designation, p.reference, p.conditionnement].some(v => (v || '').toLowerCase().includes(q));
+  });
+
+  document.getElementById('contenu').innerHTML = `
+    <div style="margin-bottom:1rem;">
+      <button class="btn-action btn-confirmer" style="width:auto; padding:0.55rem 1.1rem; font-size:0.78rem;" onclick="nouveauProduit()">+ Ajouter un produit</button>
+    </div>
+    <div class="table-wrap"><table class="tbl">
+      <thead><tr><th>Catégorie</th><th>Désignation</th><th>Référence</th><th>Conditionnement</th><th>Unité</th><th></th></tr></thead>
+      <tbody>${lignes.map(p => `
+        <tr>
+          <td><span class="cat-pill cat-${p.categorie}">${CAT_LABEL[p.categorie]}</span></td>
+          <td><b>${echap(p.designation)}</b></td>
+          <td>${echap(p.reference || '—')}</td>
+          <td>${echap(p.conditionnement || '—')}</td>
+          <td>${echap(p.unite)}</td>
+          <td style="text-align:right;">
+            <button class="btn-ghost" style="padding:0.35rem 0.8rem; font-size:0.75rem;" onclick="retirerProduit('${p.id}')">Retirer</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+/* ========== ACTIONS : ENLÈVEMENTS ========== */
+function optionsProduits(selId) {
+  const parCat = {};
+  produits.forEach(p => { (parCat[p.categorie] ||= []).push(p); });
+  return Object.entries(parCat).map(([cat, liste]) =>
+    `<optgroup label="${CAT_LABEL[cat]}">` +
+    liste.map(p => `<option value="${p.id}" ${p.id === selId ? 'selected' : ''}>${echap(p.designation)}${p.conditionnement ? ' — ' + echap(p.conditionnement) : ''}</option>`).join('') +
+    `</optgroup>`).join('');
+}
+
+document.getElementById('btnNouveau').addEventListener('click', () => {
+  if (!produits.length) { toast('Ajoutez d\'abord un produit dans l\'onglet Produits', 'error'); return; }
+  ouvrirModal('Nouvel enlèvement en attente', `
+    <div class="rappel">Enregistrez ici ce qui vient d'être <b>facturé mais pas encore emporté</b> par le client.
+    Vous pourrez marquer le retrait quand il viendra le chercher.</div>
+    <div class="form-2col">
+      <div class="form-group"><label>Client *</label><input id="f-client" placeholder="Nom du client" /></div>
+      <div class="form-group"><label>Téléphone</label><input id="f-tel" placeholder="Facultatif" /></div>
+    </div>
+    <div class="form-group"><label>Produit *</label><select id="f-produit">${optionsProduits()}</select></div>
+    <div class="form-2col">
+      <div class="form-group"><label>Quantité *</label><input id="f-qte" type="number" step="any" min="0.01" placeholder="Ex : 5" /></div>
+      <div class="form-group"><label>Date de vente</label><input id="f-date" type="date" value="${new Date().toISOString().slice(0,10)}" /></div>
+    </div>
+    <div class="form-2col">
+      <div class="form-group"><label>Document</label><select id="f-doctype">
+        <option value="facture">Facture</option><option value="commande">Commande</option><option value="devis">Devis</option>
+      </select></div>
+      <div class="form-group"><label>N° du document</label><input id="f-docref" placeholder="Ex : FA-2026-0142" /></div>
+    </div>
+    <div class="form-group"><label>Note</label><input id="f-note" placeholder="Facultatif" /></div>
+  `, [
+    { texte:'Annuler', action: fermerModal },
+    { texte:'Enregistrer', classe:'btn-action btn-confirmer', action: creerEnlevement }
+  ]);
+});
+
+async function creerEnlevement() {
+  const client = document.getElementById('f-client').value.trim();
+  const qte = parseFloat(document.getElementById('f-qte').value);
+  if (!client) { toast('Le nom du client est obligatoire', 'error'); return; }
+  if (!(qte > 0)) { toast('Indiquez une quantité valide', 'error'); return; }
+
+  const { error } = await db.from('enlevements').insert({
+    consommable_id: document.getElementById('f-produit').value,
+    client_nom: client,
+    client_tel: document.getElementById('f-tel').value.trim() || null,
+    document_type: document.getElementById('f-doctype').value,
+    document_ref: document.getElementById('f-docref').value.trim() || null,
+    quantite_vendue: qte,
+    date_vente: document.getElementById('f-date').value || new Date().toISOString().slice(0,10),
+    note: document.getElementById('f-note').value.trim() || null,
+    cree_par: utilisateur.id,
+    cree_par_nom: profil ? profil.prenom + ' ' + profil.nom : utilisateur.email
+  });
+
+  if (error) { toast('Erreur : ' + error.message, 'error'); return; }
+  fermerModal();
+  toast('Enlèvement enregistré');
+  await charger();
+}
+
+async function enregistrerRetrait(id, quantite) {
+  const { data: e, error: err1 } = await db.from('enlevements').select('*').eq('id', id).single();
+  if (err1 || !e) { toast('Enlèvement introuvable', 'error'); return; }
+
+  const reste = Number(e.quantite_vendue) - Number(e.quantite_retiree);
+  if (quantite > reste + 0.0001) { toast(`Il ne reste que ${nombre(reste)} à retirer`, 'error'); return; }
+
+  const nouvelle = Number(e.quantite_retiree) + quantite;
+  const { error: err2 } = await db.from('enlevements').update({ quantite_retiree: nouvelle }).eq('id', id);
+  if (err2) { toast('Erreur : ' + err2.message, 'error'); return; }
+
+  await db.from('mouvements_consommables').insert({
+    enlevement_id: id,
+    consommable_id: e.consommable_id,
+    type: 'retrait',
+    quantite,
+    client_nom: e.client_nom,
+    par: utilisateur.id,
+    par_nom: profil ? profil.prenom + ' ' + profil.nom : utilisateur.email
+  });
+
+  toast(nouvelle >= Number(e.quantite_vendue) ? 'Enlèvement soldé' : 'Retrait partiel enregistré');
+  await charger();
+}
+
+async function retraitTotal(id) {
+  const e = enlevements.find(x => x.id === id);
+  if (!e) return;
+  await enregistrerRetrait(id, Number(e.quantite_vendue) - Number(e.quantite_retiree));
+}
+
+function demanderRetraitPartiel(id) {
+  const e = enlevements.find(x => x.id === id);
+  if (!e) return;
+  const p = produitDe(e.consommable_id);
+  const reste = Number(e.quantite_vendue) - Number(e.quantite_retiree);
+  ouvrirModal('Retrait partiel', `
+    <div class="rappel"><b>${echap(e.client_nom)}</b><br>${echap(p?.designation || '')}<br>
+      Reste à retirer : <b>${nombre(reste)} ${echap(p?.unite || '')}${reste > 1 ? 's' : ''}</b></div>
+    <div class="form-group">
+      <label>Quantité retirée aujourd'hui *</label>
+      <input id="f-partiel" type="number" step="any" min="0.01" max="${reste}" value="${reste}" />
+    </div>
+  `, [
+    { texte:'Annuler', action: fermerModal },
+    { texte:'Valider le retrait', classe:'btn-action btn-confirmer', action: async () => {
+        const q = parseFloat(document.getElementById('f-partiel').value);
+        if (!(q > 0)) { toast('Quantité invalide', 'error'); return; }
+        fermerModal();
+        await enregistrerRetrait(id, q);
+      } }
+  ]);
+}
+
+async function annulerEnlevement(id) {
+  const e = enlevements.find(x => x.id === id);
+  if (!e) return;
+  if (!confirm(`Annuler l'enlèvement de ${echap(e.client_nom)} ?\n\nLa ligne sortira de la liste d'attente. À utiliser si la vente a été annulée ou saisie par erreur.`)) return;
+  const { error } = await db.from('enlevements').update({ statut: 'annule' }).eq('id', id);
+  if (error) { toast('Erreur : ' + error.message, 'error'); return; }
+  toast('Enlèvement annulé');
+  await charger();
+}
+
+/* ========== ACTIONS : RETOURS ========== */
+document.getElementById('btnRetour').addEventListener('click', () => {
+  if (!produits.length) { toast('Ajoutez d\'abord un produit', 'error'); return; }
+  ouvrirModal('Retour client', `
+    <div class="rappel">Un client rapporte de la marchandise ? Enregistrez-la ici : elle revient
+    physiquement au dépôt alors que le logiciel ne le sait pas forcément.</div>
+    <div class="form-group"><label>Produit *</label><select id="r-produit">${optionsProduits()}</select></div>
+    <div class="form-2col">
+      <div class="form-group"><label>Quantité *</label><input id="r-qte" type="number" step="any" min="0.01" /></div>
+      <div class="form-group"><label>Client</label><input id="r-client" placeholder="Facultatif" /></div>
+    </div>
+    <div class="form-group"><label>Note</label><input id="r-note" placeholder="Ex : sacs non utilisés, reprise chantier" /></div>
+  `, [
+    { texte:'Annuler', action: fermerModal },
+    { texte:'Enregistrer le retour', classe:'btn-action btn-confirmer', action: async () => {
+        const q = parseFloat(document.getElementById('r-qte').value);
+        if (!(q > 0)) { toast('Quantité invalide', 'error'); return; }
+        const { error } = await db.from('mouvements_consommables').insert({
+          consommable_id: document.getElementById('r-produit').value,
+          type: 'retour',
+          quantite: q,
+          client_nom: document.getElementById('r-client').value.trim() || null,
+          note: document.getElementById('r-note').value.trim() || null,
+          par: utilisateur.id,
+          par_nom: profil ? profil.prenom + ' ' + profil.nom : utilisateur.email
+        });
+        if (error) { toast('Erreur : ' + error.message, 'error'); return; }
+        fermerModal();
+        toast('Retour enregistré');
+        await charger();
+      } }
+  ]);
+});
+
+/* ========== ACTIONS : PRODUITS ========== */
+function nouveauProduit() {
+  ouvrirModal('Ajouter un consommable', `
+    <div class="form-group"><label>Catégorie *</label><select id="p-cat">
+      <option value="colle">Colle</option><option value="joint">Joint</option>
+      <option value="croisillon">Croisillon</option><option value="plot">Plot</option>
+      <option value="autre">Autre</option>
+    </select></div>
+    <div class="form-group"><label>Désignation *</label><input id="p-desi" placeholder="Ex : Colle souple grands formats" /></div>
+    <div class="form-2col">
+      <div class="form-group"><label>Référence</label><input id="p-ref" placeholder="Facultatif" /></div>
+      <div class="form-group"><label>Conditionnement</label><input id="p-cond" placeholder="Ex : sac 25 kg" /></div>
+    </div>
+    <div class="form-group"><label>Unité de comptage *</label><input id="p-unite" value="sac" placeholder="sac, seau, sachet, pièce…" /></div>
+  `, [
+    { texte:'Annuler', action: fermerModal },
+    { texte:'Ajouter', classe:'btn-action btn-confirmer', action: async () => {
+        const desi = document.getElementById('p-desi').value.trim();
+        if (!desi) { toast('La désignation est obligatoire', 'error'); return; }
+        const { error } = await db.from('consommables').insert({
+          categorie: document.getElementById('p-cat').value,
+          designation: desi,
+          reference: document.getElementById('p-ref').value.trim() || null,
+          conditionnement: document.getElementById('p-cond').value.trim() || null,
+          unite: document.getElementById('p-unite').value.trim() || 'unité'
+        });
+        if (error) { toast('Erreur : ' + error.message, 'error'); return; }
+        fermerModal();
+        toast('Produit ajouté');
+        await charger();
+      } }
+  ]);
+}
+
+async function majStockLogiciel(id, valeur) {
+  const v = parseFloat(valeur);
+  if (isNaN(v)) { toast('Valeur invalide', 'error'); return; }
+  const { error } = await db.from('consommables')
+    .update({ stock_logiciel: v, stock_logiciel_maj: new Date().toISOString() }).eq('id', id);
+  if (error) { toast('Erreur : ' + error.message, 'error'); return; }
+  toast('Stock logiciel mis à jour');
+  await charger();
+}
+
+async function retirerProduit(id) {
+  const enCours = enAttente().some(e => e.consommable_id === id);
+  if (enCours) { toast('Impossible : ce produit a des enlèvements en attente', 'error'); return; }
+  if (!confirm('Retirer ce produit du catalogue ?\n\nIl n\'apparaîtra plus dans les listes, mais l\'historique est conservé.')) return;
+  const { error } = await db.from('consommables').update({ actif: false }).eq('id', id);
+  if (error) { toast('Erreur : ' + error.message, 'error'); return; }
+  toast('Produit retiré du catalogue');
+  await charger();
+}
+
+/* ========== NAVIGATION ========== */
+document.querySelectorAll('[data-onglet]').forEach(b => {
+  b.addEventListener('click', () => {
+    ongletActuel = b.dataset.onglet;
+    document.querySelectorAll('[data-onglet]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    rendre();
+  });
+});
+document.getElementById('recherche').addEventListener('input', rendre);
+document.getElementById('filtreCategorie').addEventListener('change', rendre);
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await db.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+init();
+</script>
+<script src="sidebar.js"></script>
+</body>
+</html>
