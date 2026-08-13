@@ -298,6 +298,21 @@ function toast(msg, type = '') {
   setTimeout(() => t.classList.remove('show'), 3200);
 }
 
+// Les tables ne sont pas encore créées dans la base ?
+const tablesManquantes = (err) => !!err && (
+  err.code === 'PGRST205' ||
+  /could not find the table|schema cache|does not exist/i.test(err.message || '')
+);
+
+// Message d'erreur compréhensible plutôt que le jargon de la base
+function erreurLisible(err, contexte) {
+  if (tablesManquantes(err)) {
+    toast('Module non activé : les tables doivent être créées dans Supabase', 'error');
+  } else {
+    toast(contexte + ' : ' + (err.message || 'erreur inconnue'), 'error');
+  }
+}
+
 /* ========== MODALE ========== */
 const modalFond = document.getElementById('modalFond');
 function ouvrirModal(titre, corps, boutons) {
@@ -357,16 +372,29 @@ async function charger() {
     db.from('mouvements_consommables').select('*').order('created_at', { ascending: false }).limit(200)
   ]);
 
-  if (rProd.error || rEnl.error) {
-    const manquant = /relation .* does not exist/i.test((rProd.error || rEnl.error).message || '');
-    conteneur.innerHTML = `<div class="empty-state">
-      <div class="empty-state-icon">⚠️</div>
-      <p><b>${manquant ? 'Les tables ne sont pas encore créées.' : 'Erreur de chargement.'}</b></p>
-      <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.6rem;">
-        ${manquant
-          ? "Exécutez le fichier <code>sql/consommables_setup.sql</code> dans l’éditeur SQL de Supabase, puis rechargez cette page."
-          : echap((rProd.error || rEnl.error).message)}
-      </p></div>`;
+  const erreur = rProd.error || rEnl.error;
+  if (erreur) {
+    conteneur.innerHTML = tablesManquantes(erreur)
+      ? `<div class="empty-state" style="max-width:620px; margin:0 auto; text-align:left;">
+          <div class="empty-state-icon" style="text-align:center;">🗄️</div>
+          <p style="text-align:center; margin-bottom:1.2rem;"><b>Le module n’est pas encore activé.</b></p>
+          <div class="rappel" style="margin-bottom:0;">
+            Il reste une étape à faire une seule fois : créer les tables dans la base.
+            <ol style="margin:0.9rem 0 0 1.1rem; line-height:2;">
+              <li>Ouvrez votre projet Supabase, menu <b>SQL Editor</b>, puis <b>New query</b>.</li>
+              <li>Copiez tout le contenu du fichier
+                  <a href="https://github.com/Pierre-Louis05/top-carrelage-bailleul/blob/main/sql/consommables_setup.sql"
+                     target="_blank" rel="noopener" style="color:var(--or);">consommables_setup.sql</a>.</li>
+              <li>Collez-le dans l’éditeur et cliquez sur <b>Run</b>.</li>
+              <li>Revenez ici et rechargez la page.</li>
+            </ol>
+          </div>
+        </div>`
+      : `<div class="empty-state">
+          <div class="empty-state-icon">⚠️</div>
+          <p><b>Erreur de chargement.</b></p>
+          <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.6rem;">${echap(erreur.message)}</p>
+        </div>`;
     return;
   }
 
@@ -630,7 +658,7 @@ async function creerEnlevement() {
     cree_par_nom: profil ? profil.prenom + ' ' + profil.nom : utilisateur.email
   });
 
-  if (error) { toast('Erreur : ' + error.message, 'error'); return; }
+  if (error) { erreurLisible(error, "Enregistrement impossible"); return; }
   fermerModal();
   toast('Enlèvement enregistré');
   await charger();
@@ -645,7 +673,7 @@ async function enregistrerRetrait(id, quantite) {
 
   const nouvelle = Number(e.quantite_retiree) + quantite;
   const { error: err2 } = await db.from('enlevements').update({ quantite_retiree: nouvelle }).eq('id', id);
-  if (err2) { toast('Erreur : ' + err2.message, 'error'); return; }
+  if (err2) { erreurLisible(err2, "Retrait impossible"); return; }
 
   await db.from('mouvements_consommables').insert({
     enlevement_id: id,
@@ -695,7 +723,7 @@ async function annulerEnlevement(id) {
   if (!e) return;
   if (!confirm(`Annuler l'enlèvement de ${echap(e.client_nom)} ?\n\nLa ligne sortira de la liste d'attente. À utiliser si la vente a été annulée ou saisie par erreur.`)) return;
   const { error } = await db.from('enlevements').update({ statut: 'annule' }).eq('id', id);
-  if (error) { toast('Erreur : ' + error.message, 'error'); return; }
+  if (error) { erreurLisible(error, "Annulation impossible"); return; }
   toast('Enlèvement annulé');
   await charger();
 }
@@ -726,7 +754,7 @@ document.getElementById('btnRetour').addEventListener('click', () => {
           par: utilisateur.id,
           par_nom: profil ? profil.prenom + ' ' + profil.nom : utilisateur.email
         });
-        if (error) { toast('Erreur : ' + error.message, 'error'); return; }
+        if (error) { erreurLisible(error, "Retour non enregistré"); return; }
         fermerModal();
         toast('Retour enregistré');
         await charger();
@@ -760,7 +788,7 @@ function nouveauProduit() {
           conditionnement: document.getElementById('p-cond').value.trim() || null,
           unite: document.getElementById('p-unite').value.trim() || 'unité'
         });
-        if (error) { toast('Erreur : ' + error.message, 'error'); return; }
+        if (error) { erreurLisible(error, "Ajout impossible"); return; }
         fermerModal();
         toast('Produit ajouté');
         await charger();
@@ -773,7 +801,7 @@ async function majStockLogiciel(id, valeur) {
   if (isNaN(v)) { toast('Valeur invalide', 'error'); return; }
   const { error } = await db.from('consommables')
     .update({ stock_logiciel: v, stock_logiciel_maj: new Date().toISOString() }).eq('id', id);
-  if (error) { toast('Erreur : ' + error.message, 'error'); return; }
+  if (error) { erreurLisible(error, "Mise à jour impossible"); return; }
   toast('Stock logiciel mis à jour');
   await charger();
 }
@@ -783,7 +811,7 @@ async function retirerProduit(id) {
   if (enCours) { toast('Impossible : ce produit a des enlèvements en attente', 'error'); return; }
   if (!confirm('Retirer ce produit du catalogue ?\n\nIl n\'apparaîtra plus dans les listes, mais l\'historique est conservé.')) return;
   const { error } = await db.from('consommables').update({ actif: false }).eq('id', id);
-  if (error) { toast('Erreur : ' + error.message, 'error'); return; }
+  if (error) { erreurLisible(error, "Retrait impossible"); return; }
   toast('Produit retiré du catalogue');
   await charger();
 }
