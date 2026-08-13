@@ -75,7 +75,12 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     const { data, error } = await client.auth.signInWithPassword({ email, password });
 
     if (error) {
-      err.textContent = 'Email ou mot de passe incorrect.';
+      // On distingue une panne de service d'un mauvais mot de passe
+      const panne = !error.status || error.status === 0 || error.status >= 500
+                    || /fetch|network|failed to fetch/i.test(error.message || '');
+      err.textContent = panne
+        ? 'Service momentanément indisponible : la base de données ne répond pas. Réessayez dans quelques minutes.'
+        : 'Email ou mot de passe incorrect.';
       err.classList.add('show');
       btn.textContent = 'Se connecter';
       btn.disabled = false;
@@ -84,7 +89,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       window.location.href = 'dashboard.html';
     }
   } catch(e) {
-    err.textContent = 'Erreur réseau. Vérifiez votre connexion.';
+    err.textContent = 'Impossible de joindre le serveur. Vérifiez votre connexion, ou réessayez dans quelques minutes.';
     err.classList.add('show');
     btn.textContent = 'Se connecter';
     btn.disabled = false;
