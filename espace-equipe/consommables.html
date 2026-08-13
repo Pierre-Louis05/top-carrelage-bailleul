@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="app.css" />
   <style>
     /* ---- Barre d'outils ---- */
-    .toolbar { display:flex; gap:0.8rem; flex-wrap:wrap; align-items:center; margin-bottom:1.4rem; }
-    .search-box { position:relative; flex:1; min-width:220px; }
+    .toolbar { display:flex; gap:0.8rem; flex-wrap:wrap; align-items:center; margin-bottom:1.3rem; }
+    .search-box { position:relative; flex:1; min-width:210px; }
     .search-box input {
       width:100%; padding:0.7rem 1rem 0.7rem 2.4rem; background:var(--surface2);
       border:1px solid var(--border); border-radius:var(--radius); color:var(--text);
@@ -24,42 +24,53 @@
     }
     .select-filtre:focus { outline:none; border-color:var(--or); }
 
-    /* ---- Lignes d'enlèvement ---- */
-    .enl-list { display:flex; flex-direction:column; gap:0.7rem; }
-    .enl-card {
-      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-      padding:1.1rem 1.3rem; display:grid; grid-template-columns:1fr auto; gap:1.2rem;
-      align-items:center; transition:var(--transition);
+    /* ---- Cartes produit ---- */
+    .stock-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(330px,1fr)); gap:1rem; }
+    .prod-card {
+      background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--archive);
+      border-radius:var(--radius); padding:1.1rem 1.2rem; transition:var(--transition);
     }
-    .enl-card:hover { border-color:rgba(201,168,76,0.35); }
-    .enl-card.retard { border-left:3px solid var(--attente); }
-    .enl-client { font-size:0.98rem; font-weight:700; color:var(--text); margin-bottom:0.15rem; }
-    .enl-produit { font-size:0.86rem; color:var(--or); margin-bottom:0.45rem; }
-    .enl-meta { display:flex; flex-wrap:wrap; gap:0.5rem 1.1rem; font-size:0.78rem; color:var(--text-muted); }
-    .enl-meta b { color:var(--text); font-weight:600; }
-    .enl-right { display:flex; flex-direction:column; align-items:flex-end; gap:0.55rem; }
-    .enl-reste {
-      font-family:var(--font-titre); font-size:1.5rem; color:var(--text); line-height:1;
-    }
-    .enl-reste small { font-size:0.72rem; font-family:var(--font); color:var(--text-muted); }
-    .enl-actions { display:flex; gap:0.4rem; flex-wrap:wrap; justify-content:flex-end; }
+    .prod-card:hover { border-color:rgba(201,168,76,0.3); border-left-color:var(--archive); }
+    .prod-card.etat-ok          { border-left-color:var(--confirme); }
+    .prod-card.etat-a_commander { border-left-color:var(--attente); }
+    .prod-card.etat-rupture     { border-left-color:#e25c5c; }
+    .prod-head { display:flex; justify-content:space-between; align-items:flex-start; gap:0.8rem; margin-bottom:0.9rem; }
+    .prod-nom { font-size:0.96rem; font-weight:700; color:var(--text); line-height:1.35; }
+    .prod-cond { font-size:0.77rem; color:var(--text-muted); margin-top:0.15rem; }
 
-    /* ---- Jauge de retrait ---- */
-    .jauge { width:110px; height:5px; background:var(--surface2); border-radius:3px; overflow:hidden; }
-    .jauge span { display:block; height:100%; background:var(--confirme); border-radius:3px; transition:width .3s ease; }
+    .prod-chiffres { display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem; margin-bottom:0.9rem; }
+    .chiffre { background:var(--surface2); border-radius:5px; padding:0.55rem 0.4rem; text-align:center; }
+    .chiffre-val { font-family:var(--font-titre); font-size:1.25rem; color:var(--text); line-height:1.1; }
+    .chiffre-lbl { font-size:0.63rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); margin-top:0.2rem; }
+    .chiffre.alerte .chiffre-val { color:var(--attente); }
+    .chiffre.rupture .chiffre-val { color:#e25c5c; }
 
-    /* ---- Tableau ---- */
-    .table-wrap { overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius); }
-    table.tbl { width:100%; border-collapse:collapse; font-size:0.86rem; background:var(--surface); }
-    table.tbl th {
-      background:var(--surface2); text-align:left; padding:0.8rem 1rem; font-size:0.72rem;
-      letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); font-weight:700; white-space:nowrap;
+    .jauge-stock { height:5px; background:var(--surface2); border-radius:3px; overflow:hidden; margin-bottom:0.85rem; }
+    .jauge-stock span { display:block; height:100%; border-radius:3px; transition:width .35s ease; }
+    .jauge-ok       { background:var(--confirme); }
+    .jauge-alerte   { background:var(--attente); }
+    .jauge-rupture  { background:#e25c5c; }
+
+    .prod-actions { display:flex; gap:0.4rem; flex-wrap:wrap; }
+    .btn-mini {
+      flex:1; min-width:74px; padding:0.5rem 0.4rem; border-radius:5px; border:1px solid var(--border);
+      background:var(--surface2); color:var(--text); font-family:var(--font); font-size:0.75rem;
+      font-weight:700; cursor:pointer; transition:var(--transition);
     }
-    table.tbl td { padding:0.8rem 1rem; border-top:1px solid var(--border); color:var(--text); vertical-align:middle; }
-    table.tbl tr:hover td { background:rgba(255,255,255,0.02); }
-    table.tbl td.num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+    .btn-mini:hover { border-color:var(--or); color:var(--or); }
+    .btn-mini.entree:hover { border-color:var(--confirme); color:var(--confirme); }
+    .btn-mini.sortie:hover { border-color:#e25c5c; color:#e25c5c; }
+
+    .badge-etat {
+      display:inline-block; padding:0.22rem 0.6rem; border-radius:20px; font-size:0.65rem;
+      font-weight:700; letter-spacing:0.05em; text-transform:uppercase; white-space:nowrap;
+    }
+    .badge-ok          { background:rgba(16,185,129,0.15); color:#5fd6ab; }
+    .badge-a_commander { background:rgba(245,158,11,0.15); color:#f0b354; }
+    .badge-rupture     { background:rgba(226,92,92,0.16);  color:#f08b8b; }
+
     .cat-pill {
-      display:inline-block; padding:0.2rem 0.6rem; border-radius:20px; font-size:0.68rem;
+      display:inline-block; padding:0.18rem 0.55rem; border-radius:20px; font-size:0.65rem;
       font-weight:700; letter-spacing:0.05em; text-transform:uppercase;
     }
     .cat-colle      { background:rgba(59,130,246,0.15);  color:#7cb0ff; }
@@ -68,15 +79,23 @@
     .cat-plot       { background:rgba(139,92,246,0.15);  color:#b39bf5; }
     .cat-autre      { background:rgba(107,114,128,0.18); color:#a3a9b5; }
 
-    .stock-input {
-      width:80px; padding:0.4rem 0.55rem; background:var(--surface2); border:1px solid var(--border);
+    /* ---- Tableaux ---- */
+    .table-wrap { overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius); }
+    table.tbl { width:100%; border-collapse:collapse; font-size:0.86rem; background:var(--surface); }
+    table.tbl th {
+      background:var(--surface2); text-align:left; padding:0.8rem 1rem; font-size:0.71rem;
+      letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); font-weight:700; white-space:nowrap;
+    }
+    table.tbl td { padding:0.8rem 1rem; border-top:1px solid var(--border); color:var(--text); vertical-align:middle; }
+    table.tbl tr:hover td { background:rgba(255,255,255,0.02); }
+    table.tbl td.num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+    .champ-mini {
+      width:72px; padding:0.4rem 0.5rem; background:var(--surface2); border:1px solid var(--border);
       border-radius:4px; color:var(--text); font-family:var(--font); font-size:0.85rem; text-align:right;
     }
-    .stock-input:focus { outline:none; border-color:var(--or); }
-    .ecart-plus { color:var(--attente); font-weight:700; }
-    .ecart-zero { color:var(--text-muted); }
+    .champ-mini:focus { outline:none; border-color:var(--or); }
 
-    /* ---- Fenêtre modale ---- */
+    /* ---- Modale ---- */
     .modal-fond {
       position:fixed; inset:0; background:rgba(0,0,0,0.72); z-index:3000;
       display:flex; align-items:center; justify-content:center; padding:1.5rem;
@@ -91,22 +110,20 @@
     }
     .modal-fond.open .modal { transform:none; }
     .modal-head {
-      padding:1.3rem 1.5rem; border-bottom:1px solid var(--border);
+      padding:1.25rem 1.5rem; border-bottom:1px solid var(--border);
       display:flex; align-items:center; justify-content:space-between; gap:1rem;
     }
-    .modal-head h3 { font-family:var(--font-titre); font-size:1.15rem; color:var(--text); }
+    .modal-head h3 { font-family:var(--font-titre); font-size:1.12rem; color:var(--text); }
     .modal-close {
       width:32px; height:32px; border-radius:6px; background:var(--surface2); border:none;
-      color:var(--text-muted); cursor:pointer; font-size:1.1rem; line-height:1; transition:var(--transition);
+      color:var(--text-muted); cursor:pointer; font-size:1.05rem; line-height:1; transition:var(--transition);
     }
     .modal-close:hover { background:#e25c5c; color:#fff; }
-    .modal-body { padding:1.4rem 1.5rem; }
-    .modal-foot {
-      padding:1rem 1.5rem 1.4rem; display:flex; gap:0.7rem; justify-content:flex-end; flex-wrap:wrap;
-    }
+    .modal-body { padding:1.35rem 1.5rem; }
+    .modal-foot { padding:1rem 1.5rem 1.35rem; display:flex; gap:0.7rem; justify-content:flex-end; flex-wrap:wrap; }
     .modal .form-group { margin-bottom:1rem; }
     .modal label {
-      display:block; font-size:0.72rem; font-weight:700; letter-spacing:0.07em;
+      display:block; font-size:0.71rem; font-weight:700; letter-spacing:0.07em;
       text-transform:uppercase; color:var(--text-muted); margin-bottom:0.35rem;
     }
     .modal input, .modal select, .modal textarea {
@@ -120,7 +137,6 @@
       padding:0.8rem 1rem; font-size:0.82rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem;
     }
     .rappel b { color:var(--text); }
-
     .btn-ghost {
       padding:0.65rem 1.2rem; background:transparent; border:1px solid var(--border);
       border-radius:var(--radius); color:var(--text-muted); font-family:var(--font);
@@ -131,27 +147,29 @@
     .mvt-row { display:flex; align-items:center; gap:0.9rem; padding:0.75rem 0; border-bottom:1px solid var(--border); }
     .mvt-ico {
       width:32px; height:32px; border-radius:50%; flex-shrink:0;
-      display:flex; align-items:center; justify-content:center; font-size:0.9rem; font-weight:700;
+      display:flex; align-items:center; justify-content:center; font-size:0.95rem; font-weight:700;
     }
-    .mvt-retrait { background:rgba(16,185,129,0.15); color:#5fd6ab; }
-    .mvt-retour  { background:rgba(245,158,11,0.15); color:#f0b354; }
-    .mvt-ajust   { background:rgba(107,114,128,0.2); color:#a3a9b5; }
+    .mvt-entree { background:rgba(16,185,129,0.15); color:#5fd6ab; }
+    .mvt-sortie { background:rgba(226,92,92,0.16);  color:#f08b8b; }
+    .mvt-retour { background:rgba(245,158,11,0.15); color:#f0b354; }
+    .mvt-inventaire { background:rgba(107,114,128,0.2); color:#a3a9b5; }
     .mvt-txt { flex:1; font-size:0.85rem; }
     .mvt-txt b { color:var(--text); }
-    .mvt-date { font-size:0.74rem; color:var(--text-muted); white-space:nowrap; }
+    .mvt-date { font-size:0.73rem; color:var(--text-muted); white-space:nowrap; text-align:right; }
 
-    @media (max-width:760px) {
-      .enl-card { grid-template-columns:1fr; }
-      .enl-right { align-items:flex-start; }
-      .enl-actions { justify-content:flex-start; }
-      .form-2col { grid-template-columns:1fr; }
+    .cat-titre {
+      font-family:var(--font-titre); font-size:1.05rem; color:var(--text);
+      margin:1.8rem 0 0.9rem; display:flex; align-items:center; gap:0.7rem;
     }
+    .cat-titre:first-child { margin-top:0; }
+    .cat-titre small { font-size:0.75rem; font-family:var(--font); color:var(--text-muted); font-weight:400; }
+
+    @media (max-width:600px) { .form-2col { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
 <div class="app-layout">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="sidebar-logo-main">Top Aménagement</div>
@@ -183,51 +201,48 @@
     </div>
   </aside>
 
-  <!-- MAIN -->
   <div class="main-content">
     <div class="topbar">
-      <div class="topbar-title" id="topbarTitle">En attente de retrait</div>
+      <div class="topbar-title" id="topbarTitle">État du stock</div>
       <div class="topbar-actions">
         <span style="font-size:0.78rem; color:var(--text-muted);" id="lastRefresh"></span>
-        <button class="btn-action btn-confirmer" style="width:auto; padding:0.6rem 1.1rem; font-size:0.78rem;" id="btnNouveau">+ Nouvel enlèvement</button>
+        <button class="btn-action btn-confirmer" style="width:auto; padding:0.6rem 1.1rem; font-size:0.78rem;" id="btnInventaire">Faire l'inventaire</button>
       </div>
     </div>
 
     <div class="page-content">
 
-      <!-- STATS -->
       <div class="stats-grid">
-        <div class="stat-card nouveau">
-          <div class="stat-number" id="stat-attente">—</div>
-          <div class="stat-label">Lignes en attente</div>
-        </div>
         <div class="stat-card confirme">
-          <div class="stat-number" id="stat-clients">—</div>
-          <div class="stat-label">Clients concernés</div>
+          <div class="stat-number" id="stat-ok">—</div>
+          <div class="stat-label">Références en stock</div>
+        </div>
+        <div class="stat-card nouveau">
+          <div class="stat-number" id="stat-commander">—</div>
+          <div class="stat-label">Sous le seuil</div>
         </div>
         <div class="stat-card archive">
-          <div class="stat-number" id="stat-ancien">—</div>
-          <div class="stat-label">Attente la plus ancienne</div>
+          <div class="stat-number" id="stat-rupture">—</div>
+          <div class="stat-label">En rupture</div>
         </div>
         <div class="stat-card confirme">
-          <div class="stat-number" id="stat-refs">—</div>
-          <div class="stat-label">Références suivies</div>
+          <div class="stat-number" id="stat-reserve">—</div>
+          <div class="stat-label">Lignes réservées</div>
         </div>
       </div>
 
-      <!-- TABS -->
       <div class="tabs">
-        <button class="tab-btn active" data-onglet="attente">En attente <span class="tab-count" id="tc-attente">0</span></button>
-        <button class="tab-btn" data-onglet="ecarts">Écarts de stock</button>
-        <button class="tab-btn" data-onglet="journal">Journal</button>
-        <button class="tab-btn" data-onglet="produits">Produits</button>
+        <button class="tab-btn active" data-onglet="stock">État du stock</button>
+        <button class="tab-btn" data-onglet="commander">À commander <span class="tab-count" id="tc-commander">0</span></button>
+        <button class="tab-btn" data-onglet="reserve">Réservé <span class="tab-count" id="tc-reserve">0</span></button>
+        <button class="tab-btn" data-onglet="journal">Mouvements</button>
+        <button class="tab-btn" data-onglet="produits">Produits & seuils</button>
       </div>
 
-      <!-- BARRE D'OUTILS -->
       <div class="toolbar" id="toolbar">
         <div class="search-box">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="search" id="recherche" placeholder="Rechercher un client, un n° de document, un produit…" />
+          <input type="search" id="recherche" placeholder="Rechercher un produit, un client…" />
         </div>
         <select class="select-filtre" id="filtreCategorie">
           <option value="">Toutes les catégories</option>
@@ -237,10 +252,9 @@
           <option value="plot">Plots</option>
           <option value="autre">Autres</option>
         </select>
-        <button class="btn-ghost" id="btnRetour">Enregistrer un retour client</button>
+        <button class="btn-ghost" id="btnReserver">+ Vente à retirer plus tard</button>
       </div>
 
-      <!-- CONTENU -->
       <div id="contenu">
         <div class="loading"><div class="spinner"></div> Chargement…</div>
       </div>
@@ -249,7 +263,6 @@
   </div>
 </div>
 
-<!-- MODALE -->
 <div class="modal-fond" id="modalFond">
   <div class="modal" role="dialog" aria-modal="true">
     <div class="modal-head">
@@ -270,26 +283,30 @@ const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let ongletActuel = 'attente';
+let ongletActuel = 'stock';
 let utilisateur = null, profil = null;
-let produits = [], enlevements = [], mouvements = [];
+let produits = [], mouvements = [], reservations = [];
 
 const TITRES = {
-  attente:  'En attente de retrait',
-  ecarts:   'Écarts de stock',
-  journal:  'Journal des mouvements',
-  produits: 'Catalogue des consommables'
+  stock:     'État du stock',
+  commander: 'À commander',
+  reserve:   'Vendu, en attente de retrait',
+  journal:   'Mouvements de stock',
+  produits:  'Produits et seuils de sécurité'
 };
-const CAT_LABEL = { colle:'Colle', joint:'Joint', croisillon:'Croisillon', plot:'Plot', autre:'Autre' };
+const CAT_LABEL   = { colle:'Colle', joint:'Joint', croisillon:'Croisillon', plot:'Plot', autre:'Autre' };
+const CAT_PLURIEL = { colle:'Colles', joint:'Joints', croisillon:'Croisillons', plot:'Plots', autre:'Autres' };
+const ETAT_LABEL  = { ok:'En stock', a_commander:'À commander', rupture:'Rupture' };
 
-/* ========== OUTILS ========== */
+/* ===================== OUTILS ===================== */
 const echap = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const nombre = (n) => {
+const nb = (n) => {
   const v = Number(n) || 0;
   return Number.isInteger(v) ? v.toLocaleString('fr-FR') : v.toLocaleString('fr-FR', { maximumFractionDigits: 2 });
 };
 const dateCourte = (d) => new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'2-digit' });
 const joursDepuis = (d) => Math.floor((Date.now() - new Date(d).getTime()) / 86400000);
+const pluriel = (n, mot) => nb(n) + ' ' + mot + (Math.abs(Number(n)) > 1 ? 's' : '');
 
 function toast(msg, type = '') {
   const t = document.getElementById('toast');
@@ -298,22 +315,15 @@ function toast(msg, type = '') {
   setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-// Les tables ne sont pas encore créées dans la base ?
 const tablesManquantes = (err) => !!err && (
-  err.code === 'PGRST205' ||
-  /could not find the table|schema cache|does not exist/i.test(err.message || '')
+  err.code === 'PGRST205' || /could not find the table|schema cache|does not exist/i.test(err.message || '')
 );
-
-// Message d'erreur compréhensible plutôt que le jargon de la base
 function erreurLisible(err, contexte) {
-  if (tablesManquantes(err)) {
-    toast('Module non activé : les tables doivent être créées dans Supabase', 'error');
-  } else {
-    toast(contexte + ' : ' + (err.message || 'erreur inconnue'), 'error');
-  }
+  if (tablesManquantes(err)) toast('Module non activé : les tables doivent être créées dans Supabase', 'error');
+  else toast(contexte + ' : ' + (err.message || 'erreur inconnue'), 'error');
 }
 
-/* ========== MODALE ========== */
+/* ===================== MODALE ===================== */
 const modalFond = document.getElementById('modalFond');
 function ouvrirModal(titre, corps, boutons) {
   document.getElementById('modalTitre').textContent = titre;
@@ -335,7 +345,7 @@ document.getElementById('modalClose').addEventListener('click', fermerModal);
 modalFond.addEventListener('click', e => { if (e.target === modalFond) fermerModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') fermerModal(); });
 
-/* ========== DÉMARRAGE ========== */
+/* ===================== DÉMARRAGE ===================== */
 async function init() {
   const { data: { session } } = await db.auth.getSession();
   if (!session) { window.location.href = 'index.html'; return; }
@@ -348,8 +358,7 @@ async function init() {
     document.getElementById('sidebarRole').textContent = p.poste;
     document.getElementById('sidebarAvatar').textContent = (p.prenom[0] || '') + (p.nom[0] || '');
     if (p.poste === 'Dirigeant de la société' || p.poste === 'Responsable magasin') {
-      const lien = document.getElementById('lienPresenceEquipe');
-      if (lien) lien.style.display = '';
+      const l = document.getElementById('lienPresenceEquipe'); if (l) l.style.display = '';
     }
   } else {
     document.getElementById('sidebarName').textContent = utilisateur.email;
@@ -357,50 +366,48 @@ async function init() {
 
   await charger();
 
-  db.channel('consommables_live')
-    .on('postgres_changes', { event:'*', schema:'public', table:'enlevements' }, () => charger())
+  db.channel('stock_live')
     .on('postgres_changes', { event:'*', schema:'public', table:'consommables' }, () => charger())
     .on('postgres_changes', { event:'*', schema:'public', table:'mouvements_consommables' }, () => charger())
+    .on('postgres_changes', { event:'*', schema:'public', table:'reservations_consommables' }, () => charger())
     .subscribe();
 }
 
 async function charger() {
-  const conteneur = document.getElementById('contenu');
-  const [rProd, rEnl, rMvt] = await Promise.all([
+  const [rProd, rMvt, rRes] = await Promise.all([
     db.from('consommables').select('*').eq('actif', true).order('categorie').order('designation'),
-    db.from('enlevements').select('*').order('date_vente', { ascending: true }),
-    db.from('mouvements_consommables').select('*').order('created_at', { ascending: false }).limit(200)
+    db.from('mouvements_consommables').select('*').order('created_at', { ascending:false }).limit(250),
+    db.from('reservations_consommables').select('*').order('date_vente', { ascending:true })
   ]);
 
-  const erreur = rProd.error || rEnl.error;
+  const erreur = rProd.error || rMvt.error || rRes.error;
   if (erreur) {
-    conteneur.innerHTML = tablesManquantes(erreur)
-      ? `<div class="empty-state" style="max-width:620px; margin:0 auto; text-align:left;">
+    document.getElementById('contenu').innerHTML = tablesManquantes(erreur)
+      ? `<div class="empty-state" style="max-width:640px; margin:0 auto; text-align:left;">
           <div class="empty-state-icon" style="text-align:center;">🗄️</div>
           <p style="text-align:center; margin-bottom:1.2rem;"><b>Le module n’est pas encore activé.</b></p>
           <div class="rappel" style="margin-bottom:0;">
-            Il reste une étape à faire une seule fois : créer les tables dans la base.
+            Une seule étape, à faire une fois : créer les tables dans la base.
             <ol style="margin:0.9rem 0 0 1.1rem; line-height:2;">
-              <li>Ouvrez votre projet Supabase, menu <b>SQL Editor</b>, puis <b>New query</b>.</li>
-              <li>Copiez tout le contenu du fichier
-                  <a href="https://github.com/Pierre-Louis05/top-carrelage-bailleul/blob/main/sql/consommables_setup.sql"
-                     target="_blank" rel="noopener" style="color:var(--or);">consommables_setup.sql</a>.</li>
-              <li>Collez-le dans l’éditeur et cliquez sur <b>Run</b>.</li>
-              <li>Revenez ici et rechargez la page.</li>
+              <li>Ouvrez le fichier
+                <a href="https://raw.githubusercontent.com/Pierre-Louis05/top-carrelage-bailleul/main/sql/consommables_setup.sql"
+                   target="_blank" rel="noopener" style="color:var(--or);">consommables_setup.sql</a>
+                et copiez tout (Cmd+A puis Cmd+C).</li>
+              <li>Dans Supabase : menu <b>SQL Editor</b>, puis <b>New query</b>.</li>
+              <li>Collez et cliquez sur <b>Run</b>.</li>
+              <li>Rechargez cette page.</li>
             </ol>
           </div>
         </div>`
-      : `<div class="empty-state">
-          <div class="empty-state-icon">⚠️</div>
+      : `<div class="empty-state"><div class="empty-state-icon">⚠️</div>
           <p><b>Erreur de chargement.</b></p>
-          <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.6rem;">${echap(erreur.message)}</p>
-        </div>`;
+          <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.6rem;">${echap(erreur.message)}</p></div>`;
     return;
   }
 
   produits = rProd.data || [];
-  enlevements = rEnl.data || [];
   mouvements = rMvt.data || [];
+  reservations = rRes.data || [];
 
   majStats();
   rendre();
@@ -408,31 +415,45 @@ async function charger() {
     'Mis à jour ' + new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
 }
 
-/* ========== STATISTIQUES ========== */
-const enAttente = () => enlevements.filter(e => e.statut === 'en_attente' || e.statut === 'partiel');
+/* ===================== CALCULS ===================== */
+const resEnAttente = () => reservations.filter(r => r.statut === 'en_attente' || r.statut === 'partiel');
 
-function majStats() {
-  const att = enAttente();
-  const clients = new Set(att.map(e => (e.client_nom || '').toLowerCase().trim()));
-  const plusAncien = att.length ? Math.max(...att.map(e => joursDepuis(e.date_vente))) : 0;
-
-  document.getElementById('stat-attente').textContent = att.length;
-  document.getElementById('stat-clients').textContent = clients.size;
-  document.getElementById('stat-ancien').textContent = att.length ? plusAncien + ' j' : '—';
-  document.getElementById('stat-refs').textContent = produits.length;
-  document.getElementById('tc-attente').textContent = att.length;
+function etatDe(p) {
+  const reserve = resEnAttente()
+    .filter(r => r.consommable_id === p.id)
+    .reduce((s, r) => s + (Number(r.quantite_vendue) - Number(r.quantite_retiree)), 0);
+  const dispo = Number(p.stock_reel) - reserve;
+  const mini  = Number(p.stock_mini);
+  const etat  = dispo <= 0 ? 'rupture' : (dispo <= mini ? 'a_commander' : 'ok');
+  const manque = Math.max(mini - dispo, 0);
+  // Quantité conseillée : on arrondit au conditionnement de réappro
+  let conseille = manque;
+  const pack = Number(p.qte_reappro) || 0;
+  if (pack > 0) conseille = Math.max(Math.ceil(manque / pack), 1) * pack;
+  return { reserve, dispo, mini, etat, manque, conseille };
 }
 
-/* ========== RENDU ========== */
+function majStats() {
+  const etats = produits.map(etatDe);
+  document.getElementById('stat-ok').textContent        = etats.filter(e => e.etat === 'ok').length;
+  document.getElementById('stat-commander').textContent = etats.filter(e => e.etat === 'a_commander').length;
+  document.getElementById('stat-rupture').textContent   = etats.filter(e => e.etat === 'rupture').length;
+  document.getElementById('stat-reserve').textContent   = resEnAttente().length;
+  document.getElementById('tc-commander').textContent   = etats.filter(e => e.etat !== 'ok').length;
+  document.getElementById('tc-reserve').textContent     = resEnAttente().length;
+}
+
+/* ===================== RENDU ===================== */
 function rendre() {
   document.getElementById('topbarTitle').textContent = TITRES[ongletActuel];
   document.getElementById('toolbar').style.display = (ongletActuel === 'journal') ? 'none' : 'flex';
-  document.getElementById('btnRetour').style.display = (ongletActuel === 'attente' || ongletActuel === 'ecarts') ? '' : 'none';
+  document.getElementById('btnReserver').style.display = (ongletActuel === 'reserve' || ongletActuel === 'stock') ? '' : 'none';
 
-  if (ongletActuel === 'attente')  return rendreAttente();
-  if (ongletActuel === 'ecarts')   return rendreEcarts();
-  if (ongletActuel === 'journal')  return rendreJournal();
-  if (ongletActuel === 'produits') return rendreProduits();
+  if (ongletActuel === 'stock')     return rendreStock();
+  if (ongletActuel === 'commander') return rendreACommander();
+  if (ongletActuel === 'reserve')   return rendreReserve();
+  if (ongletActuel === 'journal')   return rendreJournal();
+  if (ongletActuel === 'produits')  return rendreProduits();
 }
 
 function filtres() {
@@ -441,110 +462,179 @@ function filtres() {
     cat: document.getElementById('filtreCategorie').value
   };
 }
-const produitDe = (id) => produits.find(p => p.id === id);
-
-function rendreAttente() {
+function produitsFiltres() {
   const { q, cat } = filtres();
-  const lignes = enAttente().filter(e => {
-    const p = produitDe(e.consommable_id);
-    if (cat && p?.categorie !== cat) return false;
+  return produits.filter(p => {
+    if (cat && p.categorie !== cat) return false;
     if (!q) return true;
-    return [e.client_nom, e.document_ref, p?.designation, p?.reference]
+    return [p.designation, p.reference, p.conditionnement, p.fournisseur]
       .some(v => (v || '').toLowerCase().includes(q));
   });
+}
+const produitDe = (id) => produits.find(p => p.id === id);
+
+function carteProduit(p) {
+  const e = etatDe(p);
+  const cible = Math.max(e.mini * 2, e.mini + 1, Number(p.stock_reel), 1);
+  const pct = Math.max(0, Math.min(100, (e.dispo / cible) * 100));
+  const jauge = e.etat === 'rupture' ? 'jauge-rupture' : (e.etat === 'a_commander' ? 'jauge-alerte' : 'jauge-ok');
+  return `
+  <div class="prod-card etat-${e.etat}">
+    <div class="prod-head">
+      <div>
+        <div class="prod-nom">${echap(p.designation)}</div>
+        <div class="prod-cond">${echap(p.conditionnement || '')}${p.reference ? ' · réf. ' + echap(p.reference) : ''}</div>
+      </div>
+      <span class="badge-etat badge-${e.etat}">${ETAT_LABEL[e.etat]}</span>
+    </div>
+
+    <div class="prod-chiffres">
+      <div class="chiffre">
+        <div class="chiffre-val">${nb(p.stock_reel)}</div>
+        <div class="chiffre-lbl">au dépôt</div>
+      </div>
+      <div class="chiffre ${e.reserve > 0 ? 'alerte' : ''}">
+        <div class="chiffre-val">${nb(e.reserve)}</div>
+        <div class="chiffre-lbl">réservé</div>
+      </div>
+      <div class="chiffre ${e.etat === 'rupture' ? 'rupture' : (e.etat === 'a_commander' ? 'alerte' : '')}">
+        <div class="chiffre-val">${nb(e.dispo)}</div>
+        <div class="chiffre-lbl">disponible</div>
+      </div>
+    </div>
+
+    <div class="jauge-stock"><span class="${jauge}" style="width:${pct}%"></span></div>
+    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.85rem;">
+      Seuil de sécurité : <b style="color:var(--text);">${nb(e.mini)} ${echap(p.unite)}${e.mini > 1 ? 's' : ''}</b>
+      ${e.manque > 0 ? ` · <span style="color:var(--attente);">il manque ${nb(e.manque)}</span>` : ''}
+    </div>
+
+    <div class="prod-actions">
+      <button class="btn-mini entree" onclick="modalMouvement('${p.id}','entree')">+ Réception</button>
+      <button class="btn-mini sortie" onclick="modalMouvement('${p.id}','sortie')">− Sortie</button>
+      <button class="btn-mini" onclick="modalMouvement('${p.id}','inventaire')">Recompter</button>
+    </div>
+  </div>`;
+}
+
+function rendreStock() {
+  const liste = produitsFiltres();
+  const c = document.getElementById('contenu');
+  if (!liste.length) {
+    c.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📭</div><p>Aucun produit. Ajoutez vos références dans l’onglet « Produits & seuils ».</p></div>`;
+    return;
+  }
+  const parCat = {};
+  liste.forEach(p => { (parCat[p.categorie] ||= []).push(p); });
+
+  c.innerHTML = Object.entries(parCat).map(([cat, prods]) => {
+    const alertes = prods.filter(p => etatDe(p).etat !== 'ok').length;
+    return `
+      <div class="cat-titre">
+        <span class="cat-pill cat-${cat}">${CAT_PLURIEL[cat]}</span>
+        <small>${prods.length} référence${prods.length > 1 ? 's' : ''}${alertes ? ` · ${alertes} à surveiller` : ''}</small>
+      </div>
+      <div class="stock-grid">${prods.map(carteProduit).join('')}</div>`;
+  }).join('');
+}
+
+function rendreACommander() {
+  const liste = produitsFiltres()
+    .map(p => ({ p, e: etatDe(p) }))
+    .filter(x => x.e.etat !== 'ok')
+    .sort((a, b) => (a.e.etat === 'rupture' ? -1 : 1) - (b.e.etat === 'rupture' ? -1 : 1) || b.e.manque - a.e.manque);
 
   const c = document.getElementById('contenu');
-  if (!lignes.length) {
+  if (!liste.length) {
     c.innerHTML = `<div class="empty-state"><div class="empty-state-icon">✅</div>
-      <p>${q || cat ? 'Aucun résultat pour cette recherche.' : 'Rien en attente : tout a été retiré.'}</p></div>`;
+      <p><b>Rien à commander.</b></p>
+      <p style="color:var(--text-muted); font-size:0.86rem; margin-top:0.5rem;">Toutes les références sont au-dessus de leur seuil de sécurité.</p></div>`;
     return;
   }
 
-  c.innerHTML = '<div class="enl-list">' + lignes.map(e => {
-    const p = produitDe(e.consommable_id);
-    const reste = Number(e.quantite_vendue) - Number(e.quantite_retiree);
-    const pct = Math.round((Number(e.quantite_retiree) / Number(e.quantite_vendue)) * 100);
-    const jours = joursDepuis(e.date_vente);
-    return `
-    <div class="enl-card ${jours > 30 ? 'retard' : ''}">
-      <div>
-        <div class="enl-client">${echap(e.client_nom)}${e.client_tel ? ` <a href="tel:${echap(e.client_tel)}" style="font-size:0.78rem; font-weight:400; color:var(--text-muted);">${echap(e.client_tel)}</a>` : ''}</div>
-        <div class="enl-produit">${echap(p?.designation || 'Produit supprimé')}${p?.conditionnement ? ` · ${echap(p.conditionnement)}` : ''}</div>
-        <div class="enl-meta">
-          <span>${echap(e.document_type)}${e.document_ref ? ` <b>${echap(e.document_ref)}</b>` : ''}</span>
-          <span>Vendu le <b>${dateCourte(e.date_vente)}</b></span>
-          <span${jours > 30 ? ' style="color:var(--attente);"' : ''}>${jours} jour${jours > 1 ? 's' : ''} d'attente</span>
-          ${e.note ? `<span>${echap(e.note)}</span>` : ''}
-        </div>
-        ${Number(e.quantite_retiree) > 0 ? `
-          <div style="display:flex; align-items:center; gap:0.6rem; margin-top:0.6rem;">
-            <div class="jauge"><span style="width:${pct}%"></span></div>
-            <span style="font-size:0.75rem; color:var(--text-muted);">${nombre(e.quantite_retiree)} / ${nombre(e.quantite_vendue)} retiré${Number(e.quantite_retiree) > 1 ? 's' : ''}</span>
-          </div>` : ''}
-      </div>
-      <div class="enl-right">
-        <div class="enl-reste">${nombre(reste)} <small>${echap(p?.unite || '')}${reste > 1 ? 's' : ''} à retirer</small></div>
-        <div class="enl-actions">
-          <button class="btn-action btn-confirmer" style="width:auto; padding:0.45rem 0.9rem; font-size:0.75rem;"
-                  onclick="retraitTotal('${e.id}')">Tout retirer</button>
-          <button class="btn-action btn-prendre" style="width:auto; padding:0.45rem 0.9rem; font-size:0.75rem;"
-                  onclick="demanderRetraitPartiel('${e.id}')">Partiel</button>
-          <button class="btn-action btn-archiver" style="width:auto; padding:0.45rem 0.9rem; font-size:0.75rem;"
-                  onclick="annulerEnlevement('${e.id}')">Annuler</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('') + '</div>';
-}
-
-function rendreEcarts() {
-  const { q, cat } = filtres();
-  const att = enAttente();
-  const retours = {};
-  mouvements.filter(m => m.type === 'retour').forEach(m => {
-    retours[m.consommable_id] = (retours[m.consommable_id] || 0) + Number(m.quantite);
-  });
-
-  const lignes = produits.filter(p => {
-    if (cat && p.categorie !== cat) return false;
-    if (!q) return true;
-    return [p.designation, p.reference, p.conditionnement].some(v => (v || '').toLowerCase().includes(q));
-  }).map(p => {
-    const attente = att.filter(e => e.consommable_id === p.id)
-      .reduce((s, e) => s + (Number(e.quantite_vendue) - Number(e.quantite_retiree)), 0);
-    const ret = retours[p.id] || 0;
-    return { p, attente, ret, physique: Number(p.stock_logiciel) + attente + ret };
-  });
-
-  const c = document.getElementById('contenu');
-  if (!lignes.length) { c.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📭</div><p>Aucun produit.</p></div>`; return; }
-
   c.innerHTML = `
-    <div class="rappel" style="margin-bottom:1.2rem;">
-      <b>Comment lire ce tableau.</b> Le logiciel décompte la marchandise dès la facturation, alors que le client
-      vient la chercher plus tard. Le stock réel du dépôt est donc plus élevé que celui du logiciel :<br>
-      <b>Stock physique = stock logiciel + en attente de retrait + retours clients</b>
+    <div class="rappel">
+      <b>Votre liste de commande.</b> Apparaît ici toute référence dont le disponible
+      (stock au dépôt moins ce qui est déjà vendu) est retombé au niveau du seuil de sécurité.
+      La quantité conseillée est arrondie au conditionnement de commande.
     </div>
     <div class="table-wrap"><table class="tbl">
       <thead><tr>
-        <th>Catégorie</th><th>Produit</th>
-        <th style="text-align:right;">Stock logiciel</th>
-        <th style="text-align:right;">En attente</th>
-        <th style="text-align:right;">Retours</th>
-        <th style="text-align:right;">Stock physique estimé</th>
+        <th>État</th><th>Produit</th><th>Fournisseur</th>
+        <th style="text-align:right;">Dispo</th>
+        <th style="text-align:right;">Seuil</th>
+        <th style="text-align:right;">Manque</th>
+        <th style="text-align:right;">À commander</th>
       </tr></thead>
-      <tbody>${lignes.map(({ p, attente, ret, physique }) => `
+      <tbody>${liste.map(({ p, e }) => `
         <tr>
-          <td><span class="cat-pill cat-${p.categorie}">${CAT_LABEL[p.categorie]}</span></td>
-          <td><b>${echap(p.designation)}</b>${p.conditionnement ? `<br><span style="font-size:0.76rem; color:var(--text-muted);">${echap(p.conditionnement)}</span>` : ''}</td>
-          <td class="num">
-            <input class="stock-input" type="number" step="any" value="${Number(p.stock_logiciel)}"
-                   onchange="majStockLogiciel('${p.id}', this.value)" title="Recopiez ici le stock affiché par votre logiciel" />
-          </td>
-          <td class="num ${attente > 0 ? 'ecart-plus' : 'ecart-zero'}">${attente > 0 ? '+' + nombre(attente) : '—'}</td>
-          <td class="num ${ret > 0 ? 'ecart-plus' : 'ecart-zero'}">${ret > 0 ? '+' + nombre(ret) : '—'}</td>
-          <td class="num" style="font-size:1rem; font-weight:700;">${nombre(physique)} <span style="font-size:0.74rem; color:var(--text-muted); font-weight:400;">${echap(p.unite)}${physique > 1 ? 's' : ''}</span></td>
+          <td><span class="badge-etat badge-${e.etat}">${ETAT_LABEL[e.etat]}</span></td>
+          <td><b>${echap(p.designation)}</b><br><span style="font-size:0.76rem; color:var(--text-muted);">${echap(p.conditionnement || '')}</span></td>
+          <td style="font-size:0.82rem; color:var(--text-muted);">${echap(p.fournisseur || '—')}</td>
+          <td class="num" style="${e.etat === 'rupture' ? 'color:#f08b8b;font-weight:700;' : ''}">${nb(e.dispo)}</td>
+          <td class="num" style="color:var(--text-muted);">${nb(e.mini)}</td>
+          <td class="num" style="color:var(--attente);">${nb(e.manque)}</td>
+          <td class="num" style="font-size:1.05rem; font-weight:700; color:var(--or);">${nb(e.conseille)} <span style="font-size:0.72rem; color:var(--text-muted); font-weight:400;">${echap(p.unite)}${e.conseille > 1 ? 's' : ''}</span></td>
         </tr>`).join('')}
+      </tbody>
+    </table></div>
+    <div style="margin-top:1.2rem; display:flex; gap:0.7rem; flex-wrap:wrap;">
+      <button class="btn-ghost" onclick="window.print()">Imprimer la liste</button>
+      <button class="btn-ghost" onclick="copierListe()">Copier la liste</button>
+    </div>`;
+}
+
+function copierListe() {
+  const lignes = produits.map(p => ({ p, e: etatDe(p) })).filter(x => x.e.etat !== 'ok');
+  const txt = 'COMMANDE CONSOMMABLES — ' + new Date().toLocaleDateString('fr-FR') + '\n\n' +
+    lignes.map(({ p, e }) =>
+      `${nb(e.conseille)} ${p.unite}${e.conseille > 1 ? 's' : ''} — ${p.designation}${p.conditionnement ? ' (' + p.conditionnement + ')' : ''}${p.fournisseur ? ' [' + p.fournisseur + ']' : ''}`
+    ).join('\n');
+  navigator.clipboard.writeText(txt)
+    .then(() => toast('Liste copiée'))
+    .catch(() => toast('Copie impossible', 'error'));
+}
+
+function rendreReserve() {
+  const { q, cat } = filtres();
+  const liste = resEnAttente().filter(r => {
+    const p = produitDe(r.consommable_id);
+    if (cat && p?.categorie !== cat) return false;
+    if (!q) return true;
+    return [r.client_nom, r.document_ref, p?.designation].some(v => (v || '').toLowerCase().includes(q));
+  });
+
+  const c = document.getElementById('contenu');
+  if (!liste.length) {
+    c.innerHTML = `<div class="empty-state"><div class="empty-state-icon">✅</div>
+      <p>Rien en attente : tout ce qui a été vendu est parti.</p></div>`;
+    return;
+  }
+
+  c.innerHTML = `
+    <div class="rappel">
+      Marchandise <b>vendue mais pas encore emportée</b>. Elle est encore au dépôt,
+      mais elle n’est plus disponible à la vente. Le stock ne baissera qu’au moment du retrait.
+    </div>
+    <div class="table-wrap"><table class="tbl">
+      <thead><tr><th>Client</th><th>Produit</th><th>Document</th><th style="text-align:right;">Reste à retirer</th><th>Attente</th><th></th></tr></thead>
+      <tbody>${liste.map(r => {
+        const p = produitDe(r.consommable_id);
+        const reste = Number(r.quantite_vendue) - Number(r.quantite_retiree);
+        const j = joursDepuis(r.date_vente);
+        return `<tr>
+          <td><b>${echap(r.client_nom)}</b>${r.client_tel ? `<br><a href="tel:${echap(r.client_tel)}" style="font-size:0.77rem; color:var(--text-muted);">${echap(r.client_tel)}</a>` : ''}</td>
+          <td>${echap(p?.designation || '—')}<br><span style="font-size:0.76rem; color:var(--text-muted);">${echap(p?.conditionnement || '')}</span></td>
+          <td style="font-size:0.8rem;">${echap(r.document_type)}${r.document_ref ? '<br><b>' + echap(r.document_ref) + '</b>' : ''}</td>
+          <td class="num" style="font-size:1.02rem; font-weight:700;">${nb(reste)}${Number(r.quantite_retiree) > 0 ? `<br><span style="font-size:0.72rem; color:var(--text-muted); font-weight:400;">sur ${nb(r.quantite_vendue)}</span>` : ''}</td>
+          <td style="font-size:0.8rem; ${j > 30 ? 'color:var(--attente);' : 'color:var(--text-muted);'}">${dateCourte(r.date_vente)}<br>${j} j</td>
+          <td style="text-align:right; white-space:nowrap;">
+            <button class="btn-mini" style="min-width:auto; padding:0.4rem 0.7rem;" onclick="retirerTout('${r.id}')">Retiré</button>
+            <button class="btn-mini" style="min-width:auto; padding:0.4rem 0.7rem;" onclick="modalRetraitPartiel('${r.id}')">Partiel</button>
+            <button class="btn-mini" style="min-width:auto; padding:0.4rem 0.7rem;" onclick="annulerReservation('${r.id}')">Annuler</button>
+          </td>
+        </tr>`;
+      }).join('')}
       </tbody>
     </table></div>`;
 }
@@ -555,268 +645,373 @@ function rendreJournal() {
     c.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📭</div><p>Aucun mouvement enregistré.</p></div>`;
     return;
   }
-  const ico = { retrait:['mvt-retrait','↓'], retour:['mvt-retour','↑'], ajustement:['mvt-ajust','=' ] };
+  const deco = {
+    entree:     ['mvt-entree', '↓', 'Réception'],
+    sortie:     ['mvt-sortie', '↑', 'Sortie'],
+    retour:     ['mvt-retour', '↩', 'Retour client'],
+    inventaire: ['mvt-inventaire', '=', 'Inventaire']
+  };
   c.innerHTML = '<div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:0.4rem 1.3rem;">' +
     mouvements.map(m => {
       const p = produitDe(m.consommable_id);
-      const [cls, sig] = ico[m.type] || ico.ajustement;
-      const libelle = { retrait:'Retrait', retour:'Retour client', ajustement:'Ajustement' }[m.type];
+      const [cls, sig, lib] = deco[m.type] || deco.inventaire;
+      const q = Number(m.quantite);
       return `<div class="mvt-row">
         <div class="mvt-ico ${cls}">${sig}</div>
         <div class="mvt-txt">
-          <b>${libelle} · ${nombre(m.quantite)} ${echap(p?.unite || '')}${Number(m.quantite) > 1 ? 's' : ''}</b>
+          <b>${lib} · ${q > 0 ? '+' : ''}${nb(q)} ${echap(p?.unite || '')}${Math.abs(q) > 1 ? 's' : ''}</b>
           — ${echap(p?.designation || 'Produit supprimé')}
-          ${m.client_nom ? `<br><span style="color:var(--text-muted); font-size:0.79rem;">${echap(m.client_nom)}${m.note ? ' · ' + echap(m.note) : ''}</span>` : (m.note ? `<br><span style="color:var(--text-muted); font-size:0.79rem;">${echap(m.note)}</span>` : '')}
+          ${(m.client_nom || m.note || m.document_ref) ? `<br><span style="color:var(--text-muted); font-size:0.79rem;">${[m.client_nom, m.document_ref, m.note].filter(Boolean).map(echap).join(' · ')}</span>` : ''}
         </div>
-        <div class="mvt-date">${new Date(m.created_at).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}${m.par_nom ? '<br>' + echap(m.par_nom) : ''}</div>
+        <div class="mvt-date">
+          ${new Date(m.created_at).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}
+          ${m.stock_apres != null ? `<br><span style="color:var(--text);">stock : ${nb(m.stock_apres)}</span>` : ''}
+          ${m.par_nom ? '<br>' + echap(m.par_nom) : ''}
+        </div>
       </div>`;
     }).join('') + '</div>';
 }
 
 function rendreProduits() {
-  const { q, cat } = filtres();
-  const lignes = produits.filter(p => {
-    if (cat && p.categorie !== cat) return false;
-    if (!q) return true;
-    return [p.designation, p.reference, p.conditionnement].some(v => (v || '').toLowerCase().includes(q));
-  });
-
+  const liste = produitsFiltres();
   document.getElementById('contenu').innerHTML = `
+    <div class="rappel">
+      Le <b>seuil de sécurité</b> déclenche l’alerte : dès que le disponible descend à ce niveau,
+      la référence bascule dans l’onglet « À commander ».
+      La <b>quantité de réappro</b> est votre conditionnement de commande habituel (palette, carton…) :
+      la quantité conseillée y sera arrondie.
+    </div>
     <div style="margin-bottom:1rem;">
-      <button class="btn-action btn-confirmer" style="width:auto; padding:0.55rem 1.1rem; font-size:0.78rem;" onclick="nouveauProduit()">+ Ajouter un produit</button>
+      <button class="btn-action btn-confirmer" style="width:auto; padding:0.55rem 1.1rem; font-size:0.78rem;" onclick="modalNouveauProduit()">+ Ajouter un produit</button>
     </div>
     <div class="table-wrap"><table class="tbl">
-      <thead><tr><th>Catégorie</th><th>Désignation</th><th>Référence</th><th>Conditionnement</th><th>Unité</th><th></th></tr></thead>
-      <tbody>${lignes.map(p => `
+      <thead><tr>
+        <th>Catégorie</th><th>Désignation</th><th>Conditionnement</th><th>Fournisseur</th>
+        <th style="text-align:right;">Seuil</th><th style="text-align:right;">Réappro</th><th></th>
+      </tr></thead>
+      <tbody>${liste.map(p => `
         <tr>
           <td><span class="cat-pill cat-${p.categorie}">${CAT_LABEL[p.categorie]}</span></td>
-          <td><b>${echap(p.designation)}</b></td>
-          <td>${echap(p.reference || '—')}</td>
-          <td>${echap(p.conditionnement || '—')}</td>
-          <td>${echap(p.unite)}</td>
-          <td style="text-align:right;">
-            <button class="btn-ghost" style="padding:0.35rem 0.8rem; font-size:0.75rem;" onclick="retirerProduit('${p.id}')">Retirer</button>
+          <td><b>${echap(p.designation)}</b>${p.reference ? `<br><span style="font-size:0.75rem; color:var(--text-muted);">réf. ${echap(p.reference)}</span>` : ''}</td>
+          <td style="font-size:0.82rem;">${echap(p.conditionnement || '—')}</td>
+          <td style="font-size:0.82rem; color:var(--text-muted);">${echap(p.fournisseur || '—')}</td>
+          <td class="num"><input class="champ-mini" type="number" step="any" min="0" value="${Number(p.stock_mini)}" onchange="majChamp('${p.id}','stock_mini',this.value)" /></td>
+          <td class="num"><input class="champ-mini" type="number" step="any" min="0" value="${p.qte_reappro ?? ''}" placeholder="—" onchange="majChamp('${p.id}','qte_reappro',this.value)" /></td>
+          <td style="text-align:right; white-space:nowrap;">
+            <button class="btn-mini" style="min-width:auto; padding:0.4rem 0.7rem;" onclick="modalEditerProduit('${p.id}')">Modifier</button>
+            <button class="btn-mini" style="min-width:auto; padding:0.4rem 0.7rem;" onclick="retirerProduit('${p.id}')">Retirer</button>
           </td>
         </tr>`).join('')}
       </tbody>
     </table></div>`;
 }
 
-/* ========== ACTIONS : ENLÈVEMENTS ========== */
-function optionsProduits(selId) {
-  const parCat = {};
-  produits.forEach(p => { (parCat[p.categorie] ||= []).push(p); });
-  return Object.entries(parCat).map(([cat, liste]) =>
-    `<optgroup label="${CAT_LABEL[cat]}">` +
-    liste.map(p => `<option value="${p.id}" ${p.id === selId ? 'selected' : ''}>${echap(p.designation)}${p.conditionnement ? ' — ' + echap(p.conditionnement) : ''}</option>`).join('') +
-    `</optgroup>`).join('');
-}
-
-document.getElementById('btnNouveau').addEventListener('click', () => {
-  if (!produits.length) { toast('Ajoutez d\'abord un produit dans l\'onglet Produits', 'error'); return; }
-  ouvrirModal('Nouvel enlèvement en attente', `
-    <div class="rappel">Enregistrez ici ce qui vient d'être <b>facturé mais pas encore emporté</b> par le client.
-    Vous pourrez marquer le retrait quand il viendra le chercher.</div>
-    <div class="form-2col">
-      <div class="form-group"><label>Client *</label><input id="f-client" placeholder="Nom du client" /></div>
-      <div class="form-group"><label>Téléphone</label><input id="f-tel" placeholder="Facultatif" /></div>
-    </div>
-    <div class="form-group"><label>Produit *</label><select id="f-produit">${optionsProduits()}</select></div>
-    <div class="form-2col">
-      <div class="form-group"><label>Quantité *</label><input id="f-qte" type="number" step="any" min="0.01" placeholder="Ex : 5" /></div>
-      <div class="form-group"><label>Date de vente</label><input id="f-date" type="date" value="${new Date().toISOString().slice(0,10)}" /></div>
-    </div>
-    <div class="form-2col">
-      <div class="form-group"><label>Document</label><select id="f-doctype">
-        <option value="facture">Facture</option><option value="commande">Commande</option><option value="devis">Devis</option>
-      </select></div>
-      <div class="form-group"><label>N° du document</label><input id="f-docref" placeholder="Ex : FA-2026-0142" /></div>
-    </div>
-    <div class="form-group"><label>Note</label><input id="f-note" placeholder="Facultatif" /></div>
-  `, [
-    { texte:'Annuler', action: fermerModal },
-    { texte:'Enregistrer', classe:'btn-action btn-confirmer', action: creerEnlevement }
-  ]);
-});
-
-async function creerEnlevement() {
-  const client = document.getElementById('f-client').value.trim();
-  const qte = parseFloat(document.getElementById('f-qte').value);
-  if (!client) { toast('Le nom du client est obligatoire', 'error'); return; }
-  if (!(qte > 0)) { toast('Indiquez une quantité valide', 'error'); return; }
-
-  const { error } = await db.from('enlevements').insert({
-    consommable_id: document.getElementById('f-produit').value,
-    client_nom: client,
-    client_tel: document.getElementById('f-tel').value.trim() || null,
-    document_type: document.getElementById('f-doctype').value,
-    document_ref: document.getElementById('f-docref').value.trim() || null,
-    quantite_vendue: qte,
-    date_vente: document.getElementById('f-date').value || new Date().toISOString().slice(0,10),
-    note: document.getElementById('f-note').value.trim() || null,
-    cree_par: utilisateur.id,
-    cree_par_nom: profil ? profil.prenom + ' ' + profil.nom : utilisateur.email
-  });
-
-  if (error) { erreurLisible(error, "Enregistrement impossible"); return; }
-  fermerModal();
-  toast('Enlèvement enregistré');
-  await charger();
-}
-
-async function enregistrerRetrait(id, quantite) {
-  const { data: e, error: err1 } = await db.from('enlevements').select('*').eq('id', id).single();
-  if (err1 || !e) { toast('Enlèvement introuvable', 'error'); return; }
-
-  const reste = Number(e.quantite_vendue) - Number(e.quantite_retiree);
-  if (quantite > reste + 0.0001) { toast(`Il ne reste que ${nombre(reste)} à retirer`, 'error'); return; }
-
-  const nouvelle = Number(e.quantite_retiree) + quantite;
-  const { error: err2 } = await db.from('enlevements').update({ quantite_retiree: nouvelle }).eq('id', id);
-  if (err2) { erreurLisible(err2, "Retrait impossible"); return; }
-
-  await db.from('mouvements_consommables').insert({
-    enlevement_id: id,
-    consommable_id: e.consommable_id,
-    type: 'retrait',
-    quantite,
-    client_nom: e.client_nom,
+/* ===================== MOUVEMENTS ===================== */
+async function enregistrerMouvement({ consommable_id, type, quantite, client_nom, document_ref, note }) {
+  const { error } = await db.from('mouvements_consommables').insert({
+    consommable_id, type, quantite,
+    client_nom: client_nom || null,
+    document_ref: document_ref || null,
+    note: note || null,
     par: utilisateur.id,
     par_nom: profil ? profil.prenom + ' ' + profil.nom : utilisateur.email
   });
-
-  toast(nouvelle >= Number(e.quantite_vendue) ? 'Enlèvement soldé' : 'Retrait partiel enregistré');
-  await charger();
+  if (error) { erreurLisible(error, 'Mouvement non enregistré'); return false; }
+  return true;
 }
 
-async function retraitTotal(id) {
-  const e = enlevements.find(x => x.id === id);
-  if (!e) return;
-  await enregistrerRetrait(id, Number(e.quantite_vendue) - Number(e.quantite_retiree));
-}
+function modalMouvement(produitId, type) {
+  const p = produitDe(produitId);
+  if (!p) return;
+  const e = etatDe(p);
+  const titres = { entree:'Réception de marchandise', sortie:'Sortie de stock', inventaire:'Recomptage du stock' };
 
-function demanderRetraitPartiel(id) {
-  const e = enlevements.find(x => x.id === id);
-  if (!e) return;
-  const p = produitDe(e.consommable_id);
-  const reste = Number(e.quantite_vendue) - Number(e.quantite_retiree);
-  ouvrirModal('Retrait partiel', `
-    <div class="rappel"><b>${echap(e.client_nom)}</b><br>${echap(p?.designation || '')}<br>
-      Reste à retirer : <b>${nombre(reste)} ${echap(p?.unite || '')}${reste > 1 ? 's' : ''}</b></div>
-    <div class="form-group">
-      <label>Quantité retirée aujourd'hui *</label>
-      <input id="f-partiel" type="number" step="any" min="0.01" max="${reste}" value="${reste}" />
-    </div>
-  `, [
+  const corps = type === 'inventaire'
+    ? `<div class="rappel"><b>${echap(p.designation)}</b><br>
+         Stock actuellement enregistré : <b>${nb(p.stock_reel)} ${echap(p.unite)}${Number(p.stock_reel) > 1 ? 's' : ''}</b></div>
+       <div class="form-group">
+         <label>Quantité réellement comptée *</label>
+         <input id="m-qte" type="number" step="any" min="0" value="${Number(p.stock_reel)}" />
+       </div>
+       <div class="form-group"><label>Note</label><input id="m-note" placeholder="Ex : inventaire mensuel, casse constatée" /></div>`
+    : `<div class="rappel"><b>${echap(p.designation)}</b> — ${echap(p.conditionnement || '')}<br>
+         Au dépôt : <b>${nb(p.stock_reel)}</b> · Disponible : <b>${nb(e.dispo)}</b></div>
+       <div class="form-group">
+         <label>Quantité ${type === 'entree' ? 'reçue' : 'sortie'} *</label>
+         <input id="m-qte" type="number" step="any" min="0.01" placeholder="Ex : 48" />
+       </div>
+       ${type === 'sortie'
+         ? `<div class="form-2col">
+              <div class="form-group"><label>Client</label><input id="m-client" placeholder="Facultatif" /></div>
+              <div class="form-group"><label>N° document</label><input id="m-doc" placeholder="Facultatif" /></div>
+            </div>`
+         : `<div class="form-group"><label>N° bon de livraison</label><input id="m-doc" placeholder="Facultatif" /></div>`}
+       <div class="form-group"><label>Note</label><input id="m-note" placeholder="Facultatif" /></div>`;
+
+  ouvrirModal(titres[type], corps, [
     { texte:'Annuler', action: fermerModal },
-    { texte:'Valider le retrait', classe:'btn-action btn-confirmer', action: async () => {
-        const q = parseFloat(document.getElementById('f-partiel').value);
-        if (!(q > 0)) { toast('Quantité invalide', 'error'); return; }
+    { texte:'Valider', classe:'btn-action btn-confirmer', action: async () => {
+        const saisie = parseFloat(document.getElementById('m-qte').value);
+        if (isNaN(saisie) || saisie < 0) { toast('Quantité invalide', 'error'); return; }
+
+        let quantite;
+        if (type === 'inventaire') {
+          quantite = saisie - Number(p.stock_reel);
+          if (quantite === 0) { toast('Le stock est déjà à cette valeur'); fermerModal(); return; }
+        } else {
+          if (saisie <= 0) { toast('Quantité invalide', 'error'); return; }
+          quantite = type === 'entree' ? saisie : -saisie;
+        }
+
+        const ok = await enregistrerMouvement({
+          consommable_id: produitId, type, quantite,
+          client_nom: document.getElementById('m-client')?.value.trim(),
+          document_ref: document.getElementById('m-doc')?.value.trim(),
+          note: document.getElementById('m-note').value.trim()
+        });
+        if (!ok) return;
         fermerModal();
-        await enregistrerRetrait(id, q);
+        toast(type === 'entree' ? 'Réception enregistrée' : (type === 'sortie' ? 'Sortie enregistrée' : 'Stock recompté'));
+        await charger();
       } }
   ]);
 }
 
-async function annulerEnlevement(id) {
-  const e = enlevements.find(x => x.id === id);
-  if (!e) return;
-  if (!confirm(`Annuler l'enlèvement de ${echap(e.client_nom)} ?\n\nLa ligne sortira de la liste d'attente. À utiliser si la vente a été annulée ou saisie par erreur.`)) return;
-  const { error } = await db.from('enlevements').update({ statut: 'annule' }).eq('id', id);
-  if (error) { erreurLisible(error, "Annulation impossible"); return; }
-  toast('Enlèvement annulé');
-  await charger();
-}
-
-/* ========== ACTIONS : RETOURS ========== */
-document.getElementById('btnRetour').addEventListener('click', () => {
-  if (!produits.length) { toast('Ajoutez d\'abord un produit', 'error'); return; }
-  ouvrirModal('Retour client', `
-    <div class="rappel">Un client rapporte de la marchandise ? Enregistrez-la ici : elle revient
-    physiquement au dépôt alors que le logiciel ne le sait pas forcément.</div>
-    <div class="form-group"><label>Produit *</label><select id="r-produit">${optionsProduits()}</select></div>
-    <div class="form-2col">
-      <div class="form-group"><label>Quantité *</label><input id="r-qte" type="number" step="any" min="0.01" /></div>
-      <div class="form-group"><label>Client</label><input id="r-client" placeholder="Facultatif" /></div>
-    </div>
-    <div class="form-group"><label>Note</label><input id="r-note" placeholder="Ex : sacs non utilisés, reprise chantier" /></div>
+/* Inventaire général : on recompte tout d'un coup */
+document.getElementById('btnInventaire').addEventListener('click', () => {
+  if (!produits.length) { toast('Ajoutez d’abord des produits', 'error'); return; }
+  const liste = produitsFiltres();
+  ouvrirModal('Inventaire du dépôt', `
+    <div class="rappel">Saisissez ce que vous comptez réellement en rayon.
+    Les écarts seront enregistrés dans le journal. Laissez vide pour ne pas toucher à une ligne.</div>
+    ${liste.map(p => `
+      <div class="form-group" style="display:grid; grid-template-columns:1fr 100px; gap:0.8rem; align-items:center; margin-bottom:0.7rem;">
+        <div>
+          <div style="font-size:0.88rem; color:var(--text); font-weight:600;">${echap(p.designation)}</div>
+          <div style="font-size:0.73rem; color:var(--text-muted);">enregistré : ${nb(p.stock_reel)} ${echap(p.unite)}${Number(p.stock_reel) > 1 ? 's' : ''}</div>
+        </div>
+        <input class="inv-champ" data-id="${p.id}" data-actuel="${Number(p.stock_reel)}" type="number" step="any" min="0" placeholder="${Number(p.stock_reel)}" style="text-align:right;" />
+      </div>`).join('')}
   `, [
     { texte:'Annuler', action: fermerModal },
-    { texte:'Enregistrer le retour', classe:'btn-action btn-confirmer', action: async () => {
-        const q = parseFloat(document.getElementById('r-qte').value);
-        if (!(q > 0)) { toast('Quantité invalide', 'error'); return; }
-        const { error } = await db.from('mouvements_consommables').insert({
-          consommable_id: document.getElementById('r-produit').value,
-          type: 'retour',
-          quantite: q,
-          client_nom: document.getElementById('r-client').value.trim() || null,
-          note: document.getElementById('r-note').value.trim() || null,
-          par: utilisateur.id,
-          par_nom: profil ? profil.prenom + ' ' + profil.nom : utilisateur.email
-        });
-        if (error) { erreurLisible(error, "Retour non enregistré"); return; }
+    { texte:'Enregistrer l’inventaire', classe:'btn-action btn-confirmer', action: async () => {
+        const champs = [...document.querySelectorAll('.inv-champ')].filter(i => i.value !== '');
+        if (!champs.length) { toast('Aucune quantité saisie'); return; }
+        let n = 0;
+        for (const champ of champs) {
+          const compte = parseFloat(champ.value);
+          const actuel = parseFloat(champ.dataset.actuel);
+          if (isNaN(compte) || compte === actuel) continue;
+          const ok = await enregistrerMouvement({
+            consommable_id: champ.dataset.id, type:'inventaire',
+            quantite: compte - actuel, note:'Inventaire'
+          });
+          if (ok) n++;
+        }
         fermerModal();
-        toast('Retour enregistré');
+        toast(n ? `${n} écart${n > 1 ? 's' : ''} enregistré${n > 1 ? 's' : ''}` : 'Aucun écart constaté');
         await charger();
       } }
   ]);
 });
 
-/* ========== ACTIONS : PRODUITS ========== */
-function nouveauProduit() {
-  ouvrirModal('Ajouter un consommable', `
-    <div class="form-group"><label>Catégorie *</label><select id="p-cat">
-      <option value="colle">Colle</option><option value="joint">Joint</option>
-      <option value="croisillon">Croisillon</option><option value="plot">Plot</option>
-      <option value="autre">Autre</option>
-    </select></div>
-    <div class="form-group"><label>Désignation *</label><input id="p-desi" placeholder="Ex : Colle souple grands formats" /></div>
+/* ===================== RÉSERVATIONS ===================== */
+function optionsProduits() {
+  const parCat = {};
+  produits.forEach(p => { (parCat[p.categorie] ||= []).push(p); });
+  return Object.entries(parCat).map(([cat, l]) =>
+    `<optgroup label="${CAT_PLURIEL[cat]}">` +
+    l.map(p => `<option value="${p.id}">${echap(p.designation)}${p.conditionnement ? ' — ' + echap(p.conditionnement) : ''}</option>`).join('') +
+    `</optgroup>`).join('');
+}
+
+document.getElementById('btnReserver').addEventListener('click', () => {
+  if (!produits.length) { toast('Ajoutez d’abord des produits', 'error'); return; }
+  ouvrirModal('Vente à retirer plus tard', `
+    <div class="rappel">Le client a payé mais n’emporte pas tout de suite ?
+    Enregistrez-le ici : la marchandise reste au dépôt mais sort du <b>disponible</b>.
+    Le stock ne baissera qu’au moment du retrait.</div>
     <div class="form-2col">
-      <div class="form-group"><label>Référence</label><input id="p-ref" placeholder="Facultatif" /></div>
-      <div class="form-group"><label>Conditionnement</label><input id="p-cond" placeholder="Ex : sac 25 kg" /></div>
+      <div class="form-group"><label>Client *</label><input id="v-client" placeholder="Nom du client" /></div>
+      <div class="form-group"><label>Téléphone</label><input id="v-tel" placeholder="Facultatif" /></div>
     </div>
-    <div class="form-group"><label>Unité de comptage *</label><input id="p-unite" value="sac" placeholder="sac, seau, sachet, pièce…" /></div>
+    <div class="form-group"><label>Produit *</label><select id="v-produit">${optionsProduits()}</select></div>
+    <div class="form-2col">
+      <div class="form-group"><label>Quantité *</label><input id="v-qte" type="number" step="any" min="0.01" /></div>
+      <div class="form-group"><label>Date de vente</label><input id="v-date" type="date" value="${new Date().toISOString().slice(0,10)}" /></div>
+    </div>
+    <div class="form-2col">
+      <div class="form-group"><label>Document</label><select id="v-doctype">
+        <option value="facture">Facture</option><option value="commande">Commande</option><option value="devis">Devis</option>
+      </select></div>
+      <div class="form-group"><label>N° du document</label><input id="v-docref" placeholder="Facultatif" /></div>
+    </div>
   `, [
     { texte:'Annuler', action: fermerModal },
-    { texte:'Ajouter', classe:'btn-action btn-confirmer', action: async () => {
-        const desi = document.getElementById('p-desi').value.trim();
-        if (!desi) { toast('La désignation est obligatoire', 'error'); return; }
-        const { error } = await db.from('consommables').insert({
-          categorie: document.getElementById('p-cat').value,
-          designation: desi,
-          reference: document.getElementById('p-ref').value.trim() || null,
-          conditionnement: document.getElementById('p-cond').value.trim() || null,
-          unite: document.getElementById('p-unite').value.trim() || 'unité'
+    { texte:'Enregistrer', classe:'btn-action btn-confirmer', action: async () => {
+        const client = document.getElementById('v-client').value.trim();
+        const qte = parseFloat(document.getElementById('v-qte').value);
+        if (!client) { toast('Le nom du client est obligatoire', 'error'); return; }
+        if (!(qte > 0)) { toast('Quantité invalide', 'error'); return; }
+        const { error } = await db.from('reservations_consommables').insert({
+          consommable_id: document.getElementById('v-produit').value,
+          client_nom: client,
+          client_tel: document.getElementById('v-tel').value.trim() || null,
+          document_type: document.getElementById('v-doctype').value,
+          document_ref: document.getElementById('v-docref').value.trim() || null,
+          quantite_vendue: qte,
+          date_vente: document.getElementById('v-date').value || new Date().toISOString().slice(0,10),
+          cree_par: utilisateur.id,
+          cree_par_nom: profil ? profil.prenom + ' ' + profil.nom : utilisateur.email
         });
-        if (error) { erreurLisible(error, "Ajout impossible"); return; }
+        if (error) { erreurLisible(error, 'Enregistrement impossible'); return; }
         fermerModal();
-        toast('Produit ajouté');
+        toast('Vente enregistrée, en attente de retrait');
         await charger();
+      } }
+  ]);
+});
+
+// Le retrait fait sortir la marchandise du stock
+async function effectuerRetrait(id, quantite) {
+  const { data: r, error: e1 } = await db.from('reservations_consommables').select('*').eq('id', id).single();
+  if (e1 || !r) { toast('Réservation introuvable', 'error'); return; }
+
+  const reste = Number(r.quantite_vendue) - Number(r.quantite_retiree);
+  if (quantite > reste + 0.0001) { toast(`Il ne reste que ${nb(reste)} à retirer`, 'error'); return; }
+
+  const ok = await enregistrerMouvement({
+    consommable_id: r.consommable_id, type:'sortie', quantite: -quantite,
+    client_nom: r.client_nom, document_ref: r.document_ref, note:'Retrait client'
+  });
+  if (!ok) return;
+
+  const { error: e2 } = await db.from('reservations_consommables')
+    .update({ quantite_retiree: Number(r.quantite_retiree) + quantite }).eq('id', id);
+  if (e2) { erreurLisible(e2, 'Mise à jour impossible'); return; }
+
+  toast(Number(r.quantite_retiree) + quantite >= Number(r.quantite_vendue) ? 'Retrait soldé' : 'Retrait partiel enregistré');
+  await charger();
+}
+
+async function retirerTout(id) {
+  const r = reservations.find(x => x.id === id);
+  if (!r) return;
+  await effectuerRetrait(id, Number(r.quantite_vendue) - Number(r.quantite_retiree));
+}
+
+function modalRetraitPartiel(id) {
+  const r = reservations.find(x => x.id === id);
+  if (!r) return;
+  const p = produitDe(r.consommable_id);
+  const reste = Number(r.quantite_vendue) - Number(r.quantite_retiree);
+  ouvrirModal('Retrait partiel', `
+    <div class="rappel"><b>${echap(r.client_nom)}</b><br>${echap(p?.designation || '')}<br>
+      Reste à retirer : <b>${pluriel(reste, p?.unite || 'unité')}</b></div>
+    <div class="form-group"><label>Quantité retirée aujourd’hui *</label>
+      <input id="rp-qte" type="number" step="any" min="0.01" max="${reste}" value="${reste}" /></div>
+  `, [
+    { texte:'Annuler', action: fermerModal },
+    { texte:'Valider', classe:'btn-action btn-confirmer', action: async () => {
+        const q = parseFloat(document.getElementById('rp-qte').value);
+        if (!(q > 0)) { toast('Quantité invalide', 'error'); return; }
+        fermerModal();
+        await effectuerRetrait(id, q);
       } }
   ]);
 }
 
-async function majStockLogiciel(id, valeur) {
-  const v = parseFloat(valeur);
-  if (isNaN(v)) { toast('Valeur invalide', 'error'); return; }
-  const { error } = await db.from('consommables')
-    .update({ stock_logiciel: v, stock_logiciel_maj: new Date().toISOString() }).eq('id', id);
-  if (error) { erreurLisible(error, "Mise à jour impossible"); return; }
-  toast('Stock logiciel mis à jour');
+async function annulerReservation(id) {
+  const r = reservations.find(x => x.id === id);
+  if (!r) return;
+  if (!confirm(`Annuler la vente de ${r.client_nom} ?\n\nLa marchandise redeviendra disponible. Le stock au dépôt n'est pas modifié.`)) return;
+  const { error } = await db.from('reservations_consommables').update({ statut:'annule' }).eq('id', id);
+  if (error) { erreurLisible(error, 'Annulation impossible'); return; }
+  toast('Vente annulée, marchandise redevenue disponible');
+  await charger();
+}
+
+/* ===================== PRODUITS ===================== */
+function champsProduit(p = {}) {
+  return `
+    <div class="form-group"><label>Catégorie *</label><select id="p-cat">
+      ${['colle','joint','croisillon','plot','autre'].map(c =>
+        `<option value="${c}" ${p.categorie === c ? 'selected' : ''}>${CAT_LABEL[c]}</option>`).join('')}
+    </select></div>
+    <div class="form-group"><label>Désignation *</label><input id="p-desi" value="${echap(p.designation || '')}" placeholder="Ex : Colle souple grands formats" /></div>
+    <div class="form-2col">
+      <div class="form-group"><label>Référence</label><input id="p-ref" value="${echap(p.reference || '')}" placeholder="Facultatif" /></div>
+      <div class="form-group"><label>Conditionnement</label><input id="p-cond" value="${echap(p.conditionnement || '')}" placeholder="Ex : sac 25 kg" /></div>
+    </div>
+    <div class="form-2col">
+      <div class="form-group"><label>Unité de comptage *</label><input id="p-unite" value="${echap(p.unite || 'sac')}" placeholder="sac, seau, sachet, pièce…" /></div>
+      <div class="form-group"><label>Fournisseur</label><input id="p-four" value="${echap(p.fournisseur || '')}" placeholder="Facultatif" /></div>
+    </div>
+    <div class="form-2col">
+      <div class="form-group"><label>Seuil de sécurité *</label><input id="p-mini" type="number" step="any" min="0" value="${p.stock_mini ?? 0}" /></div>
+      <div class="form-group"><label>Quantité de réappro</label><input id="p-reap" type="number" step="any" min="0" value="${p.qte_reappro ?? ''}" placeholder="Ex : 48" /></div>
+    </div>`;
+}
+function lireChampsProduit() {
+  const desi = document.getElementById('p-desi').value.trim();
+  if (!desi) { toast('La désignation est obligatoire', 'error'); return null; }
+  return {
+    categorie: document.getElementById('p-cat').value,
+    designation: desi,
+    reference: document.getElementById('p-ref').value.trim() || null,
+    conditionnement: document.getElementById('p-cond').value.trim() || null,
+    unite: document.getElementById('p-unite').value.trim() || 'unité',
+    fournisseur: document.getElementById('p-four').value.trim() || null,
+    stock_mini: parseFloat(document.getElementById('p-mini').value) || 0,
+    qte_reappro: document.getElementById('p-reap').value === '' ? null : parseFloat(document.getElementById('p-reap').value)
+  };
+}
+
+function modalNouveauProduit() {
+  ouvrirModal('Ajouter un consommable', champsProduit(), [
+    { texte:'Annuler', action: fermerModal },
+    { texte:'Ajouter', classe:'btn-action btn-confirmer', action: async () => {
+        const d = lireChampsProduit(); if (!d) return;
+        const { error } = await db.from('consommables').insert(d);
+        if (error) { erreurLisible(error, 'Ajout impossible'); return; }
+        fermerModal(); toast('Produit ajouté'); await charger();
+      } }
+  ]);
+}
+
+function modalEditerProduit(id) {
+  const p = produitDe(id); if (!p) return;
+  ouvrirModal('Modifier le produit', champsProduit(p), [
+    { texte:'Annuler', action: fermerModal },
+    { texte:'Enregistrer', classe:'btn-action btn-confirmer', action: async () => {
+        const d = lireChampsProduit(); if (!d) return;
+        const { error } = await db.from('consommables').update(d).eq('id', id);
+        if (error) { erreurLisible(error, 'Modification impossible'); return; }
+        fermerModal(); toast('Produit modifié'); await charger();
+      } }
+  ]);
+}
+
+async function majChamp(id, champ, valeur) {
+  const v = valeur === '' ? null : parseFloat(valeur);
+  if (valeur !== '' && isNaN(v)) { toast('Valeur invalide', 'error'); return; }
+  const { error } = await db.from('consommables').update({ [champ]: v }).eq('id', id);
+  if (error) { erreurLisible(error, 'Mise à jour impossible'); return; }
+  toast(champ === 'stock_mini' ? 'Seuil mis à jour' : 'Réappro mise à jour');
   await charger();
 }
 
 async function retirerProduit(id) {
-  const enCours = enAttente().some(e => e.consommable_id === id);
-  if (enCours) { toast('Impossible : ce produit a des enlèvements en attente', 'error'); return; }
-  if (!confirm('Retirer ce produit du catalogue ?\n\nIl n\'apparaîtra plus dans les listes, mais l\'historique est conservé.')) return;
-  const { error } = await db.from('consommables').update({ actif: false }).eq('id', id);
-  if (error) { erreurLisible(error, "Retrait impossible"); return; }
-  toast('Produit retiré du catalogue');
-  await charger();
+  if (resEnAttente().some(r => r.consommable_id === id)) {
+    toast('Impossible : ce produit a des ventes en attente de retrait', 'error'); return;
+  }
+  if (!confirm('Retirer ce produit du catalogue ?\n\nIl disparaîtra des listes, mais l’historique est conservé.')) return;
+  const { error } = await db.from('consommables').update({ actif:false }).eq('id', id);
+  if (error) { erreurLisible(error, 'Retrait impossible'); return; }
+  toast('Produit retiré du catalogue'); await charger();
 }
 
-/* ========== NAVIGATION ========== */
+/* ===================== NAVIGATION ===================== */
 document.querySelectorAll('[data-onglet]').forEach(b => {
   b.addEventListener('click', () => {
     ongletActuel = b.dataset.onglet;
@@ -827,7 +1022,6 @@ document.querySelectorAll('[data-onglet]').forEach(b => {
 });
 document.getElementById('recherche').addEventListener('input', rendre);
 document.getElementById('filtreCategorie').addEventListener('change', rendre);
-
 document.getElementById('logoutBtn').addEventListener('click', async () => {
   await db.auth.signOut();
   window.location.href = 'index.html';
