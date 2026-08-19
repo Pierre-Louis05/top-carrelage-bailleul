@@ -67,7 +67,17 @@
     .segments button:hover:not(.actif) { color:var(--marine); }
 
     /* ---- Panneau de résultats ---- */
-    .resultats { position:sticky; top:130px; }
+    /* Le panneau suit le défilement. Comme il peut dépasser la hauteur de
+       l'écran, il défile alors sur lui-même : sans cela le bouton Imprimer,
+       tout en bas, deviendrait inatteignable. */
+    .resultats {
+      position:sticky; top:130px;
+      max-height:calc(100vh - 150px); overflow-y:auto;
+      scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.25) transparent;
+    }
+    .resultats::-webkit-scrollbar { width:6px; }
+    .resultats::-webkit-scrollbar-thumb { background:rgba(24,45,78,0.25); border-radius:3px; }
+    @media (max-width:900px) { .resultats { position:static; max-height:none; overflow:visible; } }
     .res-carte {
       background:var(--marine); border-radius:12px; padding:1.8rem;
       color:#fff; box-shadow:0 14px 40px rgba(16,31,56,0.25);
@@ -110,6 +120,14 @@
       font-size:0.62rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
       padding:0.15rem 0.5rem; border-radius:3px; margin-left:0.4rem;
     }
+    /* Encart de rappel dans le panneau sombre des résultats */
+    .res-encart {
+      margin-top:0.95rem; padding:0.8rem 0.95rem; border-radius:6px;
+      background:rgba(255,255,255,0.06); border-left:2px solid #FF6B75;
+      font-size:0.75rem; line-height:1.6; color:rgba(255,255,255,0.72);
+    }
+    .res-encart b { color:#fff; font-weight:600; }
+    .res-encart:empty { display:none; }
 
     /* ---- Encadré info ---- */
     .info-bloc {
@@ -378,6 +396,24 @@
               </select>
             </div>
           </div>
+
+          <div class="deux-cols">
+            <div class="champ">
+              <label for="epaisseur">Épaisseur du carreau (mm)</label>
+              <input type="number" id="epaisseur" step="0.5" min="3" max="30" inputmode="decimal" />
+              <div class="aide">Pré-rempli, elle est indiquée sur l'étiquette.</div>
+            </div>
+            <div class="champ">
+              <label for="destination">Où posez-vous ?</label>
+              <select id="destination">
+                <option value="sol-int" selected>Sol intérieur</option>
+                <option value="mur-int">Mur intérieur</option>
+                <option value="sol-ext">Sol extérieur</option>
+                <option value="mur-ext">Mur extérieur</option>
+              </select>
+              <div class="aide">Détermine la consommation de colle.</div>
+            </div>
+          </div>
         </div>
 
         <!-- 3. PLINTHES -->
@@ -434,6 +470,14 @@
             </div>
 
             <div class="info-bloc">
+              <b>Un carreau envoyé est un carreau entièrement façonné.</b> L'atelier débite chaque carreau
+              sur toute sa largeur : il n'en garde pas la moitié pour plus tard. Si votre besoin tombe entre
+              deux carreaux, vous repartez avec quelques plinthes d'avance, et le métrage facturé correspond
+              à la totalité des plinthes produites. Ces quelques pièces en trop sont utiles : elles couvrent
+              une coupe ratée ou une reprise ultérieure.
+            </div>
+
+            <div class="info-bloc">
               <b>Deux finitions de chant.</b> Le <b>réémaillage à froid</b> donne le rendu le plus abouti,
               mais reste plus fragile que l'émail cuit : ne collez jamais de ruban adhésif dessus, il peut
               faire sauter l'émail. Le chant <b>brut</b>, un peu moins cher, se choisit en vérifiant que la
@@ -462,15 +506,19 @@
             </div>
             <div class="res-ligne">
               <div class="res-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg></div>
-              <div class="res-txt"><b id="resColle">·</b><span>colle, double encollage et primaire compris</span></div>
+              <div class="res-txt"><b id="resColle">·</b><span id="resColleLib">colle, double encollage compris</span></div>
+            </div>
+            <div class="res-ligne">
+              <div class="res-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3h8l-1 5H9z"/><path d="M9 8v11a2 2 0 002 2h2a2 2 0 002-2V8"/></svg></div>
+              <div class="res-txt"><b id="resPrimaire">·</b><span id="resPrimaireLib">primaire d'accrochage</span></div>
             </div>
             <div class="res-ligne">
               <div class="res-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h16"/><path d="M4 4h16"/><path d="M9 4v16M15 4v16"/></svg></div>
-              <div class="res-txt"><b id="resJoint">·</b><span>joint de carrelage</span></div>
+              <div class="res-txt"><b id="resJoint">·</b><span id="resJointLib">joint de carrelage</span></div>
             </div>
             <div class="res-ligne">
               <div class="res-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
-              <div class="res-txt"><b id="resCroisillons">·</b><span>croisillons de pose</span></div>
+              <div class="res-txt"><b id="resCroisillons">·</b><span id="resCroisillonsLib">croisillons de pose</span></div>
             </div>
           </div>
 
@@ -485,7 +533,12 @@
                 <div class="res-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M3 15h18"/></svg></div>
                 <div class="res-txt"><b id="resCarreauxPlinthes">·</b><span id="resCarreauxLib">carreaux à ajouter à la commande</span></div>
               </div>
+              <div class="res-ligne">
+                <div class="res-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h18"/><path d="M6 9v6M12 9v6M18 9v6"/></svg></div>
+                <div class="res-txt"><b id="resMlFacture">·</b><span id="resMlFactureLib">de plinthes facturés</span></div>
+              </div>
             </div>
+            <div class="res-encart" id="resEncartFaconnage"></div>
           </div>
 
           <div class="res-note" id="resAvertissement">
@@ -519,7 +572,15 @@
       </div>
       <div class="subcat-card reveal">
         <h3>La colle et le primaire</h3>
-        <p>Double encollage systématique, environ 7 kg de colle par m², et un primaire d'accrochage obligatoire avant la pose. Le produit exact dépend de votre support : on le choisit avec vous.</p>
+        <p>La consommation dépend de la taille du carreau et de l'endroit posé : de 3,5 kg par m² au peigne U6 pour un petit format mural, jusqu'à 8 kg au peigne E10 en grand format. Nous ajoutons 1,5 kg pour le double encollage, systématique chez nous, et le primaire d'accrochage compte 150 g par m².</p>
+      </div>
+      <div class="subcat-card reveal">
+        <h3>Le joint et les croisillons</h3>
+        <p>Le joint se calcule à partir de la largeur choisie, de l'épaisseur du carreau et de son format : un 60 × 60 en consomme quatre fois moins qu'un 20 × 20. Les croisillons autonivelants suivent la table du fabricant, de 89 pièces par m² en 15 × 15 à 3 en très grand format. Nous les vendons en sachets de 250, et nous avons d'autres conditionnements au magasin.</p>
+      </div>
+      <div class="subcat-card reveal">
+        <h3>Le métrage de plinthes facturé</h3>
+        <p>L'atelier façonne intégralement chaque carreau qu'on lui envoie, il n'en débite jamais la moitié. Si votre besoin tombe entre deux carreaux, vous repartez avec quelques plinthes d'avance et le métrage facturé correspond à la totalité des pièces produites.</p>
       </div>
       <div class="subcat-card reveal">
         <h3>Le trait de scie</h3>
@@ -539,6 +600,7 @@
       </div>
     </div>
     <p class="reveal" style="text-align:center; color:var(--muted); font-size:0.88rem; margin-top:2rem;">
+      Toutes ces consommations reprennent les <b style="color:var(--marine);">recommandations des fiches techniques usine</b> des produits que nous distribuons.<br>
       Une question sur votre cas particulier ? <a href="faq.html" style="color:var(--rouge); font-weight:600;">Consultez la FAQ</a> ou appelez-nous.
     </p>
   </div>
@@ -632,35 +694,35 @@
 
 /* --- Formats : A = petit côté, B = grand côté, en cm --- */
 const FORMATS = [
-  { g:'Carrés',      id:'15x15',   A:15,  B:15,  m2:1.00 },
-  { g:'Carrés',      id:'20x20',   A:20,  B:20,  m2:1.00 },
-  { g:'Carrés',      id:'30x30',   A:30,  B:30,  m2:1.00 },
-  { g:'Carrés',      id:'35x35',   A:35,  B:35,  m2:1.10 },
-  { g:'Carrés',      id:'40x40',   A:40,  B:40,  m2:1.12 },
-  { g:'Carrés',      id:'45x45',   A:45,  B:45,  m2:1.42 },
-  { g:'Carrés',      id:'50x50',   A:50,  B:50,  m2:1.00 },
-  { g:'Carrés',      id:'60x60',   A:60,  B:60,  m2:1.44 },
-  { g:'Carrés',      id:'75x75',   A:75,  B:75,  m2:1.13 },
-  { g:'Carrés',      id:'80x80',   A:80,  B:80,  m2:1.28 },
-  { g:'Carrés',      id:'90x90',   A:90,  B:90,  m2:1.62 },
-  { g:'Carrés',      id:'100x100', A:100, B:100, m2:2.00 },
-  { g:'Carrés',      id:'120x120', A:120, B:120, m2:2.88 },
-  { g:'Rectangles',  id:'20x60',   A:20,  B:60,  m2:1.08 },
-  { g:'Rectangles',  id:'25x50',   A:25,  B:50,  m2:1.00 },
-  { g:'Rectangles',  id:'30x60',   A:30,  B:60,  m2:1.44 },
-  { g:'Rectangles',  id:'40x80',   A:40,  B:80,  m2:1.28 },
-  { g:'Rectangles',  id:'45x90',   A:45,  B:90,  m2:1.21 },
-  { g:'Rectangles',  id:'60x90',   A:60,  B:90,  m2:1.08 },
-  { g:'Rectangles',  id:'60x120',  A:60,  B:120, m2:1.44 },
-  { g:'Rectangles',  id:'75x150',  A:75,  B:150, m2:1.13 },
-  { g:'Rectangles',  id:'80x160',  A:80,  B:160, m2:1.28 },
-  { g:'Grands formats', id:'120x240', A:120, B:240, m2:2.88 },
-  { g:'Grands formats', id:'120x280', A:120, B:280, m2:3.36 },
-  { g:'Lames effet bois', id:'15x90',  A:15, B:90,  m2:1.08 },
-  { g:'Lames effet bois', id:'20x120', A:20, B:120, m2:0.96 },
-  { g:'Lames effet bois', id:'22x90',  A:22, B:90,  m2:1.19 },
-  { g:'Lames effet bois', id:'30x120', A:30, B:120, m2:1.44 },
-  { g:'Autre',       id:'autre',   A:60,  B:60,  m2:1.00 }
+  { g:'Carrés',      id:'15x15',   A:15,  B:15,  m2:1.00, ep:7 },
+  { g:'Carrés',      id:'20x20',   A:20,  B:20,  m2:1.00, ep:7 },
+  { g:'Carrés',      id:'30x30',   A:30,  B:30,  m2:1.00, ep:7 },
+  { g:'Carrés',      id:'35x35',   A:35,  B:35,  m2:1.10, ep:8 },
+  { g:'Carrés',      id:'40x40',   A:40,  B:40,  m2:1.12, ep:8 },
+  { g:'Carrés',      id:'45x45',   A:45,  B:45,  m2:1.42, ep:8 },
+  { g:'Carrés',      id:'50x50',   A:50,  B:50,  m2:1.00, ep:8 },
+  { g:'Carrés',      id:'60x60',   A:60,  B:60,  m2:1.44, ep:9 },
+  { g:'Carrés',      id:'75x75',   A:75,  B:75,  m2:1.13, ep:10 },
+  { g:'Carrés',      id:'80x80',   A:80,  B:80,  m2:1.28, ep:10 },
+  { g:'Carrés',      id:'90x90',   A:90,  B:90,  m2:1.62, ep:10 },
+  { g:'Carrés',      id:'100x100', A:100, B:100, m2:2.00, ep:10 },
+  { g:'Carrés',      id:'120x120', A:120, B:120, m2:2.88, ep:11 },
+  { g:'Rectangles',  id:'20x60',   A:20,  B:60,  m2:1.08, ep:8 },
+  { g:'Rectangles',  id:'25x50',   A:25,  B:50,  m2:1.00, ep:8 },
+  { g:'Rectangles',  id:'30x60',   A:30,  B:60,  m2:1.44, ep:9 },
+  { g:'Rectangles',  id:'40x80',   A:40,  B:80,  m2:1.28, ep:9 },
+  { g:'Rectangles',  id:'45x90',   A:45,  B:90,  m2:1.21, ep:9 },
+  { g:'Rectangles',  id:'60x90',   A:60,  B:90,  m2:1.08, ep:9 },
+  { g:'Rectangles',  id:'60x120',  A:60,  B:120, m2:1.44, ep:10 },
+  { g:'Rectangles',  id:'75x150',  A:75,  B:150, m2:1.13, ep:10 },
+  { g:'Rectangles',  id:'80x160',  A:80,  B:160, m2:1.28, ep:10 },
+  { g:'Grands formats', id:'120x240', A:120, B:240, m2:2.88, ep:6 },
+  { g:'Grands formats', id:'120x280', A:120, B:280, m2:3.36, ep:6 },
+  { g:'Lames effet bois', id:'15x90',  A:15, B:90,  m2:1.08, ep:8 },
+  { g:'Lames effet bois', id:'20x120', A:20, B:120, m2:0.96, ep:8 },
+  { g:'Lames effet bois', id:'22x90',  A:22, B:90,  m2:1.19, ep:8 },
+  { g:'Lames effet bois', id:'30x120', A:30, B:120, m2:1.44, ep:9 },
+  { g:'Autre',       id:'autre',   A:60,  B:60,  m2:1.00, ep:9 }
 ];
 
 /* --- Table de façonnage de l'atelier : pièces de plinthe par carreau --- */
@@ -687,11 +749,87 @@ const AIDE_POSE = {
   diagonale:'Pose en diagonale : 15 % de chutes.',
   chevrons:'Pose en chevrons : 15 % de chutes.'
 };
-const COLLE_KG_M2 = 7, SAC_COLLE = 25, SAC_JOINT = 5;
-const SACHET_CROISILLONS = 250, BIDON_PRIMAIRE_M2 = 25;
+/* =====================================================================
+   CONSOMMATIONS : recommandations usine, reprises des fiches techniques
+   des produits que nous distribuons. Aucune marque n'est citée ici.
+   ===================================================================== */
+
+/* --- Colle : kg/m² et peigne, par surface de carreau (cm²) et destination.
+       Chaque palier = [surface max du carreau en cm², kg/m², peigne]. --- */
+const COLLE_USINE = {
+  'sol-int': [[300,3.5,'U6'],[500,4.5,'U9'],[1200,4.5,'U9'],[2200,7,'U9'],[3600,8,'E10'],[Infinity,8,'E10']],
+  'mur-int': [[300,3.5,'U6'],[500,3.5,'U6'],[1200,7,'U9'],[2200,7,'U9'],[3600,8,'E10'],[Infinity,8,'E10']],
+  'sol-ext': [[300,5,'U6'],  [500,7,'U9'],  [1200,7,'U9'],[2200,8,'E10'],[3600,8,'E10'],[Infinity,8,'E10']],
+  'mur-ext': [[300,5,'U6'],  [500,7,'U9'],  [1200,7,'U9'],[2200,8,'E10'],[3600,8,'E10'],[Infinity,8,'E10']]
+};
+const LIB_DESTINATION = {
+  'sol-int':'sol intérieur', 'mur-int':'mur intérieur',
+  'sol-ext':'sol extérieur', 'mur-ext':'mur extérieur'
+};
+const SAC_COLLE = 25;               // kg, conditionnement courant
+const DOUBLE_ENCOLLAGE = 1.5;       // kg/m² en plus, borne haute de la fiche
+
+/* --- Joint : formule usine e × p × (L+l)/(l×L) × 0,17
+       e = largeur de joint (mm), p = épaisseur du carreau (mm), L et l en cm. --- */
+const COEF_JOINT = 0.17;
+const SAC_JOINT = 5;                // kg, le conditionnement que nous tenons en stock
+
+/* --- Primaire d'accrochage : 150 g/m², densité 1,05 --- */
+const PRIMAIRE_G_M2 = 150, PRIMAIRE_DENSITE = 1.05;
+const BIDONS_PRIMAIRE = [1, 2, 5, 15, 30];   // litres
+
+/* --- Croisillons par m², table usine. Lecture : CROISILLONS_M2[grand côté][petit côté].
+       Les côtés sont les valeurs de la table, en cm. --- */
+const AXES_CROISILLONS = [15,20,25,30,33,40,50,60,75,90,100,120,150,180,200,240,300];
+const CROISILLONS_M2 = {
+  15:  {15:89},
+  20:  {15:67,20:50},
+  25:  {15:53,20:40,25:32},
+  30:  {15:67,20:50,25:40,30:44},
+  33:  {15:61,20:45,25:36,30:40,33:37},
+  40:  {15:50,20:38,25:30,30:25,33:31,40:25},
+  50:  {15:40,20:30,25:24,30:27,33:24,40:20,50:16},
+  60:  {15:33,20:25,25:20,30:22,33:19,40:17,50:13,60:11},
+  75:  {15:33,20:25,25:20,30:21,33:19,40:17,50:12,60:10,75:9},
+  90:  {15:30,20:22,25:18,30:15,33:15,40:15,50:11,60:9,75:8,90:7},
+  100: {15:33,20:25,25:20,30:15,33:15,40:15,50:12,60:10,75:9,90:8,100:8},
+  120: {15:28,20:21,25:17,30:15,33:15,40:15,50:10,60:8,75:7,90:6,100:7,120:6},
+  150: {15:27,20:20,25:16,30:15,33:15,40:15,50:10,60:8,75:8,90:6,100:6,120:5,150:5},
+  180: {15:26,20:20,25:16,30:13,33:14,40:12,50:9,60:8,75:7,90:9,100:6,120:5,150:5,180:4},
+  200: {15:27,20:20,25:16,30:14,33:14,40:12,50:9,60:8,75:7,90:6,100:6,120:5,150:4,180:4,200:4},
+  240: {15:25,20:19,25:15,30:13,33:13,40:11,50:9,60:7,75:7,90:6,100:5,120:5,150:4,180:4,200:4,240:3},
+  300: {15:37,20:25,25:19,30:15,33:13,40:10,50:9,60:8,75:7,90:5,100:5,120:4,150:4,180:3,200:3,240:3,300:3}
+};
+const SACHET_CROISILLONS = 250;     // pièces, conditionnement principal
+
 const TRAIT_SCIE = 0.3;          // cm consommés par coupe
 const LARGEUR_PORTE = 0.90;      // m déduits par porte
 const MARGE_PLINTHES = 2;        // plinthes de sécurité pour les angles
+
+/* --- Valeur de la table la plus proche d'une dimension réelle --- */
+function axeProche(cm) {
+  return AXES_CROISILLONS.reduce((meilleur, a) =>
+    Math.abs(a - cm) < Math.abs(meilleur - cm) ? a : meilleur, AXES_CROISILLONS[0]);
+}
+
+/* --- Croisillons par m² pour un carreau A × B --- */
+function croisillonsParM2(A, B) {
+  const gA = axeProche(Math.max(A, B)), pA = axeProche(Math.min(A, B));
+  const grand = Math.max(gA, pA), petit = Math.min(gA, pA);
+  return { valeur: CROISILLONS_M2[grand][petit], exact: grand === Math.max(A, B) && petit === Math.min(A, B) };
+}
+
+/* --- Palier de colle pour un carreau de surface donnée --- */
+function palierColle(destination, surfaceCarreauCm2) {
+  const paliers = COLLE_USINE[destination] || COLLE_USINE['sol-int'];
+  return paliers.find(p => surfaceCarreauCm2 <= p[0]) || paliers[paliers.length - 1];
+}
+
+/* --- Conditionnement de primaire le plus adapté --- */
+function choisirBidon(litres) {
+  const taille = BIDONS_PRIMAIRE.find(b => litres <= b);
+  return taille ? { nb:1, taille } : { nb: plafond(litres / 30), taille:30 };
+}
 
 let mode = 'dims', pose = 'droite', hauteur = 8, sens = 'long';
 const $ = id => document.getElementById(id);
@@ -720,12 +858,14 @@ function coteCarreau() {
     `</optgroup>`).join('');
   $('format').value = '60x60';
   $('m2Boite').value = 1.44;
+  $('epaisseur').value = 9;
 })();
 
 $('format').addEventListener('change', () => {
   const f = formatActuel();
   $('blocSurMesure').hidden = f.id !== 'autre';
   if (f.id !== 'autre') $('m2Boite').value = f.m2;
+  $('epaisseur').value = f.ep;
   calculer();
 });
 
@@ -757,8 +897,10 @@ $('veutPlinthes').addEventListener('change', e => {
   calculer();
 });
 
-['longueur','largeur','surfaceDirecte','deduction','m2Boite','largeurJoint','coteA','coteB','perimetre','portes']
+['longueur','largeur','surfaceDirecte','deduction','m2Boite','largeurJoint','epaisseur',
+ 'coteA','coteB','perimetre','portes']
   .forEach(id => $(id).addEventListener('input', calculer));
+$('destination').addEventListener('change', calculer);
 
 /* ===================== CALCUL ===================== */
 let dernier = null;
@@ -793,8 +935,10 @@ function calculer() {
     $('resBoites').textContent = '·';
     $('resBoitesLib').textContent = 'boîtes à commander';
     $('resRappel').textContent = 'Saisissez vos dimensions pour commencer';
-    ['resSurface','resColle','resJoint','resCroisillons','resPlinthes','resCarreauxPlinthes']
+    ['resSurface','resColle','resPrimaire','resJoint','resCroisillons',
+     'resPlinthes','resCarreauxPlinthes','resMlFacture']
       .forEach(id => $(id).textContent = '·');
+    $('resEncartFaconnage').innerHTML = '';
     $('btnImprimer').disabled = true;
     return;
   }
@@ -804,16 +948,29 @@ function calculer() {
   const m2Boite = Math.max(0.1, parseFloat($('m2Boite').value) || 1);
   const boites = plafond(surfaceCommande / m2Boite);
 
-  const sacsColle = Math.max(1, plafond(surface * COLLE_KG_M2 / SAC_COLLE));
-  const bidonsPrimaire = Math.max(1, plafond(surface / BIDON_PRIMAIRE_M2));
+  // ---- Colle : palier usine selon la surface du carreau et la destination ----
+  const destination = $('destination').value;
+  const surfaceCarreau = c.A * c.B;                       // cm²
+  const [, colleBase, peigne] = palierColle(destination, surfaceCarreau);
+  const colleKgM2 = colleBase + DOUBLE_ENCOLLAGE;         // double encollage systématique
+  const kgColle = surface * colleKgM2;
+  const sacsColle = Math.max(1, plafond(kgColle / SAC_COLLE));
 
-  // Joint : consommation calibrée sur les tables fabricants, 10 × (A+B)/(A×B) pour 3 mm
+  // ---- Primaire : 150 g/m², densité 1,05 ----
+  const litresPrimaire = surface * PRIMAIRE_G_M2 / 1000 / PRIMAIRE_DENSITE;
+  const primaire = choisirBidon(litresPrimaire);
+
+  // ---- Joint : formule usine e × p × (L+l)/(l×L) × 0,17 ----
   const jointMm = parseFloat($('largeurJoint').value);
-  const kgJointM2 = 10 * (c.A + c.B) / (c.A * c.B) * (jointMm / 3);
-  const sacsJoint = Math.max(1, plafond(surface * kgJointM2 / SAC_JOINT));
+  const epaisseurMm = Math.max(3, parseFloat($('epaisseur').value) || 9);
+  const kgJointM2 = jointMm * epaisseurMm * (c.A + c.B) / (c.A * c.B) * COEF_JOINT;
+  const kgJoint = surface * kgJointM2;
+  const sacsJoint = Math.max(1, plafond(kgJoint / SAC_JOINT));
 
-  const carreauxM2 = 10000 / (c.A * c.B);
-  const sachets = Math.max(1, plafond(surface * carreauxM2 * 3.5 / SACHET_CROISILLONS));
+  // ---- Croisillons : table usine, par m² ----
+  const crois = croisillonsParM2(c.A, c.B);
+  const nbCroisillons = plafond(surface * crois.valeur);
+  const sachets = Math.max(1, plafond(nbCroisillons / SACHET_CROISILLONS));
 
   // ---- Plinthes ----
   let pl = null;
@@ -838,10 +995,19 @@ function calculer() {
         estime = true;
       }
 
+      // L'atelier façonne INTÉGRALEMENT chaque carreau qu'on lui envoie :
+      // il n'y a pas de carreau à moitié débité. On facture donc toutes les
+      // plinthes produites, pas seulement celles posées au mur.
+      const carreaux = plafond(nbPlinthes / parCarreau);
+      const plinthesProduites = carreaux * parCarreau;
+      const mlFacture = plinthesProduites * cotePlinthe / 100;
+      const m2Ajouter = carreaux * c.A * c.B / 10000;
+
       pl = {
         ml, nbPlinthes, parCarreau, estime,
-        cotePlinthe, coteCoupe,
-        carreaux: plafond(nbPlinthes / parCarreau),
+        cotePlinthe, coteCoupe, carreaux,
+        plinthesProduites, mlFacture, m2Ajouter,
+        surplus: plinthesProduites - nbPlinthes,
         hauteur, portes, perim
       };
     }
@@ -849,8 +1015,11 @@ function calculer() {
 
   dernier = {
     surface, surfaceCommande, chute, boites, m2Boite,
-    format: c.label, pose, sacsColle, bidonsPrimaire, sacsJoint,
-    joint: jointMm, sachets, pl
+    format: c.label, pose, destination, peigne,
+    sacsColle, kgColle, colleKgM2, colleBase,
+    primaire, litresPrimaire,
+    sacsJoint, kgJoint, joint: jointMm, epaisseurMm,
+    sachets, nbCroisillons, crois, pl
   };
 
   // ---- Affichage ----
@@ -860,29 +1029,57 @@ function calculer() {
   $('resBoitesLib').textContent = `boîte${boites > 1 ? 's' : ''} de ${fmt1(m2Boite)} m²`;
   $('resRappel').textContent = `${fmt1(surface)} m² en ${c.label}, pose ${pose === 'decalee' ? 'décalée' : pose}`;
   $('resSurface').textContent = `${fmt1(surfaceCommande)} m²`;
-  $('resColle').textContent = `${sacsColle} sac${sacsColle > 1 ? 's' : ''} de 25 kg + ${bidonsPrimaire} primaire`;
-  $('resJoint').textContent = `${sacsJoint} sac${sacsJoint > 1 ? 's' : ''} de 5 kg`;
-  $('resCroisillons').textContent = `${sachets} sachet${sachets > 1 ? 's' : ''} de 250`;
+
+  $('resColle').textContent = `${sacsColle} sac${sacsColle > 1 ? 's' : ''} de ${SAC_COLLE} kg`;
+  $('resColleLib').textContent =
+    `${fmt1(colleKgM2)} kg/m² en ${LIB_DESTINATION[destination]}, peigne ${peigne}, double encollage compris`;
+
+  $('resPrimaire').textContent = primaire.nb > 1
+    ? `${primaire.nb} bidons de ${primaire.taille} L`
+    : `1 bidon de ${primaire.taille} L`;
+  $('resPrimaireLib').textContent =
+    `primaire d'accrochage, ${fmt1(litresPrimaire)} L nécessaires`;
+
+  $('resJoint').textContent = `${sacsJoint} sac${sacsJoint > 1 ? 's' : ''} de ${SAC_JOINT} kg`;
+  $('resJointLib').textContent =
+    `joint ${jointMm} mm sur carreau de ${fmt1(epaisseurMm)} mm, ${kgJointM2.toLocaleString('fr-FR', { maximumFractionDigits:2 })} kg/m²`;
+
+  $('resCroisillons').innerHTML =
+    `${sachets} sachet${sachets > 1 ? 's' : ''} de ${SACHET_CROISILLONS}` +
+    (crois.exact ? '' : '<span class="estim">approché</span>');
+  $('resCroisillonsLib').textContent =
+    `${nbCroisillons} croisillons, ${crois.valeur} par m²`;
 
   if (pl) {
     $('resPlinthes').textContent = `${pl.nbPlinthes} plinthes`;
     $('resPlinthesLib').textContent =
-      `de ${fmt1(pl.cotePlinthe)} cm, pour ${fmt1(pl.ml)} m de mur`;
+      `de ${fmt1(pl.cotePlinthe)} cm nécessaires, pour ${fmt1(pl.ml)} m de mur`;
     $('resCarreauxPlinthes').innerHTML =
       `${pl.carreaux} carreau${pl.carreaux > 1 ? 'x' : ''}${pl.estime ? '<span class="estim">estimé</span>' : ''}`;
     $('resCarreauxLib').textContent =
-      `à ajouter · ${pl.parCarreau} plinthe${pl.parCarreau > 1 ? 's' : ''} par carreau`;
+      `à ajouter, soit ${fmt1(pl.m2Ajouter)} m² · ${pl.parCarreau} plinthe${pl.parCarreau > 1 ? 's' : ''} par carreau`;
+    $('resMlFacture').textContent = `${fmt1(pl.mlFacture)} ml`;
+    $('resMlFactureLib').textContent =
+      `facturés, soit ${pl.plinthesProduites} plinthe${pl.plinthesProduites > 1 ? 's' : ''} façonnée${pl.plinthesProduites > 1 ? 's' : ''}`;
+    $('resEncartFaconnage').innerHTML = pl.surplus > 0
+      ? `Chaque carreau envoyé est <b>façonné en entier</b> : l'atelier ne débite pas un carreau à moitié.
+         Vous repartez donc avec <b>${pl.plinthesProduites} plinthes</b> pour ${pl.nbPlinthes} nécessaires,
+         soit ${pl.surplus} d'avance, et <b>${fmt1(pl.mlFacture)} ml facturés</b>.`
+      : `Chaque carreau envoyé est <b>façonné en entier</b> : les ${pl.carreaux} carreaux tombent juste,
+         soit <b>${fmt1(pl.mlFacture)} ml facturés</b>.`;
   } else if ($('veutPlinthes').checked) {
     $('resPlinthes').textContent = '·';
     $('resCarreauxPlinthes').textContent = '·';
+    $('resMlFacture').textContent = '·';
     $('resPlinthesLib').textContent = 'indiquez la longueur de plinthes';
+    $('resEncartFaconnage').innerHTML = '';
   }
 
   $('resAvertissement').innerHTML = (pl && (pl.estime || hauteur === 'autre'))
     ? (hauteur === 'autre'
         ? 'Hauteur hors standard : un <b style="color:#f5c26b;">réglage sur mesure facturé</b> s\'applique. Demandez-nous un chiffrage avant de commander.'
         : 'Le nombre de plinthes par carreau est estimé pour ce format : nous le confirmons avec l\'atelier avant de lancer la commande.')
-    : 'Estimation indicative pour une pose standard sur support plan. Nos conseillers vérifient les quantités avec vous au magasin, gratuitement.';
+    : 'Consommations calculées d\'après les <b>recommandations des fiches techniques usine</b>, pour une pose standard sur support plan. Nos conseillers vérifient les quantités avec vous au magasin, gratuitement.';
 
   $('btnImprimer').disabled = false;
 }
@@ -903,11 +1100,16 @@ $('btnImprimer').addEventListener('click', () => {
     <table class="imp-tab">
       <tr><th>Poste</th><th>Détail</th><th>Quantité</th></tr>
       <tr><td>Carrelage</td><td>${fmt1(d.surfaceCommande)} m² dont ${Math.round(d.chute * 100)} % de chutes, boîtes de ${fmt1(d.m2Boite)} m²</td><td>${d.boites} boîte${s(d.boites)}</td></tr>
-      <tr><td>Colle</td><td>Double encollage, sacs de 25 kg</td><td>${d.sacsColle} sac${s(d.sacsColle)}</td></tr>
-      <tr><td>Primaire</td><td>Primaire d'accrochage, obligatoire</td><td>${d.bidonsPrimaire} bidon${s(d.bidonsPrimaire)}</td></tr>
-      <tr><td>Joint</td><td>Largeur ${d.joint} mm, sacs de 5 kg</td><td>${d.sacsJoint} sac${s(d.sacsJoint)}</td></tr>
-      <tr><td>Croisillons</td><td>Sachets de 250 pièces</td><td>${d.sachets} sachet${s(d.sachets)}</td></tr>
+      <tr><td>Colle</td><td>${fmt1(d.colleBase)} kg/m² en ${LIB_DESTINATION[d.destination]} au peigne ${d.peigne}, plus ${fmt1(DOUBLE_ENCOLLAGE)} kg/m² de double encollage, soit ${fmt1(d.kgColle)} kg en sacs de ${SAC_COLLE} kg</td><td>${d.sacsColle} sac${s(d.sacsColle)}</td></tr>
+      <tr><td>Primaire</td><td>Primaire d'accrochage obligatoire, ${PRIMAIRE_G_M2} g/m², soit ${fmt1(d.litresPrimaire)} L</td><td>${d.primaire.nb} bidon${s(d.primaire.nb)} de ${d.primaire.taille} L</td></tr>
+      <tr><td>Joint</td><td>Largeur ${d.joint} mm sur carreau de ${fmt1(d.epaisseurMm)} mm, soit ${fmt1(d.kgJoint)} kg en sacs de ${SAC_JOINT} kg</td><td>${d.sacsJoint} sac${s(d.sacsJoint)}</td></tr>
+      <tr><td>Croisillons</td><td>${d.crois.valeur} par m²${d.crois.exact ? '' : ' (format le plus proche de la table)'}, soit ${d.nbCroisillons} pièces en sachets de ${SACHET_CROISILLONS}</td><td>${d.sachets} sachet${s(d.sachets)}</td></tr>
     </table>
+    <p style="font-size:8.5pt; color:#555; margin-top:0.5rem; line-height:1.6;">
+      Consommations établies d'après les <b>recommandations des fiches techniques usine</b>.
+      Croisillons autonivelants vendus par sachets de ${SACHET_CROISILLONS} pièces, autres
+      conditionnements sur demande au magasin.
+    </p>
 
     ${pl ? `
     <div class="imp-soustitre">Plinthes façonnées</div>
@@ -915,10 +1117,15 @@ $('btnImprimer').addEventListener('click', () => {
       <tr><th>Poste</th><th>Détail</th><th>Quantité</th></tr>
       <tr><td>Longueur à équiper</td><td>${fmt1(pl.perim)} m de tour de pièce moins ${pl.portes} porte${s(pl.portes)}</td><td>${fmt1(pl.ml)} m</td></tr>
       <tr><td>Hauteur</td><td>${pl.hauteur === 'autre' ? 'Hors standard, réglage sur mesure facturé' : 'Hauteur courante, sans surcoût'}</td><td>${pl.hauteur === 'autre' ? 'à définir' : fmt1(pl.hauteur) + ' cm'}</td></tr>
-      <tr><td>Plinthes</td><td>Longueur ${fmt1(pl.cotePlinthe)} cm, marge d'angles comprise</td><td>${pl.nbPlinthes} pièce${s(pl.nbPlinthes)}</td></tr>
+      <tr><td>Plinthes nécessaires</td><td>Longueur ${fmt1(pl.cotePlinthe)} cm, marge d'angles comprise</td><td>${pl.nbPlinthes} pièce${s(pl.nbPlinthes)}</td></tr>
       <tr><td>Carreaux à ajouter</td><td>${pl.parCarreau} plinthe${s(pl.parCarreau)} par carreau${pl.estime ? ', valeur estimée à confirmer avec l\'atelier' : ', d\'après la table de l\'atelier'}</td><td>${pl.carreaux} carreau${pl.carreaux > 1 ? 'x' : ''}</td></tr>
+      <tr><td>Surface à ajouter</td><td>Carreaux supplémentaires à porter sur la commande</td><td>${fmt1(pl.m2Ajouter)} m²</td></tr>
+      <tr><td>Plinthes façonnées</td><td>Chaque carreau envoyé est façonné en entier${pl.surplus > 0 ? `, soit ${pl.surplus} plinthe${s(pl.surplus)} d'avance` : ', le compte tombe juste'}</td><td>${pl.plinthesProduites} pièce${s(pl.plinthesProduites)}</td></tr>
+      <tr><td><b>Métrage à facturer</b></td><td>Totalité des plinthes façonnées, ${pl.plinthesProduites} × ${fmt1(pl.cotePlinthe)} cm</td><td><b>${fmt1(pl.mlFacture)} ml</b></td></tr>
     </table>
     <p style="font-size:8.5pt; color:#555; margin-top:0.6rem; line-height:1.6;">
+      <b>Façonnage :</b> l'atelier débite intégralement chaque carreau reçu, il n'y a pas de carreau
+      entamé à moitié. Le métrage facturé correspond donc à toutes les plinthes produites.<br>
       Finition de chant à préciser : <b>réémaillée à froid</b> (rendu le plus abouti, mais émail plus fragile,
       ne jamais coller de ruban adhésif dessus) ou <b>brute</b> (un peu moins chère, à choisir en vérifiant
       que la pâte du carreau est proche de la teinte de surface).
