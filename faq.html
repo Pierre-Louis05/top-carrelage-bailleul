@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Questions fréquentes : carrelage, parquet, salle de bain | Top Aménagement Bailleul</title>
+  <meta name="description" content="Toutes les réponses de nos conseillers : quelle quantité de carrelage prévoir, quel parquet avec un chauffage au sol, quelle colle pour un grand format, entretien de la pierre naturelle… FAQ complète de Top Aménagement Bailleul." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ---- Recherche ---- */
+    .faq-recherche { position:relative; max-width:640px; margin:0 auto 1.6rem; }
+    .faq-recherche input {
+      width:100%; padding:1.05rem 1.2rem 1.05rem 3.1rem;
+      border:1.5px solid var(--ligne); border-radius:50px; background:var(--blanc);
+      font-family:var(--font-texte); font-size:0.95rem; color:var(--texte);
+      box-shadow:0 4px 18px rgba(16,31,56,0.06); transition:var(--transition);
+    }
+    .faq-recherche input:focus { outline:none; border-color:var(--rouge); box-shadow:0 4px 22px rgba(226,51,63,0.14); }
+    .faq-recherche svg { position:absolute; left:1.2rem; top:50%; transform:translateY(-50%); color:var(--muted); }
+
+    /* ---- Chips de catégories ---- */
+    .faq-chips { display:flex; flex-wrap:wrap; gap:0.6rem; justify-content:center; margin-bottom:0.6rem; }
+    .faq-chips .puce {
+      padding:0.5rem 1.1rem; border-radius:50px; border:1.5px solid var(--ligne);
+      background:var(--blanc); color:var(--muted);
+      font-family:var(--font-titre); font-size:0.7rem; font-weight:700;
+      letter-spacing:0.05em; text-transform:uppercase; cursor:pointer;
+      transition:color .22s ease, border-color .22s ease, background-color .22s ease;
+      display:inline-flex; align-items:center; gap:0.4rem;
+    }
+    .faq-chips .puce:hover { border-color:var(--marine); color:var(--marine); }
+    .faq-chips .puce.active { background:var(--marine); border-color:var(--marine); color:#fff; }
+    .faq-chips .n { font-size:0.66rem; opacity:0.55; }
+
+    .faq-etat { text-align:center; font-size:0.85rem; color:var(--muted); margin-bottom:2rem; }
+    .faq-etat b { color:var(--marine); }
+
+    /* ---- Sections & questions ---- */
+    .faq-section { margin-bottom:2.6rem; }
+    .faq-section.cachee { display:none; }
+    .faq-section-titre {
+      display:flex; align-items:center; gap:0.8rem; margin-bottom:1.1rem;
+    }
+    .faq-section-titre h2 { font-size:1.15rem; }
+    .faq-section-titre .trait { flex:1; height:1px; background:var(--ligne); }
+
+    details.faq-item.cachee { display:none; }
+    details.faq-item mark { background:rgba(226,51,63,0.16); color:inherit; border-radius:2px; padding:0 2px; }
+    .faq-liens { margin-top:0.8rem; font-size:0.82rem; }
+    .faq-liens a { color:var(--rouge); font-weight:600; text-decoration:underline; text-underline-offset:3px; }
+
+    .faq-vide {
+      text-align:center; padding:3.5rem 1.5rem; border:1px dashed var(--ligne);
+      border-radius:10px; color:var(--muted);
+    }
+    .faq-vide b { color:var(--marine); }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar-site">
+  <div class="container">
+    <div class="topbar-left">
+      <span class="topbar-hide-mobile"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> 22 Av. de l'Europe, Bailleul</span>
+      <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Mar–Sam : 9h–12h / 14h–18h30 · Lun : 14h–18h30</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-hide-mobile">Conseils et devis :</span>
+      <a href="tel:+33328480808" class="tel-top">03 28 48 08 08</a>
+    </div>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-badge"><div class="badge-back"></div><div class="badge-front"><span>TOP</span></div></div>
+      <div class="nav-logo-text">
+        <span class="nav-logo-main">Aménagement</span>
+        <span class="nav-logo-sub">Carrelage · Sanitaire · Parquets</span>
+      </div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Accueil</a></li>
+      <li class="has-dropdown">
+        <a href="carrelage.html">Carrelage</a>
+        <div class="dropdown">
+          <a href="carrelage.html#interieur">Carrelage intérieur</a>
+          <a href="carrelage.html#exterieur">Carrelage extérieur</a>
+          <a href="carrelage.html#choisir">Bien choisir son carrelage</a>
+          <a href="carrelage.html#pose">Conseils de pose</a>
+          <a href="calculateur.html">Calculer mes quantités</a>
+        </div>
+      </li>
+      <li class="has-dropdown">
+        <a href="salle-de-bain.html">Salle de bain</a>
+        <div class="dropdown">
+          <a href="salle-de-bain.html#douche">Douche & baignoire</a>
+          <a href="salle-de-bain.html#meubles">Meubles & vasques</a>
+          <a href="salle-de-bain.html#robinetterie">Robinetterie</a>
+          <a href="salle-de-bain.html#conseils">Bien concevoir sa salle de bain</a>
+        </div>
+      </li>
+      <li class="has-dropdown">
+        <a href="parquet.html">Parquet</a>
+        <div class="dropdown">
+          <a href="parquet.html#types">Stratifié, contrecollé, massif</a>
+          <a href="parquet.html#choisir">Bien choisir son parquet</a>
+          <a href="parquet.html#pose">Pose & entretien</a>
+        </div>
+      </li>
+      <li><a href="pierre-naturelle.html">Pierre naturelle</a></li>
+      <li><a href="outillage.html">Outillage</a></li>
+      <li><a href="realisations.html">Inspirations</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <a href="tel:+33328480808" class="btn btn-rouge nav-cta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.4 2 2 0 0 1 3.58 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l1.87-1.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Appelez-nous</a>
+    <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="nav-mobile" id="mobileMenu">
+
+  <div class="nav-mobile-head">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-badge"><div class="badge-back"></div><div class="badge-front"><span>TOP</span></div></div>
+      <div class="nav-logo-text">
+        <span class="nav-logo-main">Aménagement</span>
+        <span class="nav-logo-sub">Carrelage · Sanitaire · Parquets</span>
+      </div>
+    </a>
+    <button class="nav-mobile-close" id="mobileClose" aria-label="Fermer le menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <nav class="nav-mobile-body">
+    <a href="index.html">Accueil</a>
+
+    <div class="nav-mobile-group">
+      <button class="nav-mobile-toggle" type="button" aria-expanded="false">Carrelage</button>
+      <div class="nav-mobile-sub">
+        <a href="carrelage.html">Tout le carrelage</a>
+        <a href="carrelage.html#interieur">Carrelage intérieur</a>
+        <a href="carrelage.html#exterieur">Carrelage extérieur</a>
+        <a href="carrelage.html#choisir">Bien choisir son carrelage</a>
+        <a href="carrelage.html#pose">Conseils de pose</a>
+        <a href="calculateur.html">Calculer mes quantités</a>
+      </div>
+    </div>
+
+    <div class="nav-mobile-group">
+      <button class="nav-mobile-toggle" type="button" aria-expanded="false">Salle de bain</button>
+      <div class="nav-mobile-sub">
+        <a href="salle-de-bain.html">Toute la salle de bain</a>
+        <a href="salle-de-bain.html#douche">Douche &amp; baignoire</a>
+        <a href="salle-de-bain.html#meubles">Meubles &amp; vasques</a>
+        <a href="salle-de-bain.html#robinetterie">Robinetterie</a>
+        <a href="salle-de-bain.html#conseils">Bien concevoir sa salle de bain</a>
+      </div>
+    </div>
+
+    <div class="nav-mobile-group">
+      <button class="nav-mobile-toggle" type="button" aria-expanded="false">Parquet</button>
+      <div class="nav-mobile-sub">
+        <a href="parquet.html">Tout le parquet</a>
+        <a href="parquet.html#types">Stratifié, contrecollé, massif</a>
+        <a href="parquet.html#choisir">Bien choisir son parquet</a>
+        <a href="parquet.html#pose">Pose &amp; entretien</a>
+      </div>
+    </div>
+
+    <a href="pierre-naturelle.html">Pierre naturelle</a>
+    <a href="outillage.html">Outillage &amp; Accessoires</a>
+    <a href="realisations.html">Inspirations</a>
+    <a href="services.html">Services</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+
+  <div class="nav-mobile-foot">
+    <a href="tel:+33328480808" class="btn btn-rouge">03 28 48 08 08</a>
+    <p>22 Av. de l'Europe, 59270 Bailleul<br>Mar–Sam 9h–12h &amp; 14h–18h30</p>
+  </div>
+
+</div>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-bg" style="background-image:url('photos/inspirations/inspi-24.jpg');"></div>
+  <div class="page-hero-overlay"></div>
+  <div class="container">
+    <div class="page-hero-content">
+      <div class="breadcrumb"><a href="index.html">Accueil</a> <span>/</span> Questions fréquentes</div>
+      <h1>Questions fréquentes</h1>
+      <div class="sep"></div>
+      <p style="color:rgba(255,255,255,0.78); max-width:54ch;">Les réponses que nos conseillers donnent chaque jour au comptoir, réunies au même endroit.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<section style="background:var(--bg); padding-top:3.5rem;">
+  <div class="container" style="max-width:900px;">
+
+    <div class="faq-recherche">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" id="rechercheFaq" placeholder="Posez votre question… (ex : chauffage au sol, quantité, joint)" autocomplete="off" />
+    </div>
+
+    <div class="faq-chips" id="chipsFaq"></div>
+    <div class="faq-etat" id="etatFaq"></div>
+
+    <div id="contenuFaq"></div>
+
+    <div class="faq-vide" id="faqVide" hidden>
+      <p style="margin-bottom:0.6rem;"><b>Aucune réponse ne correspond à votre recherche.</b></p>
+      <p style="font-size:0.88rem;">Posez-nous la question directement au <a href="tel:+33328480808" style="color:var(--rouge); font-weight:600;">03 28 48 08 08</a> — et elle rejoindra peut-être cette page.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="background:var(--marine); text-align:center;">
+  <div class="container">
+    <span class="tag" style="color:#FF6B75;">Il vous reste une question ?</span>
+    <h2 style="color:#fff; margin-bottom:1rem;">Nos conseillers y répondent de vive voix</h2>
+    <div class="sep sep-center"></div>
+    <p style="color:rgba(255,255,255,0.7); max-width:520px; margin:0 auto 2.5rem;">Appelez-nous ou passez au magasin avec vos plans, vos photos et vos questions : le conseil est gratuit.</p>
+    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+      <a href="tel:+33328480808" class="btn btn-rouge">03 28 48 08 08</a>
+      <a href="contact.html" class="btn btn-outline">Nous écrire</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo">
+          <div class="logo-badge"><div class="badge-back"></div><div class="badge-front"><span>TOP</span></div></div>
+          <div class="nav-logo-text">
+            <span class="nav-logo-main">Aménagement</span>
+            <span class="nav-logo-sub">Carrelage · Sanitaire · Parquets</span>
+          </div>
+        </a>
+        <p>Top Aménagement réunit à Bailleul les enseignes Top Carrelage, Top Sanitaire et Top Parquets : 1 000 m² d'exposition pour vos sols, murs et salles de bains.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Nos produits</h4>
+        <ul>
+          <li><a href="carrelage.html">Carrelage intérieur & extérieur</a></li>
+          <li><a href="salle-de-bain.html">Salle de bain & Sanitaire</a></li>
+          <li><a href="parquet.html">Parquet</a></li>
+          <li><a href="pierre-naturelle.html">Pierre naturelle</a></li>
+          <li><a href="outillage.html">Outillage & Accessoires</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>L'entreprise</h4>
+        <ul>
+          <li><a href="services.html">Nos services</a></li>
+          <li><a href="realisations.html">Inspirations</a></li>
+          <li><a href="calculateur.html">Calculateur de quantités</a></li>
+          <li><a href="faq.html">Questions fréquentes</a></li>
+          <li><a href="histoire.html">Notre histoire</a></li>
+          <li><a href="equipe.html">L'équipe</a></li>
+          <li><a href="avis.html">Laisser un avis</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col footer-contact">
+        <h4>Nous contacter</h4>
+        <p>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF6B75" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          22 Av. de l'Europe<br>59270 Bailleul
+        </p>
+        <p>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF6B75" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.4 2 2 0 0 1 3.58 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l1.87-1.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <a href="tel:+33328480808">03 28 48 08 08</a>
+        </p>
+        <p>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF6B75" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <a href="mailto:topcarrelagebailleul@yahoo.com">topcarrelagebailleul@yahoo.com</a>
+        </p>
+        <p style="font-size:0.8rem;">Lun 14h–18h30 · Mar–Sam 9h–12h & 14h–18h30<br><span style="font-size:0.72rem; opacity:0.7;">Dépôt fermé le lundi et le dimanche</span></p>
+        <a href="https://www.google.com/maps/search/?api=1&query=22+Avenue+de+l'Europe+59270+Bailleul" target="_blank" rel="noopener" class="btn btn-rouge" style="margin-top:0.5rem; font-size:0.66rem; padding:0.7rem 1.2rem;">Nous trouver</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Top Aménagement Bailleul. Tous droits réservés.</span>
+      <span><a href="espace-equipe/index.html">Espace équipe</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="nav.js"></script>
+<script>
+/* =====================================================================
+   FAQ CENTRALISÉE
+   Recherche instantanée + catégories. Le balisage FAQPage (JSON-LD)
+   est généré automatiquement à partir de ces données pour Google.
+   ===================================================================== */
+const FAQ = [
+
+  /* ---------------- CARRELAGE ---------------- */
+  { cat:'carrelage', q:"Quelle quantité de carrelage faut-il prévoir ?",
+    r:"Comptez la surface à couvrir plus 10 % pour les coupes et la casse, et 15 % en pose diagonale ou en chevrons. Gardez toujours quelques carreaux d'avance pour une éventuelle réparation : les bains de couleur varient d'une production à l'autre. Nos conseillers calculent les quantités exactes avec vous, chutes comprises.",
+    liens:[['calculateur.html','Calculer mes quantités automatiquement'],['carrelage.html#formats','Choisir le bon format']] },
+  { cat:'carrelage', q:"Peut-on poser du carrelage sur un ancien carrelage ?",
+    r:"Oui, si l'ancien sol est sain, bien adhérent et dégraissé. Un primaire d'accrochage est indispensable. Attention à la surépaisseur au niveau des portes et des seuils : quelques millimètres suffisent parfois à bloquer une porte.",
+    liens:[['carrelage.html#pose','Nos conseils de pose']] },
+  { cat:'carrelage', q:"Quelle différence entre grès cérame et faïence ?",
+    r:"Le grès cérame est pressé et cuit à très haute température : dense et quasi non poreux, il convient aux sols comme aux murs, dedans comme dehors. La faïence, plus tendre et plus légère, est réservée aux murs intérieurs — cuisines, crédences et salles de bains.",
+    liens:[['carrelage.html','Tout savoir sur le carrelage']] },
+  { cat:'carrelage', q:"Quel carrelage résiste au gel pour une terrasse ?",
+    r:"Un grès cérame ingélif, dont l'absorption d'eau est inférieure à 0,5 %, avec une surface antidérapante R11 minimum. Les dalles de 20 mm posées sur plots permettent en plus de rattraper les niveaux et de démonter facilement une dalle.",
+    liens:[['carrelage.html#exterieur','Carrelage extérieur et terrasses']] },
+  { cat:'carrelage', q:"Les grands formats sont-ils plus difficiles à poser ?",
+    r:"Oui : ils exigent un support parfaitement plan et idéalement un système de croisillons autonivelants. À partir de 120 cm, la pose par un professionnel équipé est fortement recommandée. En contrepartie, moins de joints et un effet d'espace incomparable.",
+    liens:[['carrelage.html#formats','Le guide des formats']] },
+  { cat:'carrelage', q:"Quel carrelage choisir pour une pièce à fort passage ?",
+    r:"Regardez le classement UPEC sur la fiche produit : U3 P3 convient aux pièces de vie, U4 P4S aux entrées, couloirs et commerces. Une teinte nuancée et une finition mate masquent mieux les traces du quotidien qu'un uni foncé brillant.",
+    liens:[['carrelage.html#choisir','Comment choisir son carrelage']] },
+  { cat:'carrelage', q:"Le carrelage est-il compatible avec un plancher chauffant ?",
+    r:"C'est même le meilleur revêtement pour ça : le grès cérame conduit et restitue très bien la chaleur. Il faut simplement une colle souple adaptée et respecter la mise en chauffe progressive après la pose.",
+    liens:[['carrelage.html','Notre univers carrelage']] },
+
+  /* ---------------- PARQUET ---------------- */
+  { cat:'parquet', q:"Peut-on poser du parquet sur un carrelage existant ?",
+    r:"Oui, en pose flottante avec une sous-couche adaptée, si le sol est plan et sec. C'est l'une des rénovations les plus rapides : une pièce se transforme en un week-end, sans dépose de l'ancien sol.",
+    liens:[['parquet.html#pose','La pose du parquet']] },
+  { cat:'parquet', q:"Parquet et chauffage au sol, est-ce compatible ?",
+    r:"Oui pour la plupart des contrecollés et stratifiés certifiés, avec une résistance thermique inférieure à 0,15 m²K/W. La pose collée est conseillée pour une meilleure diffusion de la chaleur. Vérifiez toujours la fiche du produit — nous le faisons avec vous.",
+    liens:[['parquet.html#choisir','Bien choisir son parquet']] },
+  { cat:'parquet', q:"Le stratifié est-il un « vrai » parquet ?",
+    r:"Techniquement non : il n'y a pas de bois noble en surface, mais un décor très réaliste protégé par une couche d'usure. En contrepartie, il résiste mieux aux rayures et coûte nettement moins cher. Pour du vrai bois, orientez-vous vers le contrecollé.",
+    liens:[['parquet.html#types','Stratifié, contrecollé ou massif ?']] },
+  { cat:'parquet', q:"Quel parquet avec des enfants et des animaux ?",
+    r:"Un stratifié AC5 pour la tranquillité totale, ou un contrecollé huilé : les micro-rayures se fondent dans la matière et une huile d'entretien remet le sol à neuf. Évitez les finitions brillantes, qui marquent davantage.",
+    liens:[['parquet.html','Notre univers parquet']] },
+  { cat:'parquet', q:"Comment entretenir un parquet huilé ou verni ?",
+    r:"Verni : aspirateur et serpillière bien essorée avec un nettoyant adapté, jamais d'eau stagnante. Huilé : même entretien courant, plus une couche d'huile une à deux fois par an qui nourrit le bois et efface les marques de vie.",
+    liens:[['parquet.html#entretien',"L’entretien du parquet"]] },
+
+  /* ---------------- SALLE DE BAIN ---------------- */
+  { cat:'salle-de-bain', q:"Une douche à l'italienne est-elle possible partout ?",
+    r:"Il faut pouvoir encastrer le siphon et créer une pente d'écoulement : simple en construction neuve, plus délicat en rénovation. Dans ce cas, un receveur extra-plat de 3 à 4 cm donne un rendu très proche sans gros travaux.",
+    liens:[['salle-de-bain.html#douche','Douche et baignoire']] },
+  { cat:'salle-de-bain', q:"Quel carrelage pour le sol d'une salle de bain ?",
+    r:"Un grès cérame antidérapant : R10 minimum pour la pièce, R11 ou classement pieds nus B pour l'intérieur de la douche. Les formats moyens facilitent la pente d'écoulement dans une douche carrelée.",
+    liens:[['salle-de-bain.html#conseils','Bien concevoir sa salle de bain']] },
+  { cat:'salle-de-bain', q:"Simple ou double vasque ?",
+    r:"À partir de 120 cm de largeur de meuble, la double vasque devient confortable. En dessous, mieux vaut une grande vasque unique et davantage de plan de pose : deux petites vasques serrées sont moins pratiques qu'une belle grande.",
+    liens:[['salle-de-bain.html#meubles','Meubles et vasques']] },
+  { cat:'salle-de-bain', q:"Peut-on rénover une salle de bain sans tout casser ?",
+    r:"Souvent, oui : panneaux muraux étanches par-dessus l'ancienne faïence, receveur extra-plat en remplacement d'une baignoire, meuble suspendu sur les arrivées existantes. Venez avec des photos et les dimensions, on vous dit ce qui est possible.",
+    liens:[['salle-de-bain.html','Notre univers salle de bain']] },
+  { cat:'salle-de-bain', q:"Receveur de douche ou douche carrelée ?",
+    r:"Le receveur est plus rapide à poser et son étanchéité est intégrée. La douche carrelée offre une continuité parfaite avec le sol, au prix d'une mise en œuvre plus technique : étanchéité complète et pente parfaitement réglée. Les deux se valent, c'est une question de style et de budget.",
+    liens:[['salle-de-bain.html#douche','Douche et baignoire']] },
+
+  /* ---------------- PIERRE NATURELLE ---------------- */
+  { cat:'pierre', q:"La pierre naturelle résiste-t-elle au gel ?",
+    r:"Le granit, la pierre bleue et la plupart des travertins en finition adaptée résistent au gel et conviennent parfaitement en extérieur dans le Nord. Le marbre poli, lui, reste un matériau d'intérieur. Chaque lot a sa fiche technique, que nous vérifions avec vous.",
+    liens:[['pierre-naturelle.html','Notre univers pierre naturelle']] },
+  { cat:'pierre', q:"Pourquoi deux dalles du même lot sont-elles différentes ?",
+    r:"C'est la signature de la pierre naturelle : nuances, veines et fossiles varient d'une dalle à l'autre. Venez voir le lot réel au magasin avant de commander, et panachez les caisses à la pose pour répartir harmonieusement les nuances.",
+    liens:[['pierre-naturelle.html#pierres','Nos familles de pierres']] },
+  { cat:'pierre', q:"Comment entretenir le marbre ?",
+    r:"Nettoyage au savon noir ou au pH neutre uniquement. À proscrire : vinaigre, anticalcaire et javel, qui attaquent le poli des pierres calcaires. Bien traité, un marbre traverse les générations.",
+    liens:[['pierre-naturelle.html#entretien','Traitement et entretien de la pierre']] },
+  { cat:'pierre', q:"Faut-il traiter la pierre naturelle après la pose ?",
+    r:"Oui : un hydrofuge-oléofuge imprègne la pierre et bloque les taches d'eau et de gras, sans changer son aspect. À renouveler tous les 3 à 5 ans selon le passage. Tous les produits sont disponibles au magasin.",
+    liens:[['pierre-naturelle.html#entretien','Le traitement de la pierre']] },
+
+  /* ---------------- POSE & PRODUITS ---------------- */
+  { cat:'pose', q:"Quelle colle pour un carrelage grand format ?",
+    r:"Une colle souple appliquée en double encollage : sur le support et au dos du carreau. Sur plancher chauffant, la souplesse est indispensable pour absorber les dilatations. Nous vous préparons le produit adapté à votre support et à votre format.",
+    liens:[['outillage.html#colles','Nos colles et produits de pose']] },
+  { cat:'pose', q:"Combien de colle prévoir au mètre carré ?",
+    r:"Comptez 3 à 5 kg/m² en simple encollage, 6 à 8 kg/m² en double encollage selon le peigne utilisé. Donnez-nous votre surface et votre format de carreau : on calcule le nombre de sacs exact.",
+    liens:[['calculateur.html','Calculer mes quantités'],['outillage.html','Notre rayon outillage']] },
+  { cat:'pose', q:"Joint époxy ou joint ciment ?",
+    r:"L'époxy ne tache pas, ne noircit pas et se nettoie d'un coup d'éponge : imbattable en douche et en crédence, mais plus exigeant à poser. Le joint ciment hydrofugé reste parfait partout ailleurs, pour un budget moindre.",
+    liens:[['outillage.html#joints','Joints et finitions']] },
+  { cat:'pose', q:"Les croisillons autonivelants valent-ils le coup ?",
+    r:"Pour les grands formats, clairement oui : ils suppriment les différences de niveau entre carreaux pendant le séchage, le défaut le plus visible d'une pose ratée. Pour des petits formats en pose droite, des croisillons classiques suffisent.",
+    liens:[['outillage.html#joints','Croisillons et nivellement']] },
+  { cat:'pose', q:"Faut-il un primaire avant de carreler ?",
+    r:"Oui, le primaire d'accrochage est obligatoire : il régule la porosité du support et garantit l'adhérence de la colle. Le produit change selon le support — chape, ancien carrelage, plaque de plâtre — et nous vous indiquons lequel prendre.",
+    liens:[['carrelage.html#pose',"Les étapes d’une pose réussie"]] },
+
+  /* ---------------- MAGASIN ---------------- */
+  { cat:'magasin', q:"Le devis est-il vraiment gratuit ?",
+    r:"Oui, toujours : étude et conseils compris, sans engagement. Il est détaillé poste par poste — produits, produits de pose, accessoires — pour que vous puissiez comparer en toute transparence. Réponse sous 48 h.",
+    liens:[['services.html','Tous nos services']] },
+  { cat:'magasin', q:"Faut-il prendre rendez-vous pour être conseillé ?",
+    r:"Non : passez quand vous voulez aux horaires d'ouverture, un conseiller se libère pour vous. Pour un gros projet, un simple appel au 03 28 48 08 08 nous permet de préparer votre visite.",
+    liens:[['contact.html','Horaires et accès']] },
+  { cat:'magasin', q:"Quand puis-je retirer ma commande au dépôt ?",
+    r:"Du mardi au samedi aux horaires d'ouverture. Le dépôt est fermé le lundi, mais le magasin d'exposition reste ouvert l'après-midi. Nous vous prévenons dès que votre commande est complète.",
+    liens:[['services.html','Commande et retrait']] },
+  { cat:'magasin', q:"Vendez-vous aux professionnels ?",
+    r:"Oui : artisans, architectes et entreprises trouvent chez nous les mêmes gammes techniques que les particuliers, avec un interlocuteur dédié et des produits de pose professionnels en stock.",
+    liens:[['services.html',"L’accompagnement des pros"]] },
+  { cat:'magasin', q:"Peut-on emprunter des échantillons ?",
+    r:"Oui, nous prêtons des carreaux pour que vous les regardiez chez vous, à la lumière de la pièce : c'est elle qui change tout. Rien ne remplace un échantillon posé au sol à côté de vos murs et de vos meubles.",
+    liens:[['realisations.html',"Trouver l’inspiration"]] }
+];
+
+const CATS = [
+  { id:'tout',          label:'Toutes' },
+  { id:'carrelage',     label:'Carrelage' },
+  { id:'parquet',       label:'Parquet' },
+  { id:'salle-de-bain', label:'Salle de bain' },
+  { id:'pierre',        label:'Pierre naturelle' },
+  { id:'pose',          label:'Pose & produits' },
+  { id:'magasin',       label:'Magasin & commandes' }
+];
+const LIB = Object.fromEntries(CATS.map(c => [c.id, c.label]));
+
+let catActive = 'tout';
+let terme = '';
+
+/* ---------- Balisage FAQPage pour Google ---------- */
+const ld = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": FAQ.map(f => ({
+    "@type": "Question", "name": f.q,
+    "acceptedAnswer": { "@type": "Answer", "text": f.r }
+  }))
+};
+const s = document.createElement('script');
+s.type = 'application/ld+json';
+s.textContent = JSON.stringify(ld);
+document.head.appendChild(s);
+
+/* ---------- Rendu ---------- */
+const contenu = document.getElementById('contenuFaq');
+
+function normaliser(t) {
+  return t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+function surligner(texte) {
+  if (!terme) return texte;
+  const source = normaliser(texte);
+  const cible = normaliser(terme);
+  let res = '', i = 0;
+  while (true) {
+    const p = source.indexOf(cible, i);
+    if (p === -1) { res += texte.slice(i); break; }
+    res += texte.slice(i, p) + '<mark>' + texte.slice(p, p + cible.length) + '</mark>';
+    i = p + cible.length;
+  }
+  return res;
+}
+
+function construire() {
+  const groupes = {};
+  FAQ.forEach((f, i) => { (groupes[f.cat] ||= []).push({ ...f, i }); });
+
+  contenu.innerHTML = CATS.filter(c => c.id !== 'tout').map(c => `
+    <div class="faq-section" data-cat="${c.id}">
+      <div class="faq-section-titre"><h2>${c.label}</h2><div class="trait"></div></div>
+      <div class="faq-list" style="margin-top:0;">
+        ${(groupes[c.id] || []).map(f => `
+          <details class="faq-item" data-i="${f.i}">
+            <summary>${f.q}</summary>
+            <div class="faq-body">
+              <p>${f.r}</p>
+              ${f.liens?.length ? `<p class="faq-liens">${f.liens.map(l => `<a href="${l[0]}">${l[1]} →</a>`).join(' &nbsp;·&nbsp; ')}</p>` : ''}
+            </div>
+          </details>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function appliquer() {
+  let visibles = 0;
+  const t = normaliser(terme);
+
+  document.querySelectorAll('.faq-item').forEach(el => {
+    const f = FAQ[Number(el.dataset.i)];
+    const okCat = catActive === 'tout' || f.cat === catActive;
+    const okTexte = !t || normaliser(f.q + ' ' + f.r).includes(t);
+    const ok = okCat && okTexte;
+    el.classList.toggle('cachee', !ok);
+    if (ok) {
+      visibles++;
+      el.querySelector('summary').innerHTML = surligner(f.q);
+      if (t) el.open = true;
+    } else {
+      el.open = false;
+    }
+  });
+
+  document.querySelectorAll('.faq-section').forEach(sec => {
+    const reste = sec.querySelectorAll('.faq-item:not(.cachee)').length;
+    sec.classList.toggle('cachee', reste === 0);
+  });
+
+  document.getElementById('faqVide').hidden = visibles > 0;
+  document.getElementById('etatFaq').innerHTML = terme || catActive !== 'tout'
+    ? `<b>${visibles}</b> réponse${visibles > 1 ? 's' : ''} sur ${FAQ.length}`
+    : `<b>${FAQ.length}</b> questions, les réponses de nos conseillers`;
+
+  // Chips avec compteurs
+  const chips = document.getElementById('chipsFaq');
+  chips.innerHTML = '';
+  CATS.forEach(c => {
+    const n = c.id === 'tout'
+      ? FAQ.filter(f => !t || normaliser(f.q + ' ' + f.r).includes(t)).length
+      : FAQ.filter(f => f.cat === c.id && (!t || normaliser(f.q + ' ' + f.r).includes(t))).length;
+    const b = document.createElement('button');
+    b.className = 'puce' + (c.id === catActive ? ' active' : '');
+    b.innerHTML = `${c.label}<span class="n">${n}</span>`;
+    b.addEventListener('click', () => { catActive = c.id; appliquer(); });
+    chips.appendChild(b);
+  });
+}
+
+document.getElementById('rechercheFaq').addEventListener('input', e => {
+  terme = e.target.value.trim();
+  appliquer();
+});
+
+// Lien direct vers une question : faq.html#q12 l'ouvre et y descend
+construire();
+appliquer();
+if (location.hash.startsWith('#q')) {
+  const el = document.querySelector(`.faq-item[data-i="${location.hash.slice(2)}"]`);
+  if (el) { el.open = true; setTimeout(() => el.scrollIntoView({ block:'center' }), 300); }
+}
+</script>
+</body>
+</html>

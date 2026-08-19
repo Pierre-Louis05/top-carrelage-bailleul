@@ -32,6 +32,14 @@
     .puce.active .n { opacity:0.75; }
     .puce.vide { opacity:0.35; pointer-events:none; }
 
+    /* Pastilles de teinte */
+    .puce-ton { padding-left:0.45rem; }
+    .puce-ton .rond {
+      width:19px; height:19px; border-radius:50%; flex-shrink:0;
+      border:1px solid rgba(16,31,56,0.16); box-shadow:inset 0 1px 2px rgba(0,0,0,0.08);
+    }
+    .puce-ton.active .rond { border-color:rgba(255,255,255,0.5); }
+
     .barre-etat {
       display:flex; align-items:center; justify-content:space-between; gap:1rem;
       flex-wrap:wrap; padding-top:0.4rem; border-top:1px solid var(--ligne);
@@ -234,6 +242,7 @@
           <a href="carrelage.html#exterieur">Carrelage extérieur</a>
           <a href="carrelage.html#choisir">Bien choisir son carrelage</a>
           <a href="carrelage.html#pose">Conseils de pose</a>
+          <a href="calculateur.html">Calculer mes quantités</a>
         </div>
       </li>
       <li class="has-dropdown">
@@ -293,6 +302,7 @@
         <a href="carrelage.html#exterieur">Carrelage extérieur</a>
         <a href="carrelage.html#choisir">Bien choisir son carrelage</a>
         <a href="carrelage.html#pose">Conseils de pose</a>
+        <a href="calculateur.html">Calculer mes quantités</a>
       </div>
     </div>
 
@@ -356,6 +366,9 @@
       <div class="filtre-ligne" id="filtresMatiere">
         <span class="filtre-label">Matière</span>
       </div>
+      <div class="filtre-ligne" id="filtresCouleur">
+        <span class="filtre-label">Teinte</span>
+      </div>
       <div class="barre-etat">
         <span class="compte-resultats" id="compteResultats"></span>
         <button class="lien-raz" id="btnRaz" hidden>Tout afficher</button>
@@ -364,7 +377,7 @@
 
     <div class="mosaique" id="mosaique"></div>
     <div class="aucun-resultat" id="aucunResultat" hidden>
-      Aucune ambiance ne combine ces deux filtres. Essayez une autre association.
+      Aucune ambiance ne réunit ces critères. Retirez-en un pour élargir la recherche.
     </div>
   </div>
 </section>
@@ -447,6 +460,8 @@
         <ul>
           <li><a href="services.html">Nos services</a></li>
           <li><a href="realisations.html">Inspirations</a></li>
+          <li><a href="calculateur.html">Calculateur de quantités</a></li>
+          <li><a href="faq.html">Questions fréquentes</a></li>
           <li><a href="histoire.html">Notre histoire</a></li>
           <li><a href="equipe.html">L'équipe</a></li>
           <li><a href="avis.html">Laisser un avis</a></li>
@@ -486,43 +501,43 @@
    et feuille imprimable à apporter au magasin.
    ===================================================================== */
 const PHOTOS = [
- { piece:'sejour',        matiere:'pierre', titre:"Séjour ouvert sur la campagne",      desc:"Un grand format beige qui file de l'intérieur vers la terrasse, sous un mur terracotta." },
- { piece:'salle-de-bain', matiere:'marbre', titre:"Marbre veiné et parquet clair",      desc:"Le veinage habille le mur jusqu'au sol, adouci par un bois blond et une fenêtre en arche." },
- { piece:'exterieur',     matiere:'bois',   titre:"Terrasse effet bois au bord du bassin", desc:"La chaleur du bois avec la résistance du grès : ni gris, ni échardes, ni entretien annuel." },
- { piece:'cuisine',       matiere:'pierre', titre:"Îlot en pierre, façades sombres",    desc:"Sol et plan de travail dans la même matière : l'ensemble ne fait qu'un." },
- { piece:'salle-de-bain', matiere:'pierre', titre:"Douche à l'italienne en pierre grise", desc:"Un granité moucheté qui court du sol jusqu'à la paroi, sans rupture de matière." },
- { piece:'commerce',      matiere:'pierre', titre:"Boutique en grand format",           desc:"Peu de joints, une teinte sable régulière : le sol s'efface et laisse parler les volumes." },
- { piece:'sejour',        matiere:'pierre', titre:"Séjour tout en nuances claires",     desc:"Un veiné très pâle qui capte la lumière rasante et agrandit visuellement la pièce." },
- { piece:'cuisine',       matiere:'bois',   titre:"Îlot pierre et parquet chevrons",    desc:"Le chevron réchauffe la pièce, l'îlot minéral lui donne son point d'ancrage." },
- { piece:'exterieur',     matiere:'pierre', titre:"Terrasse face au couchant",          desc:"Une teinte très claire qui reste tempérée sous le soleil, jusqu'au bord du bassin." },
- { piece:'salle-de-bain', matiere:'pierre', titre:"Salle d'eau ouverte sur le patio",   desc:"Sol clair en continuité de l'extérieur, bois en soubassement : la pièce respire." },
- { piece:'sejour',        matiere:'bois',   titre:"Chevrons dans une pièce ancienne",   desc:"Le point de Hongrie remis au goût du jour, avec la solidité du grès cérame." },
- { piece:'cuisine',       matiere:'pierre', titre:"Îlot noir sur sol sable",            desc:"Le contraste maximal : une cuisine sombre posée sur un grand format beige mat." },
- { piece:'exterieur',     matiere:'pierre', titre:"Bassin intérieur et murs sculptés",  desc:"Sol et murs dans la même pierre claire, avec un relief strié qui capte l'éclairage." },
- { piece:'salle-de-bain', matiere:'marbre', titre:"Baignoire îlot et mur strié",        desc:"Un relief vertical vert d'eau derrière la baignoire, pour rompre la neutralité." },
- { piece:'sejour',        matiere:'pierre', titre:"Séjour lumineux sur jardin",         desc:"Une crème très douce, presque sans veine, qui reflète bien la lumière du nord." },
- { piece:'cuisine',       matiere:'bois',   titre:"Arches et bois clair",               desc:"Un sol effet chêne qui adoucit les courbes et répond aux façades de la cuisine." },
- { piece:'exterieur',     matiere:'pierre', titre:"Terrasse grise entre les palmiers",  desc:"Des dalles épaisses posées sur plots, avec un lit de galets pour l'écoulement." },
- { piece:'salle-de-bain', matiere:'pierre', titre:"Salle de bain esprit thermes",       desc:"Vasque colonne et bain encastré dans une même matière douce et mate." },
- { piece:'commerce',      matiere:'bois',   titre:"Espace en chevrons clairs",          desc:"Un chevron blond qui structure l'espace sans jamais le charger." },
- { piece:'sejour',        matiere:'pierre', titre:"Salon ouvert sur la piscine",        desc:"Une teinte sable chaude qui prolonge le séjour jusqu'au bord du bassin." },
- { piece:'salle-de-bain', matiere:'marbre', titre:"Douche en zellige profond",          desc:"Un bleu-vert irrégulier, fait main, qui donne de la profondeur à la douche." },
- { piece:'exterieur',     matiere:'bois',   titre:"Terrasse sous pergola",              desc:"Des lames effet bois clair, séparées par un lit de galets qui draine l'eau de pluie." },
- { piece:'cuisine',       matiere:'beton',  titre:"Crédence terrazzo, sol béton",       desc:"Le grain minéral du terrazzo en crédence, posé sur un sol béton uni et discret." },
- { piece:'sejour',        matiere:'pierre', titre:"Pièce de vie tout en clarté",        desc:"Un sol uni très pâle, choisi pour disparaître et laisser la lumière travailler." },
- { piece:'sejour',        matiere:'pierre', titre:"Sol ardoise face à l'océan",         desc:"Une teinte sombre et mate qui ancre la pièce et fait ressortir les bois clairs." },
- { piece:'cuisine',       matiere:'marbre', titre:"Crédence nacrée",                    desc:"Des carreaux allongés et brillants qui renvoient la lumière des étagères." },
- { piece:'exterieur',     matiere:'pierre', titre:"Cour intérieure minérale",           desc:"Dalles beige nuancé et gravier : une entrée qui respire la fraîcheur." },
- { piece:'sejour',        matiere:'pierre', titre:"Grand séjour et baie ouverte",       desc:"Un sol clair sans motif marqué, idéal quand la vue fait déjà tout le décor." },
- { piece:'commerce',      matiere:'marbre', titre:"Comptoir en mosaïque émeraude",      desc:"Des petits carreaux brillants qui accrochent la lumière et signent le lieu." },
- { piece:'salle-de-bain', matiere:'pierre', titre:"Bain minéral et reflets cuivrés",    desc:"Un travertin doux du sol au plafond, réchauffé par une robinetterie cuivre." },
- { piece:'exterieur',     matiere:'bois',   titre:"Terrasse bois et mur corten",        desc:"L'effet bois côté détente, le métal oxydé côté façade : deux matières qui vieillissent bien." },
- { piece:'sejour',        matiere:'pierre', titre:"Salle à manger sur fond vert",       desc:"Une teinte sable nuancée qui tient tête à un mur profond sans jamais l'écraser." },
- { piece:'salle-de-bain', matiere:'marbre', titre:"Mur fleuri et laiton",               desc:"Un décor mural végétal qui fait de la salle de bain une pièce à part entière." },
- { piece:'exterieur',     matiere:'pierre', titre:"Abords de piscine en pierre claire", desc:"Une surface antidérapante et claire, agréable pieds nus même en plein été." },
- { piece:'chambre',       matiere:'bois',   titre:"Chambre en bois miel",               desc:"Des lames larges et chaudes, agréables pieds nus au réveil." },
- { piece:'commerce',      matiere:'beton',  titre:"Boutique vert d'eau",                desc:"Un sol clair et mat, volontairement neutre, pour laisser parler la couleur des murs." },
- { piece:'commerce',      matiere:'beton',  titre:"Espace de vente épuré",              desc:"Un sol clair, uni et facile d'entretien, pensé pour un fort passage." }
+ { piece:'sejour',        matiere:'pierre', couleur:'beige', titre:"Séjour ouvert sur la campagne",      desc:"Un grand format beige qui file de l'intérieur vers la terrasse, sous un mur terracotta." },
+ { piece:'salle-de-bain', matiere:'marbre', couleur:'blanc', titre:"Marbre veiné et parquet clair",      desc:"Le veinage habille le mur jusqu'au sol, adouci par un bois blond et une fenêtre en arche." },
+ { piece:'exterieur',     matiere:'bois', couleur:'bois',   titre:"Terrasse effet bois au bord du bassin", desc:"La chaleur du bois avec la résistance du grès : ni gris, ni échardes, ni entretien annuel." },
+ { piece:'cuisine',       matiere:'pierre', couleur:'beige', titre:"Îlot en pierre, façades sombres",    desc:"Sol et plan de travail dans la même matière : l'ensemble ne fait qu'un." },
+ { piece:'salle-de-bain', matiere:'pierre', couleur:'gris', titre:"Douche à l'italienne en pierre grise", desc:"Un granité moucheté qui court du sol jusqu'à la paroi, sans rupture de matière." },
+ { piece:'commerce',      matiere:'pierre', couleur:'beige', titre:"Boutique en grand format",           desc:"Peu de joints, une teinte sable régulière : le sol s'efface et laisse parler les volumes." },
+ { piece:'sejour',        matiere:'pierre', couleur:'blanc', titre:"Séjour tout en nuances claires",     desc:"Un veiné très pâle qui capte la lumière rasante et agrandit visuellement la pièce." },
+ { piece:'cuisine',       matiere:'bois', couleur:'bois',   titre:"Îlot pierre et parquet chevrons",    desc:"Le chevron réchauffe la pièce, l'îlot minéral lui donne son point d'ancrage." },
+ { piece:'exterieur',     matiere:'pierre', couleur:'blanc', titre:"Terrasse face au couchant",          desc:"Une teinte très claire qui reste tempérée sous le soleil, jusqu'au bord du bassin." },
+ { piece:'salle-de-bain', matiere:'pierre', couleur:'beige', titre:"Salle d'eau ouverte sur le patio",   desc:"Sol clair en continuité de l'extérieur, bois en soubassement : la pièce respire." },
+ { piece:'sejour',        matiere:'bois', couleur:'bois',   titre:"Chevrons dans une pièce ancienne",   desc:"Le point de Hongrie remis au goût du jour, avec la solidité du grès cérame." },
+ { piece:'cuisine',       matiere:'pierre', couleur:'beige', titre:"Îlot noir sur sol sable",            desc:"Le contraste maximal : une cuisine sombre posée sur un grand format beige mat." },
+ { piece:'exterieur',     matiere:'pierre', couleur:'beige', titre:"Bassin intérieur et murs sculptés",  desc:"Sol et murs dans la même pierre claire, avec un relief strié qui capte l'éclairage." },
+ { piece:'salle-de-bain', matiere:'marbre', couleur:'colore', titre:"Baignoire îlot et mur strié",        desc:"Un relief vertical vert d'eau derrière la baignoire, pour rompre la neutralité." },
+ { piece:'sejour',        matiere:'pierre', couleur:'blanc', titre:"Séjour lumineux sur jardin",         desc:"Une crème très douce, presque sans veine, qui reflète bien la lumière du nord." },
+ { piece:'cuisine',       matiere:'bois', couleur:'bois',   titre:"Arches et bois clair",               desc:"Un sol effet chêne qui adoucit les courbes et répond aux façades de la cuisine." },
+ { piece:'exterieur',     matiere:'pierre', couleur:'gris', titre:"Terrasse grise entre les palmiers",  desc:"Des dalles épaisses posées sur plots, avec un lit de galets pour l'écoulement." },
+ { piece:'salle-de-bain', matiere:'pierre', couleur:'beige', titre:"Salle de bain esprit thermes",       desc:"Vasque colonne et bain encastré dans une même matière douce et mate." },
+ { piece:'commerce',      matiere:'bois', couleur:'bois',   titre:"Espace en chevrons clairs",          desc:"Un chevron blond qui structure l'espace sans jamais le charger." },
+ { piece:'sejour',        matiere:'pierre', couleur:'beige', titre:"Salon ouvert sur la piscine",        desc:"Une teinte sable chaude qui prolonge le séjour jusqu'au bord du bassin." },
+ { piece:'salle-de-bain', matiere:'marbre', couleur:'colore', titre:"Douche en zellige profond",          desc:"Un bleu-vert irrégulier, fait main, qui donne de la profondeur à la douche." },
+ { piece:'exterieur',     matiere:'bois', couleur:'bois',   titre:"Terrasse sous pergola",              desc:"Des lames effet bois clair, séparées par un lit de galets qui draine l'eau de pluie." },
+ { piece:'cuisine',       matiere:'beton', couleur:'gris',  titre:"Crédence terrazzo, sol béton",       desc:"Le grain minéral du terrazzo en crédence, posé sur un sol béton uni et discret." },
+ { piece:'sejour',        matiere:'pierre', couleur:'blanc', titre:"Pièce de vie tout en clarté",        desc:"Un sol uni très pâle, choisi pour disparaître et laisser la lumière travailler." },
+ { piece:'sejour',        matiere:'pierre', couleur:'noir', titre:"Sol ardoise face à l'océan",         desc:"Une teinte sombre et mate qui ancre la pièce et fait ressortir les bois clairs." },
+ { piece:'cuisine',       matiere:'marbre', couleur:'blanc', titre:"Crédence nacrée",                    desc:"Des carreaux allongés et brillants qui renvoient la lumière des étagères." },
+ { piece:'exterieur',     matiere:'pierre', couleur:'beige', titre:"Cour intérieure minérale",           desc:"Dalles beige nuancé et gravier : une entrée qui respire la fraîcheur." },
+ { piece:'sejour',        matiere:'pierre', couleur:'blanc', titre:"Grand séjour et baie ouverte",       desc:"Un sol clair sans motif marqué, idéal quand la vue fait déjà tout le décor." },
+ { piece:'commerce',      matiere:'marbre', couleur:'colore', titre:"Comptoir en mosaïque émeraude",      desc:"Des petits carreaux brillants qui accrochent la lumière et signent le lieu." },
+ { piece:'salle-de-bain', matiere:'pierre', couleur:'beige', titre:"Bain minéral et reflets cuivrés",    desc:"Un travertin doux du sol au plafond, réchauffé par une robinetterie cuivre." },
+ { piece:'exterieur',     matiere:'bois', couleur:'bois',   titre:"Terrasse bois et mur corten",        desc:"L'effet bois côté détente, le métal oxydé côté façade : deux matières qui vieillissent bien." },
+ { piece:'sejour',        matiere:'pierre', couleur:'beige', titre:"Salle à manger sur fond vert",       desc:"Une teinte sable nuancée qui tient tête à un mur profond sans jamais l'écraser." },
+ { piece:'salle-de-bain', matiere:'marbre', couleur:'colore', titre:"Mur fleuri et laiton",               desc:"Un décor mural végétal qui fait de la salle de bain une pièce à part entière." },
+ { piece:'exterieur',     matiere:'pierre', couleur:'beige', titre:"Abords de piscine en pierre claire", desc:"Une surface antidérapante et claire, agréable pieds nus même en plein été." },
+ { piece:'chambre',       matiere:'bois', couleur:'bois',   titre:"Chambre en bois miel",               desc:"Des lames larges et chaudes, agréables pieds nus au réveil." },
+ { piece:'commerce',      matiere:'beton', couleur:'colore',  titre:"Boutique vert d'eau",                desc:"Un sol clair et mat, volontairement neutre, pour laisser parler la couleur des murs." },
+ { piece:'commerce',      matiere:'beton', couleur:'blanc',  titre:"Espace de vente épuré",              desc:"Un sol clair, uni et facile d'entretien, pensé pour un fort passage." }
 ].map((p, i) => ({ ...p, f:`inspi-${String(i + 1).padStart(2, '0')}.jpg`, id:i }));
 
 const PIECES = [
@@ -536,11 +551,20 @@ const MATIERES = [
   { id:'bois', label:'Effet bois' }, { id:'marbre', label:'Marbre & décors' },
   { id:'beton', label:'Béton & terrazzo' }
 ];
+const COULEURS = [
+  { id:'tout',   label:'Toutes',        ton:'linear-gradient(135deg,#E8E2D6 0%,#B9BCC0 50%,#C99A5B 100%)' },
+  { id:'beige',  label:'Beige & sable', ton:'#DCCFB6' },
+  { id:'blanc',  label:'Blanc & crème', ton:'#F1EDE6' },
+  { id:'gris',   label:'Gris',          ton:'#AFB3B7' },
+  { id:'noir',   label:'Anthracite',    ton:'#3C4148' },
+  { id:'bois',   label:'Bois',          ton:'#C69254' },
+  { id:'colore', label:'Couleur',       ton:'linear-gradient(135deg,#5E8F86 0%,#3F6E86 100%)' }
+];
 const LIB_PIECE = { sejour:'Séjour', cuisine:'Cuisine', 'salle-de-bain':'Salle de bain',
                     chambre:'Chambre', exterieur:'Extérieur', commerce:'Commerce' };
 
 const CLE = 'topamenagement_selection';
-let piece = 'tout', matiere = 'tout';
+let piece = 'tout', matiere = 'tout', couleur = 'tout';
 let favoris = new Set();
 let dispo = [];        // photos dont le fichier existe
 let visibles = [];     // photos affichées après filtres
@@ -601,19 +625,32 @@ function construireFiltres() {
   };
   ligne(document.getElementById('filtresPiece'),   PIECES,   piece,   'piece');
   ligne(document.getElementById('filtresMatiere'), MATIERES, matiere, 'matiere');
+
+  const cont = document.getElementById('filtresCouleur');
+  cont.querySelectorAll('.puce').forEach(b => b.remove());
+  COULEURS.forEach(c => {
+    const n = c.id === 'tout' ? dispo.length : dispo.filter(i => PHOTOS[i].couleur === c.id).length;
+    const b = document.createElement('button');
+    b.className = 'puce puce-ton' + (c.id === couleur ? ' active' : '') + (n === 0 && c.id !== 'tout' ? ' vide' : '');
+    b.innerHTML = `<span class="rond" style="background:${c.ton}"></span>${c.label}<span class="n">${n}</span>`;
+    b.addEventListener('click', () => { couleur = c.id; construireFiltres(); appliquer(); });
+    cont.appendChild(b);
+  });
 }
 
 function appliquer() {
   visibles = [];
   mosaique.querySelectorAll('.carte').forEach(el => {
     const p = PHOTOS[Number(el.dataset.id)];
-    const ok = (piece === 'tout' || p.piece === piece) && (matiere === 'tout' || p.matiere === matiere);
+    const ok = (piece   === 'tout' || p.piece   === piece)
+            && (matiere === 'tout' || p.matiere === matiere)
+            && (couleur === 'tout' || p.couleur === couleur);
     el.classList.toggle('cachee', !ok);
     if (ok) visibles.push(p.id);
   });
 
   zoneVide.hidden = visibles.length > 0;
-  const filtre = piece !== 'tout' || matiere !== 'tout';
+  const filtre = piece !== 'tout' || matiere !== 'tout' || couleur !== 'tout';
   document.getElementById('btnRaz').hidden = !filtre;
   document.getElementById('compteResultats').innerHTML = filtre
     ? `<b>${visibles.length}</b> ambiance${visibles.length > 1 ? 's' : ''} sur ${dispo.length}`
@@ -621,7 +658,7 @@ function appliquer() {
 }
 
 document.getElementById('btnRaz').addEventListener('click', () => {
-  piece = 'tout'; matiere = 'tout'; construireFiltres(); appliquer();
+  piece = 'tout'; matiere = 'tout'; couleur = 'tout'; construireFiltres(); appliquer();
 });
 
 /* ---------- Coups de cœur ---------- */

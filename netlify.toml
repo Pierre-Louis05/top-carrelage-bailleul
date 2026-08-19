@@ -57,3 +57,13 @@
   from = "/produits"
   to = "/univers.html"
   status = 200
+
+[[redirects]]
+  from = "/faq"
+  to = "/faq.html"
+  status = 200
+
+[[redirects]]
+  from = "/calculateur"
+  to = "/calculateur.html"
+  status = 200
