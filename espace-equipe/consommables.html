@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stock consommables — Espace Équipe Top Aménagement</title>
+  <title>Stock consommables · Espace Équipe Top Aménagement</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="app.css" />
@@ -211,19 +211,19 @@
 
       <div class="stats-grid">
         <div class="stat-card confirme">
-          <div class="stat-number" id="stat-ok">—</div>
+          <div class="stat-number" id="stat-ok">·</div>
           <div class="stat-label">Références en stock</div>
         </div>
         <div class="stat-card nouveau">
-          <div class="stat-number" id="stat-commander">—</div>
+          <div class="stat-number" id="stat-commander">·</div>
           <div class="stat-label">Sous le seuil</div>
         </div>
         <div class="stat-card archive">
-          <div class="stat-number" id="stat-rupture">—</div>
+          <div class="stat-number" id="stat-rupture">·</div>
           <div class="stat-label">En rupture</div>
         </div>
         <div class="stat-card confirme">
-          <div class="stat-number" id="stat-jour">—</div>
+          <div class="stat-number" id="stat-jour">·</div>
           <div class="stat-label">Mouvements aujourd'hui</div>
         </div>
       </div>
@@ -539,7 +539,7 @@ function rendreACommander() {
         <tr>
           <td><span class="badge-etat badge-${e.etat}">${ETAT_LABEL[e.etat]}</span></td>
           <td><b>${echap(p.designation)}</b><br><span style="font-size:0.76rem; color:var(--text-muted);">${echap(p.conditionnement || '')}</span></td>
-          <td style="font-size:0.82rem; color:var(--text-muted);">${echap(p.fournisseur || '—')}</td>
+          <td style="font-size:0.82rem; color:var(--text-muted);">${echap(p.fournisseur || '·')}</td>
           <td class="num" style="${e.etat === 'rupture' ? 'color:#f08b8b;font-weight:700;' : ''}">${nb(e.stock)}</td>
           <td class="num" style="color:var(--text-muted);">${nb(e.mini)}</td>
           <td class="num" style="color:var(--attente);">${nb(e.manque)}</td>
@@ -555,9 +555,9 @@ function rendreACommander() {
 
 function copierListe() {
   const lignes = produits.map(p => ({ p, e: etatDe(p) })).filter(x => x.e.etat !== 'ok');
-  const txt = 'COMMANDE CONSOMMABLES — ' + new Date().toLocaleDateString('fr-FR') + '\n\n' +
+  const txt = 'COMMANDE CONSOMMABLES du ' + new Date().toLocaleDateString('fr-FR') + '\n\n' +
     lignes.map(({ p, e }) =>
-      `${nb(e.conseille)} ${p.unite}${s(e.conseille)} — ${p.designation}${p.conditionnement ? ' (' + p.conditionnement + ')' : ''}${p.fournisseur ? ' [' + p.fournisseur + ']' : ''}`
+      `${nb(e.conseille)} ${p.unite}${s(e.conseille)} : ${p.designation}${p.conditionnement ? ' (' + p.conditionnement + ')' : ''}${p.fournisseur ? ' [' + p.fournisseur + ']' : ''}`
     ).join('\n');
   navigator.clipboard.writeText(txt)
     .then(() => toast('Liste copiée'))
@@ -584,7 +584,7 @@ function rendreJournal() {
         <div class="mvt-ico ${cls}">${sig}</div>
         <div class="mvt-txt">
           <b>${lib} · ${q > 0 ? '+' : ''}${nb(q)} ${echap(p?.unite || '')}${s(q)}</b>
-          — ${echap(p?.designation || 'Produit supprimé')}
+          · ${echap(p?.designation || 'Produit supprimé')}
           ${(m.client_nom || m.note || m.document_ref) ? `<br><span style="color:var(--text-muted); font-size:0.79rem;">${[m.client_nom, m.document_ref, m.note].filter(Boolean).map(echap).join(' · ')}</span>` : ''}
         </div>
         <div class="mvt-date">
@@ -617,10 +617,10 @@ function rendreProduits() {
         <tr>
           <td><span class="cat-pill cat-${p.categorie}">${CAT_LABEL[p.categorie]}</span></td>
           <td><b>${echap(p.designation)}</b>${p.reference ? `<br><span style="font-size:0.75rem; color:var(--text-muted);">réf. ${echap(p.reference)}</span>` : ''}</td>
-          <td style="font-size:0.82rem;">${echap(p.conditionnement || '—')}</td>
-          <td style="font-size:0.82rem; color:var(--text-muted);">${echap(p.fournisseur || '—')}</td>
+          <td style="font-size:0.82rem;">${echap(p.conditionnement || '·')}</td>
+          <td style="font-size:0.82rem; color:var(--text-muted);">${echap(p.fournisseur || '·')}</td>
           <td class="num"><input class="champ-mini" type="number" step="any" min="0" value="${Number(p.stock_mini)}" onchange="majChamp('${p.id}','stock_mini',this.value)" /></td>
-          <td class="num"><input class="champ-mini" type="number" step="any" min="0" value="${p.qte_reappro ?? ''}" placeholder="—" onchange="majChamp('${p.id}','qte_reappro',this.value)" /></td>
+          <td class="num"><input class="champ-mini" type="number" step="any" min="0" value="${p.qte_reappro ?? ''}" placeholder="·" onchange="majChamp('${p.id}','qte_reappro',this.value)" /></td>
           <td style="text-align:right; white-space:nowrap;">
             <button class="btn-mini" style="padding:0.4rem 0.7rem;" onclick="modalEditerProduit('${p.id}')">Modifier</button>
             <button class="btn-mini" style="padding:0.4rem 0.7rem;" onclick="retirerProduit('${p.id}')">Retirer</button>
@@ -650,7 +650,7 @@ function modalMouvement(produitId, type) {
   const e = etatDe(p);
   const titres = { entree:'Réception de marchandise', sortie:'Chargement client', inventaire:'Recomptage du stock' };
 
-  const enTete = `<div class="rappel"><b>${echap(p.designation)}</b>${p.conditionnement ? ' — ' + echap(p.conditionnement) : ''}<br>
+  const enTete = `<div class="rappel"><b>${echap(p.designation)}</b>${p.conditionnement ? ' · ' + echap(p.conditionnement) : ''}<br>
     Stock actuel : <b>${nb(e.stock)} ${echap(p.unite)}${s(e.stock)}</b></div>`;
 
   const corps = type === 'inventaire'

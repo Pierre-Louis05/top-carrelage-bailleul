@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mon pointage — Espace Équipe Top Carrelage</title>
+  <title>Mon pointage · Espace Équipe Top Carrelage</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="app.css" />
@@ -211,7 +211,7 @@ function heureFmt(iso) {
 }
 
 function dureeFmt(heuresDecimal) {
-  if (heuresDecimal == null) return '—';
+  if (heuresDecimal == null) return '·';
   const h = Math.floor(heuresDecimal);
   const m = Math.round((heuresDecimal - h) * 60);
   return `${h}h${m.toString().padStart(2, '0')}`;
@@ -324,7 +324,7 @@ function renderSteps() {
       inner = `<div class="clock-step-icon">${s.icon}</div><div class="clock-step-label">${s.label}</div><button onclick="pointer('${s.champ}')">${s.actionLabel}</button>`;
     } else {
       cls += ' disabled';
-      inner = `<div class="clock-step-icon">${s.icon}</div><div class="clock-step-label">${s.label}</div><div class="clock-step-time">—</div>`;
+      inner = `<div class="clock-step-icon">${s.icon}</div><div class="clock-step-label">${s.label}</div><div class="clock-step-time">·</div>`;
     }
     return `<div class="${cls}">${inner}</div>`;
   }).join('');
@@ -398,9 +398,9 @@ async function loadHistorique() {
         ${data.map(p => `
           <tr>
             <td style="text-transform:capitalize;">${new Date(p.date).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}</td>
-            <td>${heureFmt(p.arrivee) || '—'}</td>
-            <td>${p.pause_debut && p.pause_fin ? `${heureFmt(p.pause_debut)} – ${heureFmt(p.pause_fin)}` : (p.pause_debut ? `${heureFmt(p.pause_debut)} – …` : '—')}</td>
-            <td>${heureFmt(p.depart) || '—'}</td>
+            <td>${heureFmt(p.arrivee) || '·'}</td>
+            <td>${p.pause_debut && p.pause_fin ? `${heureFmt(p.pause_debut)} – ${heureFmt(p.pause_fin)}` : (p.pause_debut ? `${heureFmt(p.pause_debut)} – …` : '·')}</td>
+            <td>${heureFmt(p.depart) || '·'}</td>
             <td><span class="total-pill">${dureeFmt(calculerHeures(p))}</span></td>
           </tr>
         `).join('')}

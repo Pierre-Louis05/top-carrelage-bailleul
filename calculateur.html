@@ -372,9 +372,9 @@
             <div class="champ">
               <label for="largeurJoint">Largeur de joint</label>
               <select id="largeurJoint">
-                <option value="2">2 mm — rectifié</option>
-                <option value="3" selected>3 mm — standard</option>
-                <option value="5">5 mm — rustique</option>
+                <option value="2">2 mm (rectifié)</option>
+                <option value="3" selected>3 mm (standard)</option>
+                <option value="5">5 mm (rustique)</option>
               </select>
             </div>
           </div>
@@ -451,26 +451,26 @@
           <div class="res-sous" id="resRappel">Saisissez vos dimensions pour commencer</div>
 
           <div class="res-principal">
-            <span class="gros" id="resBoites">—</span>
+            <span class="gros" id="resBoites">·</span>
             <span class="unite" id="resBoitesLib">boîtes à commander</span>
           </div>
 
           <div class="res-lignes">
             <div class="res-ligne">
               <div class="res-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
-              <div class="res-txt"><b id="resSurface">—</b><span>surface à commander, chutes comprises</span></div>
+              <div class="res-txt"><b id="resSurface">·</b><span>surface à commander, chutes comprises</span></div>
             </div>
             <div class="res-ligne">
               <div class="res-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg></div>
-              <div class="res-txt"><b id="resColle">—</b><span>colle, double encollage et primaire compris</span></div>
+              <div class="res-txt"><b id="resColle">·</b><span>colle, double encollage et primaire compris</span></div>
             </div>
             <div class="res-ligne">
               <div class="res-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h16"/><path d="M4 4h16"/><path d="M9 4v16M15 4v16"/></svg></div>
-              <div class="res-txt"><b id="resJoint">—</b><span>joint de carrelage</span></div>
+              <div class="res-txt"><b id="resJoint">·</b><span>joint de carrelage</span></div>
             </div>
             <div class="res-ligne">
               <div class="res-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
-              <div class="res-txt"><b id="resCroisillons">—</b><span>croisillons de pose</span></div>
+              <div class="res-txt"><b id="resCroisillons">·</b><span>croisillons de pose</span></div>
             </div>
           </div>
 
@@ -479,11 +479,11 @@
             <div class="res-lignes">
               <div class="res-ligne">
                 <div class="res-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="14" width="20" height="6" rx="1"/><path d="M2 10h20"/></svg></div>
-                <div class="res-txt"><b id="resPlinthes">—</b><span id="resPlinthesLib">plinthes à façonner</span></div>
+                <div class="res-txt"><b id="resPlinthes">·</b><span id="resPlinthesLib">plinthes à façonner</span></div>
               </div>
               <div class="res-ligne">
                 <div class="res-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M3 15h18"/></svg></div>
-                <div class="res-txt"><b id="resCarreauxPlinthes">—</b><span id="resCarreauxLib">carreaux à ajouter à la commande</span></div>
+                <div class="res-txt"><b id="resCarreauxPlinthes">·</b><span id="resCarreauxLib">carreaux à ajouter à la commande</span></div>
               </div>
             </div>
           </div>
@@ -790,11 +790,11 @@ function calculer() {
 
   if (surface <= 0) {
     dernier = null;
-    $('resBoites').textContent = '—';
+    $('resBoites').textContent = '·';
     $('resBoitesLib').textContent = 'boîtes à commander';
     $('resRappel').textContent = 'Saisissez vos dimensions pour commencer';
     ['resSurface','resColle','resJoint','resCroisillons','resPlinthes','resCarreauxPlinthes']
-      .forEach(id => $(id).textContent = '—');
+      .forEach(id => $(id).textContent = '·');
     $('btnImprimer').disabled = true;
     return;
   }
@@ -873,8 +873,8 @@ function calculer() {
     $('resCarreauxLib').textContent =
       `à ajouter · ${pl.parCarreau} plinthe${pl.parCarreau > 1 ? 's' : ''} par carreau`;
   } else if ($('veutPlinthes').checked) {
-    $('resPlinthes').textContent = '—';
-    $('resCarreauxPlinthes').textContent = '—';
+    $('resPlinthes').textContent = '·';
+    $('resCarreauxPlinthes').textContent = '·';
     $('resPlinthesLib').textContent = 'indiquez la longueur de plinthes';
   }
 
@@ -914,12 +914,12 @@ $('btnImprimer').addEventListener('click', () => {
     <table class="imp-tab">
       <tr><th>Poste</th><th>Détail</th><th>Quantité</th></tr>
       <tr><td>Longueur à équiper</td><td>${fmt1(pl.perim)} m de tour de pièce moins ${pl.portes} porte${s(pl.portes)}</td><td>${fmt1(pl.ml)} m</td></tr>
-      <tr><td>Hauteur</td><td>${pl.hauteur === 'autre' ? 'Hors standard — réglage sur mesure facturé' : 'Hauteur courante, sans surcoût'}</td><td>${pl.hauteur === 'autre' ? 'à définir' : fmt1(pl.hauteur) + ' cm'}</td></tr>
+      <tr><td>Hauteur</td><td>${pl.hauteur === 'autre' ? 'Hors standard, réglage sur mesure facturé' : 'Hauteur courante, sans surcoût'}</td><td>${pl.hauteur === 'autre' ? 'à définir' : fmt1(pl.hauteur) + ' cm'}</td></tr>
       <tr><td>Plinthes</td><td>Longueur ${fmt1(pl.cotePlinthe)} cm, marge d'angles comprise</td><td>${pl.nbPlinthes} pièce${s(pl.nbPlinthes)}</td></tr>
       <tr><td>Carreaux à ajouter</td><td>${pl.parCarreau} plinthe${s(pl.parCarreau)} par carreau${pl.estime ? ', valeur estimée à confirmer avec l\'atelier' : ', d\'après la table de l\'atelier'}</td><td>${pl.carreaux} carreau${pl.carreaux > 1 ? 'x' : ''}</td></tr>
     </table>
     <p style="font-size:8.5pt; color:#555; margin-top:0.6rem; line-height:1.6;">
-      Finition de chant à préciser : <b>réémaillée à froid</b> (rendu le plus abouti, mais émail plus fragile —
+      Finition de chant à préciser : <b>réémaillée à froid</b> (rendu le plus abouti, mais émail plus fragile,
       ne jamais coller de ruban adhésif dessus) ou <b>brute</b> (un peu moins chère, à choisir en vérifiant
       que la pâte du carreau est proche de la teinte de surface).
     </p>` : ''}
@@ -927,7 +927,7 @@ $('btnImprimer').addEventListener('click', () => {
     <div class="imp-pied">
       Estimation indicative pour une pose standard sur support plan. Les quantités définitives sont
       vérifiées gratuitement au magasin selon votre support et le produit choisi.<br>
-      <b>Top Aménagement</b> — 22 avenue de l'Europe, 59270 Bailleul — 03 28 48 08 08
+      <b>Top Aménagement</b> · 22 avenue de l'Europe, 59270 Bailleul · 03 28 48 08 08
     </div>`;
   window.print();
 });

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Présence équipe — Espace Équipe Top Carrelage</title>
+  <title>Présence équipe · Espace Équipe Top Carrelage</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="app.css" />
@@ -160,7 +160,7 @@
 
     <div class="page-content">
 
-      <h3 style="margin-bottom:1rem;">Aujourd'hui — en direct</h3>
+      <h3 style="margin-bottom:1rem;">Aujourd'hui, en direct</h3>
       <div class="presence-grid" id="presenceGrid">
         <div class="loading"><div class="spinner"></div> Chargement…</div>
       </div>
@@ -253,7 +253,7 @@ function heureFmt(iso) {
   return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 function dureeFmt(heuresDecimal) {
-  if (heuresDecimal == null) return '—';
+  if (heuresDecimal == null) return '·';
   const h = Math.floor(heuresDecimal);
   const m = Math.round((heuresDecimal - h) * 60);
   return `${h}h${m.toString().padStart(2, '0')}`;
@@ -284,7 +284,7 @@ async function init() {
     .single();
 
   if (!profile || (profile.poste !== 'Dirigeant de la société' && profile.poste !== 'Responsable magasin')) {
-    // Accès réservé — redirection silencieuse
+    // Accès réservé, redirection silencieuse
     window.location.href = 'dashboard.html';
     return;
   }
@@ -297,7 +297,7 @@ async function init() {
 
   // Sélecteur d'employé pour l'historique
   const select = document.getElementById('employeeSelect');
-  select.innerHTML = EQUIPE.map(e => `<option value="${e.name}">${e.name} — ${e.poste}</option>`).join('');
+  select.innerHTML = EQUIPE.map(e => `<option value="${e.name}">${e.name} · ${e.poste}</option>`).join('');
   select.addEventListener('change', () => loadHistorique(select.value));
 
   await loadPresenceJour();
@@ -384,7 +384,7 @@ function renderDemandesConges() {
 
 async function traiterDemandeConge(id, nouveauStatut) {
   const verbe = nouveauStatut === 'approuve' ? 'approuver' : 'refuser';
-  const reponse = prompt(`Tu peux ajouter un message pour expliquer ta décision (${verbe} la demande) — facultatif :`);
+  const reponse = prompt(`Tu peux ajouter un message pour expliquer ta décision (${verbe} la demande), facultatif :`);
   if (reponse === null) return; // annulé
 
   const { error } = await db.from('conges').update({
@@ -492,9 +492,9 @@ async function loadHistorique(employeeName) {
         ${data.map(p => `
           <tr>
             <td style="text-transform:capitalize;">${new Date(p.date).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}</td>
-            <td>${heureFmt(p.arrivee) || '—'}</td>
-            <td>${p.pause_debut && p.pause_fin ? `${heureFmt(p.pause_debut)} – ${heureFmt(p.pause_fin)}` : (p.pause_debut ? `${heureFmt(p.pause_debut)} – …` : '—')}</td>
-            <td>${heureFmt(p.depart) || '—'}</td>
+            <td>${heureFmt(p.arrivee) || '·'}</td>
+            <td>${p.pause_debut && p.pause_fin ? `${heureFmt(p.pause_debut)} – ${heureFmt(p.pause_fin)}` : (p.pause_debut ? `${heureFmt(p.pause_debut)} – …` : '·')}</td>
+            <td>${heureFmt(p.depart) || '·'}</td>
             <td><span class="total-pill">${dureeFmt(calculerHeures(p))}</span></td>
           </tr>
         `).join('')}
@@ -525,7 +525,7 @@ function initExport() {
   EQUIPE.forEach(e => {
     const opt = document.createElement('option');
     opt.value = e.name;
-    opt.textContent = `${e.name} — ${e.poste}`;
+    opt.textContent = `${e.name} · ${e.poste}`;
     select.appendChild(opt);
   });
 
@@ -563,7 +563,7 @@ async function exporterCSV() {
       return;
     }
 
-    // En-têtes CSV — séparateur ";" pour une compatibilité optimale avec Excel/Sheets en français
+    // En-têtes CSV, séparateur ";" pour une compatibilité optimale avec Excel/Sheets en français
     const lignes = [
       ['Collaborateur', 'Poste', 'Date', 'Arrivée', 'Début pause déjeuner', 'Fin pause déjeuner', 'Départ', 'Total travaillé (h:min)', 'Total travaillé (heures décimales)']
     ];

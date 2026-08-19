@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard — Espace Équipe Top Carrelage</title>
+  <title>Dashboard · Espace Équipe Top Carrelage</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="app.css" />
@@ -56,23 +56,23 @@
       <!-- STATS -->
       <div class="stats-grid">
         <div class="stat-card nouveau">
-          <div class="stat-number" id="stat-nouveau">—</div>
+          <div class="stat-number" id="stat-nouveau">·</div>
           <div class="stat-label">Nouvelles</div>
         </div>
         <div class="stat-card pris">
-          <div class="stat-number" id="stat-pris">—</div>
+          <div class="stat-number" id="stat-pris">·</div>
           <div class="stat-label">En cours</div>
         </div>
         <div class="stat-card attente">
-          <div class="stat-number" id="stat-attente">—</div>
+          <div class="stat-number" id="stat-attente">·</div>
           <div class="stat-label">En attente</div>
         </div>
         <div class="stat-card confirme">
-          <div class="stat-number" id="stat-confirme">—</div>
+          <div class="stat-number" id="stat-confirme">·</div>
           <div class="stat-label">Confirmés</div>
         </div>
         <div class="stat-card archive">
-          <div class="stat-number" id="stat-archive">—</div>
+          <div class="stat-number" id="stat-archive">·</div>
           <div class="stat-label">Archivés</div>
         </div>
       </div>
@@ -217,7 +217,7 @@ function renderList() {
         <div class="rdv-meta">
           <span>📞 ${rdv.client_tel}</span>
           <span>✉️ ${rdv.client_email}</span>
-          ${rdv.date_souhaitee ? `<span>📅 ${new Date(rdv.date_souhaitee).toLocaleDateString('fr-FR')} ${rdv.creneau ? '— ' + (rdv.creneau === 'matin' ? 'Matin' : 'Après-midi') : ''}</span>` : ''}
+          ${rdv.date_souhaitee ? `<span>📅 ${new Date(rdv.date_souhaitee).toLocaleDateString('fr-FR')} ${rdv.creneau ? '· ' + (rdv.creneau === 'matin' ? 'Matin' : 'Après-midi') : ''}</span>` : ''}
           <span>📋 ${rdv.avancement}</span>
         </div>
         <div class="rdv-univers">

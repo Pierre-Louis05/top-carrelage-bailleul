@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Commandes — Espace Équipe Top Carrelage</title>
+  <title>Commandes · Espace Équipe Top Carrelage</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="app.css" />
@@ -374,7 +374,7 @@
           <span style="font-size:1.3rem;">🚛</span>
           <div>
             <div class="tr-title">Optimisation transport</div>
-            <div class="tr-sub">Cochez les commandes à inclure — poids et coût calculés automatiquement</div>
+            <div class="tr-sub">Cochez les commandes à inclure, poids et coût calculés automatiquement</div>
           </div>
         </div>
         <span class="tr-chev open" id="trChev">▼</span>
@@ -455,7 +455,7 @@
         <div class="ff">
           <label>Pays *</label>
           <select id="fPays" required>
-            <option value="">— Choisir —</option>
+            <option value="">Choisir</option>
             <option value="ESPAGNE">🇪🇸 Espagne</option>
             <option value="ITALIE">🇮🇹 Italie</option>
             <option value="PORTUGAL">🇵🇹 Portugal</option>
@@ -466,7 +466,7 @@
         <div class="ff">
           <label>Fournisseur *</label>
           <select id="fFour" required>
-            <option value="">— Choisir le pays d'abord —</option>
+            <option value="">Choisir le pays d'abord</option>
           </select>
         </div>
         <div class="ff">
@@ -701,14 +701,14 @@ function renderList(){
 
         html+=`<div class="cmd-row">
           <div class="cmd-cell-main">
-            <div class="cmd-client">${esc(c.client||'—')}</div>
+            <div class="cmd-client">${esc(c.client||'·')}</div>
             ${c.numero_commande ? `<div class="cmd-num">${esc(c.numero_commande)}</div>`:'' }
             ${c.commentaire ? `<div class="cmd-comment-line">${esc(c.commentaire)}</div>`:''}
           </div>
           <div class="cmd-cell-date">
             ${c.date_chantier ? `<div class="cmd-date-label">Chantier</div><div>${esc(c.date_chantier)}</div>` :
               c.reception_prev ? `<div class="cmd-date-label">Réception</div><div>${esc(c.reception_prev)}</div>` :
-              '<span style="color:var(--text-muted);font-size:0.78rem;">—</span>'}
+              '<span style="color:var(--text-muted);font-size:0.78rem;">·</span>'}
           </div>
           <div class="cmd-cell-status">
             <button class="sbadge ${cls}" onclick="openPopup('${c.id}','${c.statut}',this)">${shortLbl}</button>
@@ -789,7 +789,7 @@ const modal=document.getElementById('cmdModal');
 document.getElementById('fPays').addEventListener('change',e=>updateFours(e.target.value));
 function updateFours(pays,cur){
   const list=FOURNISSEURS[pays]||[];
-  document.getElementById('fFour').innerHTML='<option value="">— Choisir —</option>'
+  document.getElementById('fFour').innerHTML='<option value="">Choisir</option>'
     +list.map(f=>`<option value="${f}"${f===cur?' selected':''}>${f}</option>`).join('');
 }
 document.getElementById('btnNouvelle').addEventListener('click',()=>openModal());
@@ -886,8 +886,8 @@ function renderTransport(){
       <td><input type="checkbox" class="tr-cb" id="cb-${c.id}" onchange="updateTotals()"/></td>
       <td style="font-size:0.78rem;">${FLAGS[c.pays]||''} ${c.pays}</td>
       <td style="font-size:0.78rem;font-weight:600;">${esc(c.fournisseur)}</td>
-      <td style="font-weight:600;">${esc(c.client||'—')}</td>
-      <td style="font-size:0.76rem;color:var(--text-muted);">${esc(c.date_chantier||'—')}</td>
+      <td style="font-weight:600;">${esc(c.client||'·')}</td>
+      <td style="font-size:0.76rem;color:var(--text-muted);">${esc(c.date_chantier||'·')}</td>
       <td><span class="sbadge ${sCls(c.statut)}" style="cursor:default;pointer-events:none;">${SHORT[c.statut]||c.statut}</span></td>
       <td style="text-align:right;font-weight:700;">${Number(c.poids_kg).toLocaleString('fr-FR')} kg</td>
     </tr>`).join('');

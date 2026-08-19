@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mes congés — Espace Équipe Top Carrelage</title>
+  <title>Mes congés · Espace Équipe Top Carrelage</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
       <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="app.css" />
@@ -178,7 +178,7 @@
         </div>
       </div>
 
-      <h3 style="margin-bottom:1rem;">📅 Planning de l'équipe — congés à venir</h3>
+      <h3 style="margin-bottom:1rem;">📅 Planning de l'équipe, congés à venir</h3>
       <div id="planningEquipe">
         <div class="loading"><div class="spinner"></div> Chargement du planning…</div>
       </div>
@@ -301,7 +301,7 @@ async function envoyerDemande(e) {
 
   if (error) { showToast('Erreur lors de l\'envoi de la demande', 'error'); console.error(error); return; }
 
-  showToast('Demande envoyée — ton responsable va l\'examiner ✓');
+  showToast('Demande envoyée, ton responsable va l\'examiner ✓');
   document.getElementById('congeForm').reset();
   await loadMesConges();
 }

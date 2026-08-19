@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Détail RDV — Top Carrelage</title>
+  <title>Détail RDV · Top Carrelage</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="app.css" />
@@ -225,7 +225,7 @@ function renderPage() {
             </div>
             <div class="detail-field">
               <label>Heure</label>
-              <p style="color:var(--confirme);">${rdv.confirmed_time || '—'}</p>
+              <p style="color:var(--confirme);">${rdv.confirmed_time || '·'}</p>
             </div>
           </div>
           ${rdv.confirmed_by ? `<div class="detail-field"><label>Confirmé par</label><p>${rdv.confirmed_by}</p></div>` : ''}
@@ -264,7 +264,7 @@ function renderPage() {
               ${EMPLOYEES.map(e => `
                 <div class="collegue-item">
                   <input type="checkbox" id="emp-${e.id}" value="${e.name}" />
-                  <label for="emp-${e.id}">${e.name} <span style="color:var(--text-muted); font-size:0.75rem;">— ${e.poste}</span></label>
+                  <label for="emp-${e.id}">${e.name} <span style="color:var(--text-muted); font-size:0.75rem;">· ${e.poste}</span></label>
                 </div>`).join('')}
             </div>
             <button class="btn-action btn-prendre" onclick="prendrePlusieurs()" style="margin-top:0.5rem;">
@@ -372,7 +372,7 @@ async function prendrePlusieurs() {
 async function refuser() {
   if (!confirm('Confirmer que vous ne prenez pas ce rendez-vous ?')) return;
   await updateRdv({ status: 'archive' });
-  showToast('RDV non pris — archivé', '');
+  showToast('RDV non pris, archivé', '');
   setTimeout(() => window.location.href = 'dashboard.html', 1500);
 }
 
@@ -393,7 +393,7 @@ async function confirmerRdv() {
     confirmed_time: time,
     confirmed_by: myName
   });
-  showToast('Date enregistrée — en attente de confirmation client', 'success');
+  showToast('Date enregistrée, en attente de confirmation client', 'success');
   await loadRdv();
 }
 
@@ -409,7 +409,7 @@ function buildGoogleCalendarLink(rdvData) {
     + 'T' + pad2(d.getUTCHours()) + pad2(d.getUTCMinutes()) + pad2(d.getUTCSeconds()) + 'Z';
   const params = new URLSearchParams({
     action: 'TEMPLATE',
-    text: `RDV Top Carrelage — ${rdvData.client_prenom} ${rdvData.client_nom}`,
+    text: `RDV Top Carrelage · ${rdvData.client_prenom} ${rdvData.client_nom}`,
     dates: `${toUtcStamp(start)}/${toUtcStamp(end)}`,
     details: `Rendez-vous chez Top Carrelage (Top Carrelage), 22 Avenue de l'Europe, 59270 Bailleul.`,
     location: `22 Avenue de l'Europe, 59270 Bailleul`
@@ -449,7 +449,7 @@ async function envoyerEmailsConfirmation(rdvData) {
     heure: heureAffichee,
     univers_line: universLine,
     google_cal_link: calLink,
-    signature: `À très bientôt — L'équipe Top Carrelage
+    signature: `À très bientôt, L'équipe Top Carrelage
 
 En cas d'imprévu, merci de nous appeler au 03 28 48 08 08. Ceci est un email automatique, merci de ne pas y répondre.`
   });

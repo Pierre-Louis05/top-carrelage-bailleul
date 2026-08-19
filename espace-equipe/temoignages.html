@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Témoignages — Espace Équipe Top Carrelage</title>
+  <title>Témoignages · Espace Équipe Top Carrelage</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="app.css" />
@@ -56,15 +56,15 @@
       <!-- STATS -->
       <div class="stats-grid">
         <div class="stat-card nouveau">
-          <div class="stat-number" id="stat-attente">—</div>
+          <div class="stat-number" id="stat-attente">·</div>
           <div class="stat-label">En attente</div>
         </div>
         <div class="stat-card confirme">
-          <div class="stat-number" id="stat-approuve">—</div>
+          <div class="stat-number" id="stat-approuve">·</div>
           <div class="stat-label">Approuvés</div>
         </div>
         <div class="stat-card archive">
-          <div class="stat-number" id="stat-rejete">—</div>
+          <div class="stat-number" id="stat-rejete">·</div>
           <div class="stat-label">Rejetés</div>
         </div>
       </div>
@@ -228,7 +228,7 @@ async function changerStatut(event, id, newStatus) {
   const { error } = await db.from('testimonials').update({ status: newStatus }).eq('id', id);
   if (error) { showToast('Erreur lors de la mise à jour', 'error'); return; }
 
-  const labels = { approuve: 'Témoignage approuvé ✓ — il est maintenant visible publiquement', rejete: 'Témoignage rejeté', en_attente: 'Témoignage remis en attente' };
+  const labels = { approuve: 'Témoignage approuvé ✓, il est maintenant visible publiquement', rejete: 'Témoignage rejeté', en_attente: 'Témoignage remis en attente' };
   showToast(labels[newStatus] || 'Statut mis à jour');
   await loadTemoignages();
 }

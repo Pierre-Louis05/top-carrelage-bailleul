@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Messages — Espace Équipe Top Carrelage</title>
+  <title>Messages · Espace Équipe Top Carrelage</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Lato:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="app.css" />
@@ -56,15 +56,15 @@
       <!-- STATS -->
       <div class="stats-grid">
         <div class="stat-card nouveau">
-          <div class="stat-number" id="stat-nouveau">—</div>
+          <div class="stat-number" id="stat-nouveau">·</div>
           <div class="stat-label">Nouveaux</div>
         </div>
         <div class="stat-card confirme">
-          <div class="stat-number" id="stat-traite">—</div>
+          <div class="stat-number" id="stat-traite">·</div>
           <div class="stat-label">Traités</div>
         </div>
         <div class="stat-card archive">
-          <div class="stat-number" id="stat-archive">—</div>
+          <div class="stat-number" id="stat-archive">·</div>
           <div class="stat-label">Archivés</div>
         </div>
       </div>
@@ -186,7 +186,7 @@ function renderList() {
   container.innerHTML = '<div class="rdv-list">' + filtered.map(msg => `
     <div class="rdv-card" style="cursor:default;">
       <div class="rdv-card-left">
-        <div class="rdv-client-name">${msg.prenom} ${msg.nom} — <span style="color:var(--or); font-weight:400;">${msg.sujet}</span></div>
+        <div class="rdv-client-name">${msg.prenom} ${msg.nom} · <span style="color:var(--or); font-weight:400;">${msg.sujet}</span></div>
         <div class="rdv-meta">
           <span>✉️ <a href="mailto:${msg.email}" style="color:var(--text-muted);">${msg.email}</a></span>
           ${msg.tel ? `<span>📞 <a href="tel:${msg.tel}" style="color:var(--text-muted);">${msg.tel}</a></span>` : ''}
