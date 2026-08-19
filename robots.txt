@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /espace-equipe/
+Disallow: /rendez-vous.html
+
+Sitemap: https://top-carrelage-bailleul.netlify.app/sitemap.xml
