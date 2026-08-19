@@ -4,11 +4,200 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Inspirations | Top Aménagement Bailleul</title>
-  <meta name="description" content="Inspirations carrelage, salle de bain, parquet et pierre naturelle : des ambiances pour imaginer votre futur intérieur avec Top Aménagement Bailleul." />
+  <meta name="description" content="37 ambiances carrelage, salle de bain, parquet et pierre naturelle. Filtrez par pièce et par matière, composez votre sélection et apportez-la au magasin." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ================= FILTRES ================= */
+    .filtres-bloc { margin:2rem 0 2.2rem; }
+    .filtre-ligne { display:flex; align-items:center; gap:0.9rem; flex-wrap:wrap; margin-bottom:0.9rem; }
+    .filtre-label {
+      font-family:var(--font-titre); font-size:0.66rem; font-weight:700;
+      letter-spacing:0.16em; text-transform:uppercase; color:var(--muted);
+      min-width:74px;
+    }
+    .puce {
+      padding:0.5rem 1.1rem; border-radius:50px; border:1.5px solid var(--ligne);
+      background:var(--blanc); color:var(--muted);
+      font-family:var(--font-titre); font-size:0.7rem; font-weight:700;
+      letter-spacing:0.05em; text-transform:uppercase; cursor:pointer;
+      transition:color .22s ease, border-color .22s ease, background-color .22s ease;
+      display:inline-flex; align-items:center; gap:0.4rem;
+    }
+    .puce:hover { border-color:var(--marine); color:var(--marine); }
+    .puce.active { background:var(--marine); border-color:var(--marine); color:#fff; }
+    .puce .n { font-size:0.66rem; opacity:0.55; font-weight:600; }
+    .puce.active .n { opacity:0.75; }
+    .puce.vide { opacity:0.35; pointer-events:none; }
+
+    .barre-etat {
+      display:flex; align-items:center; justify-content:space-between; gap:1rem;
+      flex-wrap:wrap; padding-top:0.4rem; border-top:1px solid var(--ligne);
+    }
+    .compte-resultats { font-size:0.85rem; color:var(--muted); }
+    .compte-resultats b { color:var(--marine); }
+    .lien-raz {
+      background:none; border:none; cursor:pointer; padding:0;
+      font-family:var(--font-texte); font-size:0.82rem; color:var(--rouge);
+      font-weight:600; text-decoration:underline; text-underline-offset:3px;
+    }
+
+    /* ================= MOSAÏQUE ================= */
+    .mosaique { columns:3; column-gap:16px; }
+    @media (max-width:980px) { .mosaique { columns:2; } }
+    @media (max-width:600px) { .mosaique { columns:1; } }
+
+    .carte {
+      break-inside:avoid; position:relative; margin-bottom:16px;
+      border-radius:10px; overflow:hidden; background:var(--bg);
+      box-shadow:0 2px 10px rgba(16,31,56,0.06);
+      opacity:0; transform:translateY(14px);
+      animation:carteIn .55s cubic-bezier(0.22,1,0.36,1) forwards;
+      transition:box-shadow .35s ease;
+    }
+    @keyframes carteIn { to { opacity:1; transform:none; } }
+    .carte:hover { box-shadow:0 14px 34px rgba(16,31,56,0.16); }
+    .carte.cachee { display:none; }
+
+    .carte-photo { display:block; width:100%; border:none; padding:0; background:none; cursor:zoom-in; }
+    .carte-photo img { width:100%; height:auto; display:block; transition:transform .7s cubic-bezier(0.22,1,0.36,1); }
+    .carte:hover .carte-photo img { transform:scale(1.05); }
+
+    .carte-voile {
+      position:absolute; inset:0; pointer-events:none;
+      background:linear-gradient(180deg, rgba(16,31,56,0) 40%, rgba(16,31,56,0.9) 100%);
+      opacity:0; transition:opacity .4s ease;
+      display:flex; flex-direction:column; justify-content:flex-end; padding:1.3rem 1.2rem 1.1rem;
+    }
+    .carte:hover .carte-voile, .carte:focus-within .carte-voile { opacity:1; }
+    .carte-tag {
+      align-self:flex-start; background:var(--rouge); color:#fff;
+      font-family:var(--font-titre); font-size:0.56rem; font-weight:700;
+      letter-spacing:0.13em; text-transform:uppercase;
+      padding:0.25rem 0.6rem; border-radius:3px; margin-bottom:0.45rem;
+    }
+    .carte-titre { color:#fff; font-family:var(--font-titre); font-size:1rem; font-weight:700; line-height:1.3; }
+    .carte-desc { color:rgba(255,255,255,0.82); font-size:0.81rem; line-height:1.5; margin-top:0.25rem; }
+
+    /* --- Bouton coup de cœur --- */
+    .coeur {
+      position:absolute; top:0.85rem; right:0.85rem; z-index:2;
+      width:38px; height:38px; border-radius:50%; border:none; cursor:pointer;
+      background:rgba(255,255,255,0.92); color:var(--marine);
+      display:flex; align-items:center; justify-content:center;
+      opacity:0; transform:scale(0.85);
+      transition:opacity .3s ease, transform .3s cubic-bezier(0.22,1,0.36,1), background-color .25s ease, color .25s ease;
+      box-shadow:0 3px 10px rgba(16,31,56,0.2);
+    }
+    .carte:hover .coeur, .coeur.actif, .coeur:focus-visible { opacity:1; transform:scale(1); }
+    .coeur:hover { background:#fff; color:var(--rouge); }
+    .coeur.actif { background:var(--rouge); color:#fff; }
+    .coeur.actif svg { fill:#fff; }
+    .coeur svg { fill:none; transition:fill .25s ease; }
+    @keyframes pop { 0%{transform:scale(1)} 45%{transform:scale(1.32)} 100%{transform:scale(1)} }
+    .coeur.bat { animation:pop .42s cubic-bezier(0.22,1,0.36,1); }
+
+    /* ================= BARRE DE SÉLECTION ================= */
+    .selection-barre {
+      position:fixed; left:50%; bottom:1.5rem; transform:translate(-50%, 130%);
+      z-index:2500; display:flex; align-items:center; gap:1rem;
+      background:var(--marine); color:#fff; border-radius:50px;
+      padding:0.65rem 0.7rem 0.65rem 1.5rem;
+      box-shadow:0 16px 44px rgba(16,31,56,0.4);
+      transition:transform .45s cubic-bezier(0.22,1,0.36,1);
+    }
+    .selection-barre.visible { transform:translate(-50%, 0); }
+    .selection-texte { font-size:0.87rem; white-space:nowrap; }
+    .selection-texte b { font-family:var(--font-titre); }
+    .selection-barre .btn { padding:0.6rem 1.2rem; font-size:0.68rem; }
+    .btn-vider {
+      background:none; border:none; color:rgba(255,255,255,0.55); cursor:pointer;
+      font-size:0.78rem; text-decoration:underline; text-underline-offset:3px; padding:0 0.3rem;
+    }
+    .btn-vider:hover { color:#fff; }
+    @media (max-width:560px) {
+      .selection-barre { left:1rem; right:1rem; transform:translateY(130%); padding:0.7rem 0.8rem; }
+      .selection-barre.visible { transform:translateY(0); }
+      .selection-texte { font-size:0.8rem; }
+    }
+
+    /* ================= VISIONNEUSE ================= */
+    .vis { position:fixed; inset:0; z-index:4000; background:rgba(9,16,29,0.97);
+      display:flex; align-items:center; justify-content:center;
+      opacity:0; visibility:hidden; transition:opacity .3s ease, visibility .3s; }
+    .vis.open { opacity:1; visibility:visible; }
+    .vis-fig { max-width:min(1200px,92vw); transform:scale(0.97); transition:transform .35s cubic-bezier(0.22,1,0.36,1); }
+    .vis.open .vis-fig { transform:none; }
+    .vis-fig img { max-width:100%; max-height:74vh; width:auto; height:auto; display:block;
+      margin:0 auto; border-radius:6px; box-shadow:0 30px 80px rgba(0,0,0,0.55); }
+    .vis-cap { text-align:center; padding:1.2rem 1rem 0; }
+    .vis-cap .carte-tag { display:inline-block; align-self:auto; margin-bottom:0.55rem; }
+    .vis-cap h3 { color:#fff; font-size:1.12rem; margin-bottom:0.3rem; }
+    .vis-cap p { color:rgba(255,255,255,0.72); font-size:0.87rem; max-width:58ch; margin:0 auto 1rem; }
+    .vis-coeur {
+      display:inline-flex; align-items:center; gap:0.5rem; cursor:pointer;
+      background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25);
+      color:#fff; border-radius:50px; padding:0.55rem 1.2rem;
+      font-family:var(--font-titre); font-size:0.68rem; font-weight:700;
+      letter-spacing:0.08em; text-transform:uppercase; transition:var(--transition);
+    }
+    .vis-coeur:hover { background:rgba(255,255,255,0.2); }
+    .vis-coeur.actif { background:var(--rouge); border-color:var(--rouge); }
+    .vis-coeur.actif svg { fill:#fff; }
+    .vis-coeur svg { fill:none; }
+
+    .vis-nav {
+      position:absolute; top:50%; transform:translateY(-50%);
+      width:50px; height:50px; border-radius:50%; border:1px solid rgba(255,255,255,0.25);
+      background:rgba(255,255,255,0.08); color:#fff; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; transition:var(--transition);
+    }
+    .vis-nav:hover { background:var(--rouge); border-color:var(--rouge); }
+    .vis-prec { left:max(1rem,3vw); } .vis-suiv { right:max(1rem,3vw); }
+    .vis-fermer {
+      position:absolute; top:1.3rem; right:max(1rem,3vw); width:44px; height:44px;
+      border-radius:50%; border:1px solid rgba(255,255,255,0.25);
+      background:rgba(255,255,255,0.08); color:#fff; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; transition:var(--transition);
+    }
+    .vis-fermer:hover { background:var(--rouge); border-color:var(--rouge); }
+    .vis-compteur { position:absolute; top:1.6rem; left:max(1rem,3vw);
+      color:rgba(255,255,255,0.6); font-family:var(--font-titre); font-size:0.78rem; letter-spacing:0.1em; }
+    @media (max-width:700px) {
+      .vis-prec { left:0.4rem; } .vis-suiv { right:0.4rem; }
+      .vis-nav { width:42px; height:42px; }
+      .vis-fig img { max-height:60vh; }
+    }
+
+    .aucun-resultat {
+      padding:4rem 1.5rem; text-align:center; border:1px dashed var(--ligne);
+      border-radius:10px; color:var(--muted);
+    }
+
+    /* ================= IMPRESSION DE LA SÉLECTION ================= */
+    #zoneImpression { display:none; }
+    @media print {
+      body > *:not(#zoneImpression) { display:none !important; }
+      #zoneImpression { display:block !important; }
+      .imp-tete { border-bottom:2px solid #E2333F; padding-bottom:1rem; margin-bottom:1.5rem; }
+      .imp-tete h1 { font-size:20pt; color:#182D4E; }
+      .imp-tete p { font-size:9pt; color:#555; margin-top:0.35rem; }
+      .imp-grille { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+      .imp-item { break-inside:avoid; border:1px solid #ddd; border-radius:5px; overflow:hidden; }
+      .imp-item img { width:100%; height:150px; object-fit:cover; display:block; }
+      .imp-txt { padding:8px 10px; }
+      .imp-txt h3 { font-size:10pt; color:#182D4E; margin-bottom:2px; }
+      .imp-txt p { font-size:8pt; color:#666; }
+      .imp-pied { margin-top:1.5rem; padding-top:0.8rem; border-top:1px solid #ddd; font-size:8.5pt; color:#555; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .carte { animation:none; opacity:1; transform:none; }
+      .carte-photo img, .coeur, .selection-barre, .vis-fig { transition:none; }
+    }
+  </style>
 </head>
 <body>
 
@@ -144,83 +333,38 @@
 
 <!-- PAGE HERO -->
 <div class="page-hero">
-  <div class="page-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1600585152915-d208bec867a1?w=1920&q=80&auto=format&fit=crop');"></div>
+  <div class="page-hero-bg" style="background-image:url('photos/inspirations/inspi-01.jpg');"></div>
   <div class="page-hero-overlay"></div>
   <div class="container">
     <div class="page-hero-content">
       <div class="breadcrumb"><a href="index.html">Accueil</a> <span>/</span> Inspirations</div>
       <h1>Inspirations</h1>
       <div class="sep"></div>
-      <p style="color:rgba(255,255,255,0.75);">Des ambiances pour imaginer votre futur intérieur.</p>
+      <p style="color:rgba(255,255,255,0.78); max-width:56ch;">Filtrez par pièce et par matière, gardez vos coups de cœur, et apportez votre sélection au magasin : on retrouve les matériaux avec vous.</p>
     </div>
   </div>
 </div>
 
 <!-- GALERIE -->
-<section style="background:var(--bg);">
+<section style="background:var(--bg); padding-top:3.5rem;">
   <div class="container">
-    <div class="section-header reveal" style="text-align:left; margin: 0 0 0.5rem; max-width:none;">
-      <span class="tag">Galerie</span>
-      <h2>Trouvez votre style</h2>
-      <div class="sep"></div>
-      <p style="max-width:600px;">Filtrez par univers et repérez les ambiances qui vous parlent, puis venez au magasin retrouver les matériaux correspondants, exposés en grand format.</p>
+
+    <div class="filtres-bloc">
+      <div class="filtre-ligne" id="filtresPiece">
+        <span class="filtre-label">Pièce</span>
+      </div>
+      <div class="filtre-ligne" id="filtresMatiere">
+        <span class="filtre-label">Matière</span>
+      </div>
+      <div class="barre-etat">
+        <span class="compte-resultats" id="compteResultats"></span>
+        <button class="lien-raz" id="btnRaz" hidden>Tout afficher</button>
+      </div>
     </div>
 
-    <div class="filter-bar">
-      <button class="filter-btn active" data-filter="all">Tout voir</button>
-      <button class="filter-btn" data-filter="carrelage">Carrelage</button>
-      <button class="filter-btn" data-filter="salle-de-bain">Salle de bain</button>
-      <button class="filter-btn" data-filter="parquet">Parquet</button>
-      <button class="filter-btn" data-filter="pierre">Pierre naturelle</button>
-    </div>
-
-    <div class="insp-grid" id="inspGrid">
-
-      <div class="insp-item" data-cat="carrelage">
-        <img src="https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=700&q=80&auto=format&fit=crop" alt="Salle de bain en grands carreaux anthracite" loading="lazy" />
-        <div class="insp-overlay"><span class="chip">Carrelage</span><p>Grands formats anthracite, esprit contemporain</p></div>
-      </div>
-
-      <div class="insp-item" data-cat="parquet">
-        <img src="https://images.unsplash.com/photo-1600210492493-0946911123ea?w=700&q=80&auto=format&fit=crop" alt="Séjour parquet chêne naturel" loading="lazy" />
-        <div class="insp-overlay"><span class="chip">Parquet</span><p>Chêne naturel, lumière du Nord</p></div>
-      </div>
-
-      <div class="insp-item" data-cat="salle-de-bain">
-        <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=700&q=80&auto=format&fit=crop" alt="Salle de bain blanche avec douche vitrée" loading="lazy" />
-        <div class="insp-overlay"><span class="chip">Salle de bain</span><p>Blanc intemporel & douche toute vitrée</p></div>
-      </div>
-
-      <div class="insp-item" data-cat="carrelage">
-        <img src="https://images.unsplash.com/photo-1600585152915-d208bec867a1?w=700&q=80&auto=format&fit=crop" alt="Séjour au sol grand format et mur en pierre" loading="lazy" />
-        <div class="insp-overlay"><span class="chip">Carrelage</span><p>Sol grand format & mur minéral</p></div>
-      </div>
-
-      <div class="insp-item" data-cat="salle-de-bain">
-        <img src="https://images.unsplash.com/photo-1620626011761-996317b8d101?w=700&q=80&auto=format&fit=crop" alt="Baignoire îlot" loading="lazy" />
-        <div class="insp-overlay"><span class="chip">Salle de bain</span><p>Baignoire îlot, esprit spa</p></div>
-      </div>
-
-      <div class="insp-item" data-cat="parquet">
-        <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=700&q=80&auto=format&fit=crop" alt="Salon au parquet clair" loading="lazy" />
-        <div class="insp-overlay"><span class="chip">Parquet</span><p>Lames claires, ambiance scandinave</p></div>
-      </div>
-
-      <div class="insp-item" data-cat="carrelage">
-        <img src="https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=700&q=80&auto=format&fit=crop" alt="Sol damier noir et blanc" loading="lazy" />
-        <div class="insp-overlay"><span class="chip">Carrelage</span><p>Damier rétro, charme d'antan</p></div>
-      </div>
-
-      <div class="insp-item" data-cat="parquet">
-        <img src="https://images.unsplash.com/photo-1586105251261-72a756497a11?w=700&q=80&auto=format&fit=crop" alt="Chambre avec tête de lit en bois" loading="lazy" />
-        <div class="insp-overlay"><span class="chip">Parquet</span><p>Chambre bois & lin, douceur naturelle</p></div>
-      </div>
-
-      <div class="insp-item" data-cat="pierre">
-        <img src="https://images.unsplash.com/photo-1524230572899-a752b3835840?w=700&q=80&auto=format&fit=crop" alt="Arches et escalier en pierre naturelle" loading="lazy" />
-        <div class="insp-overlay"><span class="chip">Pierre naturelle</span><p>Arches et escalier en pierre blanche</p></div>
-      </div>
-
+    <div class="mosaique" id="mosaique"></div>
+    <div class="aucun-resultat" id="aucunResultat" hidden>
+      Aucune ambiance ne combine ces deux filtres. Essayez une autre association.
     </div>
   </div>
 </section>
@@ -229,15 +373,51 @@
 <section style="background:var(--marine); text-align:center;">
   <div class="container">
     <span class="tag" style="color:#FF6B75;">Envie du même rendu ?</span>
-    <h2 style="color:#fff; margin-bottom:1rem;">Ces ambiances existent en vrai au magasin</h2>
+    <h2 style="color:#fff; margin-bottom:1rem;">Ces matières existent en vrai au magasin</h2>
     <div class="sep sep-center"></div>
-    <p style="color:rgba(255,255,255,0.7); max-width:520px; margin:0 auto 2.5rem;">Venez avec vos photos et vos coups de cœur : nos conseillers retrouvent les matériaux et composent votre projet dans nos 21 box d'inspiration.</p>
+    <p style="color:rgba(255,255,255,0.7); max-width:560px; margin:0 auto 2.5rem;">Gardez vos coups de cœur, imprimez votre sélection et venez la déposer sur le comptoir : nos conseillers sortent les dalles en grand format et composent votre projet avec vous.</p>
     <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
       <a href="tel:+33328480808" class="btn btn-rouge">Appelez-nous</a>
       <a href="contact.html" class="btn btn-outline">Passer au magasin</a>
     </div>
   </div>
 </section>
+
+<!-- BARRE DE SÉLECTION -->
+<div class="selection-barre" id="barreSelection">
+  <span class="selection-texte"><b id="nbSelection">0</b> <span id="motSelection">coup de cœur</span></span>
+  <button class="btn btn-rouge" id="btnImprimer">Imprimer ma sélection</button>
+  <button class="btn-vider" id="btnVider">Vider</button>
+</div>
+
+<!-- VISIONNEUSE -->
+<div class="vis" id="visionneuse" role="dialog" aria-modal="true" aria-label="Image agrandie">
+  <div class="vis-compteur" id="visCompteur"></div>
+  <button class="vis-fermer" id="visFermer" aria-label="Fermer">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <button class="vis-nav vis-prec" id="visPrec" aria-label="Précédente">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <button class="vis-nav vis-suiv" id="visSuiv" aria-label="Suivante">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+  <figure class="vis-fig">
+    <img id="visImg" src="" alt="" />
+    <figcaption class="vis-cap">
+      <span class="carte-tag" id="visTag"></span>
+      <h3 id="visTitre"></h3>
+      <p id="visDesc"></p>
+      <button class="vis-coeur" id="visCoeur">
+        <svg width="15" height="15" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span id="visCoeurTxt">Garder</span>
+      </button>
+    </figcaption>
+  </figure>
+</div>
+
+<!-- FEUILLE IMPRIMABLE -->
+<div id="zoneImpression"></div>
 
 <footer>
   <div class="container">
@@ -300,19 +480,274 @@
 
 <script src="nav.js"></script>
 <script>
-// Filtres galerie
-const filterBtns = document.querySelectorAll('.filter-btn');
-const items = document.querySelectorAll('.insp-item');
-filterBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    filterBtns.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const f = btn.dataset.filter;
-    items.forEach(item => {
-      item.classList.toggle('hidden', f !== 'all' && item.dataset.cat !== f);
-    });
-  });
+/* =====================================================================
+   GALERIE D'INSPIRATIONS
+   Deux filtres combinables, mosaïque, coups de cœur mémorisés
+   et feuille imprimable à apporter au magasin.
+   ===================================================================== */
+const PHOTOS = [
+ { piece:'sejour',        matiere:'pierre', titre:"Séjour ouvert sur la campagne",      desc:"Un grand format beige qui file de l'intérieur vers la terrasse, sous un mur terracotta." },
+ { piece:'salle-de-bain', matiere:'marbre', titre:"Marbre veiné et parquet clair",      desc:"Le veinage habille le mur jusqu'au sol, adouci par un bois blond et une fenêtre en arche." },
+ { piece:'exterieur',     matiere:'bois',   titre:"Terrasse effet bois au bord du bassin", desc:"La chaleur du bois avec la résistance du grès : ni gris, ni échardes, ni entretien annuel." },
+ { piece:'cuisine',       matiere:'pierre', titre:"Îlot en pierre, façades sombres",    desc:"Sol et plan de travail dans la même matière : l'ensemble ne fait qu'un." },
+ { piece:'salle-de-bain', matiere:'pierre', titre:"Douche à l'italienne en pierre grise", desc:"Un granité moucheté qui court du sol jusqu'à la paroi, sans rupture de matière." },
+ { piece:'commerce',      matiere:'pierre', titre:"Boutique en grand format",           desc:"Peu de joints, une teinte sable régulière : le sol s'efface et laisse parler les volumes." },
+ { piece:'sejour',        matiere:'pierre', titre:"Séjour tout en nuances claires",     desc:"Un veiné très pâle qui capte la lumière rasante et agrandit visuellement la pièce." },
+ { piece:'cuisine',       matiere:'bois',   titre:"Îlot pierre et parquet chevrons",    desc:"Le chevron réchauffe la pièce, l'îlot minéral lui donne son point d'ancrage." },
+ { piece:'exterieur',     matiere:'pierre', titre:"Terrasse face au couchant",          desc:"Une teinte très claire qui reste tempérée sous le soleil, jusqu'au bord du bassin." },
+ { piece:'salle-de-bain', matiere:'pierre', titre:"Salle d'eau ouverte sur le patio",   desc:"Sol clair en continuité de l'extérieur, bois en soubassement : la pièce respire." },
+ { piece:'sejour',        matiere:'bois',   titre:"Chevrons dans une pièce ancienne",   desc:"Le point de Hongrie remis au goût du jour, avec la solidité du grès cérame." },
+ { piece:'cuisine',       matiere:'pierre', titre:"Îlot noir sur sol sable",            desc:"Le contraste maximal : une cuisine sombre posée sur un grand format beige mat." },
+ { piece:'exterieur',     matiere:'pierre', titre:"Bassin intérieur et murs sculptés",  desc:"Sol et murs dans la même pierre claire, avec un relief strié qui capte l'éclairage." },
+ { piece:'salle-de-bain', matiere:'marbre', titre:"Baignoire îlot et mur strié",        desc:"Un relief vertical vert d'eau derrière la baignoire, pour rompre la neutralité." },
+ { piece:'sejour',        matiere:'pierre', titre:"Séjour lumineux sur jardin",         desc:"Une crème très douce, presque sans veine, qui reflète bien la lumière du nord." },
+ { piece:'cuisine',       matiere:'bois',   titre:"Arches et bois clair",               desc:"Un sol effet chêne qui adoucit les courbes et répond aux façades de la cuisine." },
+ { piece:'exterieur',     matiere:'pierre', titre:"Terrasse grise entre les palmiers",  desc:"Des dalles épaisses posées sur plots, avec un lit de galets pour l'écoulement." },
+ { piece:'salle-de-bain', matiere:'pierre', titre:"Salle de bain esprit thermes",       desc:"Vasque colonne et bain encastré dans une même matière douce et mate." },
+ { piece:'commerce',      matiere:'bois',   titre:"Espace en chevrons clairs",          desc:"Un chevron blond qui structure l'espace sans jamais le charger." },
+ { piece:'sejour',        matiere:'pierre', titre:"Salon ouvert sur la piscine",        desc:"Une teinte sable chaude qui prolonge le séjour jusqu'au bord du bassin." },
+ { piece:'salle-de-bain', matiere:'marbre', titre:"Douche en zellige profond",          desc:"Un bleu-vert irrégulier, fait main, qui donne de la profondeur à la douche." },
+ { piece:'exterieur',     matiere:'bois',   titre:"Terrasse sous pergola",              desc:"Des lames effet bois clair, séparées par un lit de galets qui draine l'eau de pluie." },
+ { piece:'cuisine',       matiere:'beton',  titre:"Crédence terrazzo, sol béton",       desc:"Le grain minéral du terrazzo en crédence, posé sur un sol béton uni et discret." },
+ { piece:'sejour',        matiere:'pierre', titre:"Pièce de vie tout en clarté",        desc:"Un sol uni très pâle, choisi pour disparaître et laisser la lumière travailler." },
+ { piece:'sejour',        matiere:'pierre', titre:"Sol ardoise face à l'océan",         desc:"Une teinte sombre et mate qui ancre la pièce et fait ressortir les bois clairs." },
+ { piece:'cuisine',       matiere:'marbre', titre:"Crédence nacrée",                    desc:"Des carreaux allongés et brillants qui renvoient la lumière des étagères." },
+ { piece:'exterieur',     matiere:'pierre', titre:"Cour intérieure minérale",           desc:"Dalles beige nuancé et gravier : une entrée qui respire la fraîcheur." },
+ { piece:'sejour',        matiere:'pierre', titre:"Grand séjour et baie ouverte",       desc:"Un sol clair sans motif marqué, idéal quand la vue fait déjà tout le décor." },
+ { piece:'commerce',      matiere:'marbre', titre:"Comptoir en mosaïque émeraude",      desc:"Des petits carreaux brillants qui accrochent la lumière et signent le lieu." },
+ { piece:'salle-de-bain', matiere:'pierre', titre:"Bain minéral et reflets cuivrés",    desc:"Un travertin doux du sol au plafond, réchauffé par une robinetterie cuivre." },
+ { piece:'exterieur',     matiere:'bois',   titre:"Terrasse bois et mur corten",        desc:"L'effet bois côté détente, le métal oxydé côté façade : deux matières qui vieillissent bien." },
+ { piece:'sejour',        matiere:'pierre', titre:"Salle à manger sur fond vert",       desc:"Une teinte sable nuancée qui tient tête à un mur profond sans jamais l'écraser." },
+ { piece:'salle-de-bain', matiere:'marbre', titre:"Mur fleuri et laiton",               desc:"Un décor mural végétal qui fait de la salle de bain une pièce à part entière." },
+ { piece:'exterieur',     matiere:'pierre', titre:"Abords de piscine en pierre claire", desc:"Une surface antidérapante et claire, agréable pieds nus même en plein été." },
+ { piece:'chambre',       matiere:'bois',   titre:"Chambre en bois miel",               desc:"Des lames larges et chaudes, agréables pieds nus au réveil." },
+ { piece:'commerce',      matiere:'beton',  titre:"Boutique vert d'eau",                desc:"Un sol clair et mat, volontairement neutre, pour laisser parler la couleur des murs." },
+ { piece:'commerce',      matiere:'beton',  titre:"Espace de vente épuré",              desc:"Un sol clair, uni et facile d'entretien, pensé pour un fort passage." }
+].map((p, i) => ({ ...p, f:`inspi-${String(i + 1).padStart(2, '0')}.jpg`, id:i }));
+
+const PIECES = [
+  { id:'tout', label:'Toutes' }, { id:'sejour', label:'Séjour' },
+  { id:'cuisine', label:'Cuisine' }, { id:'salle-de-bain', label:'Salle de bain' },
+  { id:'chambre', label:'Chambre' }, { id:'exterieur', label:'Extérieur' },
+  { id:'commerce', label:'Commerce' }
+];
+const MATIERES = [
+  { id:'tout', label:'Toutes' }, { id:'pierre', label:'Effet pierre' },
+  { id:'bois', label:'Effet bois' }, { id:'marbre', label:'Marbre & décors' },
+  { id:'beton', label:'Béton & terrazzo' }
+];
+const LIB_PIECE = { sejour:'Séjour', cuisine:'Cuisine', 'salle-de-bain':'Salle de bain',
+                    chambre:'Chambre', exterieur:'Extérieur', commerce:'Commerce' };
+
+const CLE = 'topamenagement_selection';
+let piece = 'tout', matiere = 'tout';
+let favoris = new Set();
+let dispo = [];        // photos dont le fichier existe
+let visibles = [];     // photos affichées après filtres
+
+const mosaique   = document.getElementById('mosaique');
+const zoneVide   = document.getElementById('aucunResultat');
+const barreSel   = document.getElementById('barreSelection');
+
+/* ---------- Mémoire des coups de cœur ---------- */
+try { favoris = new Set(JSON.parse(localStorage.getItem(CLE) || '[]')); } catch(e) { favoris = new Set(); }
+const memoriser = () => { try { localStorage.setItem(CLE, JSON.stringify([...favoris])); } catch(e) {} };
+
+/* ---------- Construction de la mosaïque ---------- */
+const ICONE_COEUR = '<svg width="17" height="17" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+
+mosaique.innerHTML = PHOTOS.map((p, i) => `
+  <figure class="carte" data-id="${p.id}" style="animation-delay:${Math.min(i * 35, 600)}ms">
+    <button class="coeur ${favoris.has(p.id) ? 'actif' : ''}" data-coeur="${p.id}"
+            aria-label="Garder cette ambiance" aria-pressed="${favoris.has(p.id)}">${ICONE_COEUR}</button>
+    <button class="carte-photo" data-ouvrir="${p.id}" aria-label="Agrandir : ${p.titre}">
+      <img src="photos/inspirations/${p.f}" alt="${p.titre}" loading="lazy" />
+    </button>
+    <figcaption class="carte-voile">
+      <span class="carte-tag">${LIB_PIECE[p.piece]}</span>
+      <span class="carte-titre">${p.titre}</span>
+      <span class="carte-desc">${p.desc}</span>
+    </figcaption>
+  </figure>`).join('');
+
+// Une photo absente disparaît proprement
+mosaique.querySelectorAll('img').forEach(img => {
+  img.addEventListener('error', () => { img.closest('.carte')?.remove(); recenser(); });
 });
+
+function recenser() {
+  dispo = [...mosaique.querySelectorAll('.carte')].map(el => Number(el.dataset.id));
+  construireFiltres();
+  appliquer();
+}
+
+/* ---------- Filtres ---------- */
+function construireFiltres() {
+  const ligne = (conteneur, liste, actif, dimension) => {
+    conteneur.querySelectorAll('.puce').forEach(b => b.remove());
+    liste.forEach(f => {
+      const n = f.id === 'tout'
+        ? dispo.length
+        : dispo.filter(i => PHOTOS[i][dimension] === f.id).length;
+      const b = document.createElement('button');
+      b.className = 'puce' + (f.id === actif ? ' active' : '') + (n === 0 && f.id !== 'tout' ? ' vide' : '');
+      b.innerHTML = `${f.label}<span class="n">${n}</span>`;
+      b.addEventListener('click', () => {
+        if (dimension === 'piece') piece = f.id; else matiere = f.id;
+        construireFiltres(); appliquer();
+      });
+      conteneur.appendChild(b);
+    });
+  };
+  ligne(document.getElementById('filtresPiece'),   PIECES,   piece,   'piece');
+  ligne(document.getElementById('filtresMatiere'), MATIERES, matiere, 'matiere');
+}
+
+function appliquer() {
+  visibles = [];
+  mosaique.querySelectorAll('.carte').forEach(el => {
+    const p = PHOTOS[Number(el.dataset.id)];
+    const ok = (piece === 'tout' || p.piece === piece) && (matiere === 'tout' || p.matiere === matiere);
+    el.classList.toggle('cachee', !ok);
+    if (ok) visibles.push(p.id);
+  });
+
+  zoneVide.hidden = visibles.length > 0;
+  const filtre = piece !== 'tout' || matiere !== 'tout';
+  document.getElementById('btnRaz').hidden = !filtre;
+  document.getElementById('compteResultats').innerHTML = filtre
+    ? `<b>${visibles.length}</b> ambiance${visibles.length > 1 ? 's' : ''} sur ${dispo.length}`
+    : `<b>${dispo.length}</b> ambiances à découvrir`;
+}
+
+document.getElementById('btnRaz').addEventListener('click', () => {
+  piece = 'tout'; matiere = 'tout'; construireFiltres(); appliquer();
+});
+
+/* ---------- Coups de cœur ---------- */
+function basculer(id) {
+  const nouveau = !favoris.has(id);
+  nouveau ? favoris.add(id) : favoris.delete(id);
+  memoriser();
+
+  const btn = mosaique.querySelector(`[data-coeur="${id}"]`);
+  if (btn) {
+    btn.classList.toggle('actif', nouveau);
+    btn.setAttribute('aria-pressed', String(nouveau));
+    btn.classList.remove('bat'); void btn.offsetWidth; btn.classList.add('bat');
+  }
+  majBarre();
+  if (document.getElementById('visionneuse').classList.contains('open')) majCoeurVis();
+  return nouveau;
+}
+
+function majBarre() {
+  const n = favoris.size;
+  document.getElementById('nbSelection').textContent = n;
+  document.getElementById('motSelection').textContent = n > 1 ? 'coups de cœur' : 'coup de cœur';
+  barreSel.classList.toggle('visible', n > 0);
+}
+
+mosaique.addEventListener('click', e => {
+  const c = e.target.closest('[data-coeur]');
+  if (c) { basculer(Number(c.dataset.coeur)); return; }
+  const o = e.target.closest('[data-ouvrir]');
+  if (o) ouvrir(Number(o.dataset.ouvrir));
+});
+
+document.getElementById('btnVider').addEventListener('click', () => {
+  favoris.clear(); memoriser();
+  mosaique.querySelectorAll('.coeur.actif').forEach(b => {
+    b.classList.remove('actif'); b.setAttribute('aria-pressed', 'false');
+  });
+  majBarre();
+});
+
+/* ---------- Feuille imprimable ---------- */
+document.getElementById('btnImprimer').addEventListener('click', () => {
+  const choisies = PHOTOS.filter(p => favoris.has(p.id));
+  if (!choisies.length) return;
+  document.getElementById('zoneImpression').innerHTML = `
+    <div class="imp-tete">
+      <h1>Ma sélection d'inspirations</h1>
+      <p>${choisies.length} ambiance${choisies.length > 1 ? 's' : ''} · Établie le ${new Date().toLocaleDateString('fr-FR')}</p>
+    </div>
+    <div class="imp-grille">
+      ${choisies.map(p => `
+        <div class="imp-item">
+          <img src="photos/inspirations/${p.f}" alt="" />
+          <div class="imp-txt"><h3>${p.titre}</h3><p>${LIB_PIECE[p.piece]} · ${p.desc}</p></div>
+        </div>`).join('')}
+    </div>
+    <div class="imp-pied">
+      <b>Top Aménagement</b> — 22 avenue de l'Europe, 59270 Bailleul — 03 28 48 08 08<br>
+      Présentez cette feuille au comptoir : nos conseillers retrouveront les matériaux correspondants.
+    </div>`;
+  window.print();
+});
+
+/* ---------- Visionneuse ---------- */
+const vis = document.getElementById('visionneuse');
+let position = 0;
+
+function ouvrir(id) {
+  position = Math.max(0, visibles.indexOf(id));
+  afficher();
+  vis.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('visFermer').focus();
+}
+function afficher() {
+  const p = PHOTOS[visibles[position]];
+  if (!p) return;
+  document.getElementById('visImg').src = 'photos/inspirations/' + p.f;
+  document.getElementById('visImg').alt = p.titre;
+  document.getElementById('visTag').textContent   = LIB_PIECE[p.piece];
+  document.getElementById('visTitre').textContent = p.titre;
+  document.getElementById('visDesc').textContent  = p.desc;
+  document.getElementById('visCompteur').textContent = (position + 1) + ' / ' + visibles.length;
+  const seule = visibles.length < 2;
+  document.getElementById('visPrec').style.display = seule ? 'none' : '';
+  document.getElementById('visSuiv').style.display = seule ? 'none' : '';
+  majCoeurVis();
+}
+function majCoeurVis() {
+  const p = PHOTOS[visibles[position]];
+  if (!p) return;
+  const actif = favoris.has(p.id);
+  const btn = document.getElementById('visCoeur');
+  btn.classList.toggle('actif', actif);
+  document.getElementById('visCoeurTxt').textContent = actif ? 'Gardée' : 'Garder';
+}
+function deplacer(pas) { position = (position + pas + visibles.length) % visibles.length; afficher(); }
+function fermer() { vis.classList.remove('open'); document.body.style.overflow = ''; }
+
+document.getElementById('visCoeur').addEventListener('click', () => basculer(PHOTOS[visibles[position]].id));
+document.getElementById('visFermer').addEventListener('click', fermer);
+document.getElementById('visPrec').addEventListener('click', () => deplacer(-1));
+document.getElementById('visSuiv').addEventListener('click', () => deplacer(1));
+vis.addEventListener('click', e => { if (e.target === vis) fermer(); });
+document.addEventListener('keydown', e => {
+  if (!vis.classList.contains('open')) return;
+  if (e.key === 'Escape')     fermer();
+  if (e.key === 'ArrowLeft')  deplacer(-1);
+  if (e.key === 'ArrowRight') deplacer(1);
+  if (e.key === 'f' || e.key === 'F') basculer(PHOTOS[visibles[position]].id);
+});
+
+let depart = null;
+vis.addEventListener('touchstart', e => { depart = e.changedTouches[0].clientX; }, { passive:true });
+vis.addEventListener('touchend', e => {
+  if (depart === null) return;
+  const d = e.changedTouches[0].clientX - depart;
+  if (Math.abs(d) > 55) deplacer(d > 0 ? -1 : 1);
+  depart = null;
+}, { passive:true });
+
+/* ---------- Démarrage ---------- */
+recenser();
+majBarre();
+window.addEventListener('load', recenser);
 </script>
 </body>
 </html>

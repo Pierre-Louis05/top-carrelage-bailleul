@@ -1,0 +1,28 @@
+DOSSIER DES PHOTOS D'INSPIRATION
+================================
+
+Déposez ici les photos, nommées exactement :
+
+  inspi-01.jpg   Cuisine bois clair, mur et sol pierre beige, ouverture sur jardin
+  inspi-02.jpg   Salle de bain claire, baignoire ronde, grande baie vitrée
+  inspi-03.jpg   Cuisine noire vue de dessus, sol beige grand format
+  inspi-04.jpg   Cuisine sombre, îlot en pierre beige
+  inspi-05.jpg   Cuisine blanche avec arches, marbre blanc, sol effet bois
+  inspi-06.jpg   Boutique / showroom, grand format beige  (sert aussi de bandeau en haut de page)
+  inspi-07.jpg   Vue de dessus sur table, gros plan sur la matière
+  inspi-08.jpg   Piscine intérieure, murs en pierre claire
+  inspi-09.jpg   Salle de bain esprit spa, vasques colonnes
+  inspi-10.jpg   Terrasse face à la mer, transat
+  inspi-11.jpg   Terrasse bord de piscine, sol effet bois miel
+  inspi-12.jpg   Salle de bain marbre blanc et parquet
+  inspi-13.jpg   Bureau, mur strié beige
+  inspi-14.jpg   Salle de bain, baignoire pierre grise, cactus (format portrait)
+  inspi-15.jpg   Salle de bain ouverte sur patio, cactus (format paysage)
+  inspi-16.jpg   Chambre, sol gris pierre (format portrait)
+  inspi-17.jpg   Cuisine / séjour, sol ardoise sombre, bord de mer
+
+Toutes en .jpg. Une photo manquante est simplement masquée sur le site,
+rien ne casse.
+
+Pour changer un titre ou une description : tout est regroupé au même
+endroit, dans le tableau PHOTOS en bas du fichier realisations.html.
