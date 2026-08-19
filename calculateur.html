@@ -696,6 +696,9 @@ const MARGE_PLINTHES = 2;        // plinthes de sécurité pour les angles
 let mode = 'dims', pose = 'droite', hauteur = 8, sens = 'long';
 const $ = id => document.getElementById(id);
 const fmt1 = n => n.toLocaleString('fr-FR', { maximumFractionDigits:1 });
+// Arrondi superieur insensible aux artefacts de virgule flottante :
+// sans cela, 16,8 / 0,6 vaut 28,000000000000004 et ajoute une piece fantome.
+const plafond = n => Math.ceil(Number(n.toFixed(6)));
 const formatActuel = () => FORMATS.find(f => f.id === $('format').value);
 
 /* --- Dimensions réelles du carreau (gère le format libre) --- */
@@ -799,18 +802,18 @@ function calculer() {
   const chute = CHUTES[pose];
   const surfaceCommande = surface * (1 + chute);
   const m2Boite = Math.max(0.1, parseFloat($('m2Boite').value) || 1);
-  const boites = Math.ceil(surfaceCommande / m2Boite);
+  const boites = plafond(surfaceCommande / m2Boite);
 
-  const sacsColle = Math.max(1, Math.ceil(surface * COLLE_KG_M2 / SAC_COLLE));
-  const bidonsPrimaire = Math.max(1, Math.ceil(surface / BIDON_PRIMAIRE_M2));
+  const sacsColle = Math.max(1, plafond(surface * COLLE_KG_M2 / SAC_COLLE));
+  const bidonsPrimaire = Math.max(1, plafond(surface / BIDON_PRIMAIRE_M2));
 
   // Joint : consommation calibrée sur les tables fabricants, 10 × (A+B)/(A×B) pour 3 mm
   const jointMm = parseFloat($('largeurJoint').value);
   const kgJointM2 = 10 * (c.A + c.B) / (c.A * c.B) * (jointMm / 3);
-  const sacsJoint = Math.max(1, Math.ceil(surface * kgJointM2 / SAC_JOINT));
+  const sacsJoint = Math.max(1, plafond(surface * kgJointM2 / SAC_JOINT));
 
   const carreauxM2 = 10000 / (c.A * c.B);
-  const sachets = Math.max(1, Math.ceil(surface * carreauxM2 * 3.5 / SACHET_CROISILLONS));
+  const sachets = Math.max(1, plafond(surface * carreauxM2 * 3.5 / SACHET_CROISILLONS));
 
   // ---- Plinthes ----
   let pl = null;
@@ -823,7 +826,7 @@ function calculer() {
       const cotePlinthe = carre ? c.A : (sens === 'long' ? c.B : c.A);   // longueur d'une plinthe, cm
       const coteCoupe   = carre ? c.A : (sens === 'long' ? c.A : c.B);   // côté dans lequel on taille
 
-      const nbPlinthes = Math.ceil(ml / (cotePlinthe / 100)) + MARGE_PLINTHES;
+      const nbPlinthes = plafond(ml / (cotePlinthe / 100)) + MARGE_PLINTHES;
 
       let parCarreau, estime = false;
       const cle = `${c.A}x${c.B}`;
@@ -831,14 +834,14 @@ function calculer() {
         parCarreau = PLINTHES_ATELIER[cle][hauteur];
       } else {
         const h = hauteur === 'autre' ? 8 : hauteur;
-        parCarreau = Math.max(1, Math.floor(coteCoupe / (h + TRAIT_SCIE)));
+        parCarreau = Math.max(1, Math.floor(Number((coteCoupe / (h + TRAIT_SCIE)).toFixed(6))));
         estime = true;
       }
 
       pl = {
         ml, nbPlinthes, parCarreau, estime,
         cotePlinthe, coteCoupe,
-        carreaux: Math.ceil(nbPlinthes / parCarreau),
+        carreaux: plafond(nbPlinthes / parCarreau),
         hauteur, portes, perim
       };
     }
