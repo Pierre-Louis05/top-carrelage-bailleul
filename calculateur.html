@@ -397,22 +397,10 @@
             </div>
           </div>
 
-          <div class="deux-cols">
-            <div class="champ">
-              <label for="epaisseur">Épaisseur du carreau (mm)</label>
-              <input type="number" id="epaisseur" step="0.5" min="3" max="30" inputmode="decimal" />
-              <div class="aide">Pré-rempli, elle est indiquée sur l'étiquette.</div>
-            </div>
-            <div class="champ">
-              <label for="destination">Où posez-vous ?</label>
-              <select id="destination">
-                <option value="sol-int" selected>Sol intérieur</option>
-                <option value="mur-int">Mur intérieur</option>
-                <option value="sol-ext">Sol extérieur</option>
-                <option value="mur-ext">Mur extérieur</option>
-              </select>
-              <div class="aide">Détermine la consommation de colle.</div>
-            </div>
+          <div class="champ">
+            <label for="epaisseur">Épaisseur du carreau (mm)</label>
+            <input type="number" id="epaisseur" step="0.5" min="3" max="30" inputmode="decimal" />
+            <div class="aide">Pré-rempli, elle est indiquée sur l'étiquette. Elle sert au calcul du joint.</div>
           </div>
         </div>
 
@@ -572,7 +560,7 @@
       </div>
       <div class="subcat-card reveal">
         <h3>La colle et le primaire</h3>
-        <p>La consommation dépend de la taille du carreau et de l'endroit posé : de 3,5 kg par m² au peigne U6 pour un petit format mural, jusqu'à 8 kg au peigne E10 en grand format. Le double encollage est systématique chez nous : pour les grands formats et en extérieur, il est déjà compris dans la valeur du fabricant ; pour les petits formats en intérieur, nous ajoutons 1,5 kg. Le primaire d'accrochage compte 150 g par m².</p>
+        <p>Nous partons de la moyenne que nous utilisons au comptoir : un sac de 25 kg pour environ 4,5 m². C'est un repère pour vous aider à prévoir, pas une règle absolue. La consommation réelle dépend de la planéité du support, du format posé et surtout de la main du poseur : certains chargent nettement plus, d'autres moins. Le primaire d'accrochage, lui, compte 150 g par m².</p>
       </div>
       <div class="subcat-card reveal">
         <h3>Le joint et les croisillons</h3>
@@ -600,7 +588,7 @@
       </div>
     </div>
     <p class="reveal" style="text-align:center; color:var(--muted); font-size:0.88rem; margin-top:2rem;">
-      Toutes ces consommations reprennent les <b style="color:var(--marine);">recommandations des fiches techniques usine</b> des produits que nous distribuons.<br>
+      Le joint, le primaire et les croisillons reprennent les <b style="color:var(--marine);">recommandations des fiches techniques usine</b> des produits que nous distribuons. La colle part de notre moyenne de comptoir.<br>
       Une question sur votre cas particulier ? <a href="faq.html" style="color:var(--rouge); font-weight:600;">Consultez la FAQ</a> ou appelez-nous.
     </p>
   </div>
@@ -754,23 +742,12 @@ const AIDE_POSE = {
    des produits que nous distribuons. Aucune marque n'est citée ici.
    ===================================================================== */
 
-/* --- Colle : kg/m² et peigne, par surface de carreau (cm²) et destination.
-       Chaque palier = [surface max du carreau en cm², kg/m², peigne, double encollage compris].
-       Le 4e champ reprend les cases bleues de la fiche : la valeur usine y est
-       DÉJÀ donnée en double encollage. Ailleurs (petits formats en intérieur),
-       la fiche donne du simple encollage et on ajoute DOUBLE_ENCOLLAGE. --- */
-const COLLE_USINE = {
-  'sol-int': [[300,3.5,'U6',false],[500,4.5,'U9',false],[1200,4.5,'U9',false],[2200,7,'U9',true],[3600,8,'E10',true],[Infinity,8,'E10',true]],
-  'mur-int': [[300,3.5,'U6',false],[500,3.5,'U6',false],[1200,7,'U9',true],  [2200,7,'U9',true],[3600,8,'E10',true],[Infinity,8,'E10',true]],
-  'sol-ext': [[300,5,'U6',true],   [500,7,'U9',true],   [1200,7,'U9',true],  [2200,8,'E10',true],[3600,8,'E10',true],[Infinity,8,'E10',true]],
-  'mur-ext': [[300,5,'U6',true],   [500,7,'U9',true],   [1200,7,'U9',true],  [2200,8,'E10',true],[3600,8,'E10',true],[Infinity,8,'E10',true]]
-};
-const LIB_DESTINATION = {
-  'sol-int':'sol intérieur', 'mur-int':'mur intérieur',
-  'sol-ext':'sol extérieur', 'mur-ext':'mur extérieur'
-};
+/* --- Colle : moyenne du magasin. Les fiches usine donnent une valeur par
+       format et par destination, de 3,5 à 8 kg/m², mais la consommation réelle
+       dépend surtout du support et de la main du poseur. On annonce donc la
+       règle que nous utilisons au comptoir : un sac de 25 kg pour 4,5 m². --- */
 const SAC_COLLE = 25;               // kg, conditionnement courant
-const DOUBLE_ENCOLLAGE = 1.5;       // kg/m² à ajouter hors cases bleues, borne haute de la fiche (1 à 1,5)
+const M2_PAR_SAC_COLLE = 4.5;       // m² couverts par un sac, moyenne magasin
 
 /* --- Joint : formule usine e × p × (L+l)/(l×L) × 0,17
        e = largeur de joint (mm), p = épaisseur du carreau (mm), L et l en cm. --- */
@@ -823,11 +800,6 @@ function croisillonsParM2(A, B) {
 }
 
 /* --- Palier de colle pour un carreau de surface donnée --- */
-function palierColle(destination, surfaceCarreauCm2) {
-  const paliers = COLLE_USINE[destination] || COLLE_USINE['sol-int'];
-  return paliers.find(p => surfaceCarreauCm2 <= p[0]) || paliers[paliers.length - 1];
-}
-
 /* --- Conditionnement de primaire le plus adapté --- */
 function choisirBidon(litres) {
   const taille = BIDONS_PRIMAIRE.find(b => litres <= b);
@@ -903,7 +875,6 @@ $('veutPlinthes').addEventListener('change', e => {
 ['longueur','largeur','surfaceDirecte','deduction','m2Boite','largeurJoint','epaisseur',
  'coteA','coteB','perimetre','portes']
   .forEach(id => $(id).addEventListener('input', calculer));
-$('destination').addEventListener('change', calculer);
 
 /* ===================== CALCUL ===================== */
 let dernier = null;
@@ -951,16 +922,8 @@ function calculer() {
   const m2Boite = Math.max(0.1, parseFloat($('m2Boite').value) || 1);
   const boites = plafond(surfaceCommande / m2Boite);
 
-  // ---- Colle : palier usine selon la surface du carreau et la destination ----
-  const destination = $('destination').value;
-  const surfaceCarreau = c.A * c.B;                       // cm²
-  const [, colleBase, peigne, deCompris] = palierColle(destination, surfaceCarreau);
-  // Double encollage systématique chez nous : on ne l'ajoute que si la
-  // valeur usine est donnée en simple encollage.
-  const ajoutDouble = deCompris ? 0 : DOUBLE_ENCOLLAGE;
-  const colleKgM2 = colleBase + ajoutDouble;
-  const kgColle = surface * colleKgM2;
-  const sacsColle = Math.max(1, plafond(kgColle / SAC_COLLE));
+  // ---- Colle : moyenne magasin, un sac de 25 kg pour 4,5 m² ----
+  const sacsColle = Math.max(1, plafond(surface / M2_PAR_SAC_COLLE));
 
   // ---- Primaire : 150 g/m², densité 1,05 ----
   const litresPrimaire = surface * PRIMAIRE_G_M2 / 1000 / PRIMAIRE_DENSITE;
@@ -1021,8 +984,7 @@ function calculer() {
 
   dernier = {
     surface, surfaceCommande, chute, boites, m2Boite,
-    format: c.label, pose, destination, peigne,
-    sacsColle, kgColle, colleKgM2, colleBase, ajoutDouble,
+    format: c.label, pose, sacsColle,
     primaire, litresPrimaire,
     sacsJoint, kgJoint, joint: jointMm, epaisseurMm,
     sachets, nbCroisillons, crois, pl
@@ -1038,7 +1000,7 @@ function calculer() {
 
   $('resColle').textContent = `${sacsColle} sac${sacsColle > 1 ? 's' : ''} de ${SAC_COLLE} kg`;
   $('resColleLib').textContent =
-    `${fmt1(colleKgM2)} kg/m² en ${LIB_DESTINATION[destination]}, peigne ${peigne}, double encollage compris`;
+    `colle, sur une moyenne d'un sac pour ${fmt1(M2_PAR_SAC_COLLE)} m²`;
 
   $('resPrimaire').textContent = primaire.nb > 1
     ? `${primaire.nb} bidons de ${primaire.taille} L`
@@ -1085,7 +1047,7 @@ function calculer() {
     ? (hauteur === 'autre'
         ? 'Hauteur hors standard : un <b style="color:#f5c26b;">réglage sur mesure facturé</b> s\'applique. Demandez-nous un chiffrage avant de commander.'
         : 'Le nombre de plinthes par carreau est estimé pour ce format : nous le confirmons avec l\'atelier avant de lancer la commande.')
-    : 'Consommations calculées d\'après les <b>recommandations des fiches techniques usine</b>, pour une pose standard sur support plan. Nos conseillers vérifient les quantités avec vous au magasin, gratuitement.';
+    : 'Le joint, le primaire et les croisillons suivent les <b>recommandations usine</b>. La colle part de notre moyenne de comptoir : elle varie selon le support et la main du poseur. Nous vérifions tout cela avec vous au magasin, gratuitement.';
 
   $('btnImprimer').disabled = false;
 }
@@ -1106,15 +1068,15 @@ $('btnImprimer').addEventListener('click', () => {
     <table class="imp-tab">
       <tr><th>Poste</th><th>Détail</th><th>Quantité</th></tr>
       <tr><td>Carrelage</td><td>${fmt1(d.surfaceCommande)} m² dont ${Math.round(d.chute * 100)} % de chutes, boîtes de ${fmt1(d.m2Boite)} m²</td><td>${d.boites} boîte${s(d.boites)}</td></tr>
-      <tr><td>Colle</td><td>${d.ajoutDouble
-        ? `${fmt1(d.colleBase)} kg/m² en ${LIB_DESTINATION[d.destination]} au peigne ${d.peigne}, plus ${fmt1(d.ajoutDouble)} kg/m² de double encollage`
-        : `${fmt1(d.colleBase)} kg/m² en ${LIB_DESTINATION[d.destination]} au peigne ${d.peigne}, double encollage compris`}, soit ${fmt1(d.kgColle)} kg en sacs de ${SAC_COLLE} kg</td><td>${d.sacsColle} sac${s(d.sacsColle)}</td></tr>
+      <tr><td>Colle</td><td>Moyenne d'un sac de ${SAC_COLLE} kg pour ${fmt1(M2_PAR_SAC_COLLE)} m², à ajuster selon le support et le poseur</td><td>${d.sacsColle} sac${s(d.sacsColle)}</td></tr>
       <tr><td>Primaire</td><td>Primaire d'accrochage obligatoire, ${PRIMAIRE_G_M2} g/m², soit ${fmt1(d.litresPrimaire)} L</td><td>${d.primaire.nb} bidon${s(d.primaire.nb)} de ${d.primaire.taille} L</td></tr>
       <tr><td>Joint</td><td>Largeur ${d.joint} mm sur carreau de ${fmt1(d.epaisseurMm)} mm, soit ${fmt1(d.kgJoint)} kg en sacs de ${SAC_JOINT} kg</td><td>${d.sacsJoint} sac${s(d.sacsJoint)}</td></tr>
       <tr><td>Croisillons</td><td>${d.crois.valeur} par m²${d.crois.exact ? '' : ' (format le plus proche de la table)'}, soit ${d.nbCroisillons} pièces en sachets de ${SACHET_CROISILLONS}</td><td>${d.sachets} sachet${s(d.sachets)}</td></tr>
     </table>
     <p style="font-size:8.5pt; color:#555; margin-top:0.5rem; line-height:1.6;">
-      Consommations établies d'après les <b>recommandations des fiches techniques usine</b>.
+      Joint, primaire et croisillons d'après les <b>recommandations des fiches techniques usine</b>.
+      La colle part de notre moyenne de comptoir, un sac de ${SAC_COLLE} kg pour ${fmt1(M2_PAR_SAC_COLLE)} m² :
+      c'est un repère, la consommation varie selon le support et la main du poseur.
       Croisillons autonivelants vendus par sachets de ${SACHET_CROISILLONS} pièces, autres
       conditionnements sur demande au magasin.
     </p>
