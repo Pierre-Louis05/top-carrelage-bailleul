@@ -334,7 +334,7 @@
 </section>
 
 <!-- AVIS GOOGLE -->
-<section class="section-avis">
+<section class="section-avis" id="sectionAvis">
   <div class="container">
     <div class="avis-header reveal">
       <div class="avis-header-left">
@@ -540,7 +540,7 @@ async function chargerAvis() {
     const data = await res.json();
 
     if (data.error || !data.reviews || data.reviews.length === 0) {
-      carousel.innerHTML = '<div class="avis-card" style="grid-column:1/-1;text-align:center;color:var(--muted);padding:2rem;">Avis temporairement indisponibles.</div>';
+      masquerAvis();
       return;
     }
 
@@ -575,8 +575,15 @@ async function chargerAvis() {
     initCarousel(Array.from(allCards));
 
   } catch (e) {
-    carousel.innerHTML = '<div class="avis-card" style="grid-column:1/-1;text-align:center;color:var(--muted);padding:2rem;">Impossible de charger les avis.</div>';
+    masquerAvis();
   }
+}
+
+// Plutot que d'afficher un message d'erreur au visiteur, on retire la section :
+// un bloc d'avis vide ou en panne fait plus de mal que pas de bloc du tout.
+function masquerAvis() {
+  const section = document.getElementById('sectionAvis');
+  if (section) section.hidden = true;
 }
 
 chargerAvis();
