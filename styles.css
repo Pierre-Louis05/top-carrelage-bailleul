@@ -565,6 +565,11 @@ section { padding: 5rem 0; }
 
 /* ============ AVIS GOOGLE ============ */
 .section-avis { background: var(--bg); }
+/* Etoiles a la note exacte : une rangee doree rognee par-dessus une rangee grise */
+.etoiles { position: relative; display: inline-block; color: #D6D9DF; white-space: nowrap; }
+.etoiles-plein { position: absolute; left: 0; top: 0; overflow: hidden; color: #FBBC05; }
+.avis-stars .etoiles { font-size: 0.9em; }
+.avis-sans-cartes .avis-header { margin-bottom: 0; }
 .section-avis h2 { color: var(--marine); }
 .avis-header { display: grid; grid-template-columns: 1fr auto; gap: 3rem; align-items: center; margin-bottom: 2.5rem; }
 .avis-score-inner {

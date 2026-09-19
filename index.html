@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=3" />
+  <link rel="stylesheet" href="styles.css?v=5" />
 </head>
 <body>
 
@@ -346,7 +346,7 @@
         <div class="avis-score-inner">
           <svg width="28" height="28" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.7C34.1 33.9 29.6 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 6 1.1 8.1 3l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15 16.1 19.2 13 24 13c3.1 0 6 1.1 8.1 3l6.4-6.4C34.6 4.1 29.6 2 24 2c-7.6 0-14.2 4.5-17.7 11z"/><path fill="#FBBC05" d="M24 46c5.4 0 10.3-1.8 14.1-4.9l-6.5-5.3C29.6 37.6 26.9 38.5 24 38.5c-5.5 0-10.1-3.1-11.7-7.6l-7 5.4C8.9 42.1 15.9 46 24 46z"/><path fill="#EA4335" d="M44.5 20H24v8.5h11.7c-.8 2.3-2.3 4.2-4.2 5.7l6.5 5.3C42.1 36.4 46 30.6 46 24c0-1.3-.2-2.7-.5-4z"/></svg>
           <div class="avis-note" id="avisNote">…</div>
-          <div class="avis-etoiles" id="avisEtoiles">★★★★★</div>
+          <div class="avis-etoiles" id="avisEtoiles"></div>
           <div class="avis-total" id="avisTotal">Chargement…</div>
           <a href="https://www.google.com/maps/place/Top+Carrelage/@50.7252536,2.7336752,17z" target="_blank" rel="noopener" class="btn btn-outline-dark" style="font-size:0.66rem; margin-top:1rem;">Lire tous les avis</a>
         </div>
@@ -475,8 +475,14 @@
 // ===== AVIS GOOGLE : chargement dynamique =====
 const COLORS = ['#4285F4','#34A853','#EA4335','#FBBC05','#9C27B0','#FF7043','#00897B','#E53935'];
 
+// Cinq etoiles grises, recouvertes de cinq etoiles dorees rognees a la
+// largeur exacte de la note : 4,6 doit se lire 4,6, pas cinq etoiles pleines.
 function etoiles(note) {
-  return '★'.repeat(Math.round(note)) + '☆'.repeat(5 - Math.round(note));
+  const pct = Math.max(0, Math.min(100, (note / 5) * 100));
+  return '<span class="etoiles" role="img" aria-label="' + note.toString().replace('.', ',') +
+         ' sur 5"><span aria-hidden="true">★★★★★</span>' +
+         '<span class="etoiles-plein" aria-hidden="true" style="width:' + pct.toFixed(1) +
+         '%">★★★★★</span></span>';
 }
 
 function initCarousel(allCards) {
@@ -534,53 +540,66 @@ function initCarousel(allCards) {
 
 async function chargerAvis() {
   const carousel = document.getElementById('avisCarousel');
+  const wrapper = document.querySelector('.avis-carousel-wrapper');
   try {
-    // Fonction hébergée sur le site Marcuzzi (même magasin, clé API déjà configurée là-bas)
-    const res = await fetch('https://resplendent-unicorn-da1705.netlify.app/.netlify/functions/reviews');
+    // Les avis viennent d'un fichier que le magasin met a jour lui-meme.
+    // L'API Google exige une carte bancaire sur le projet Google Cloud, ce que
+    // nous n'avons pas : le fichier evite cette dependance et ne tombe pas en panne.
+    const res = await fetch('avis.json', { cache: 'no-cache' });
     const data = await res.json();
+    const liste = Array.isArray(data.avis) ? data.avis : [];
 
-    if (data.error || !data.reviews || data.reviews.length === 0) {
-      masquerAvis();
+    if (!data.note || !data.totalAvis) { masquerAvis(); return; }
+
+    document.getElementById('avisNote').textContent = data.note.toFixed(1).replace('.', ',');
+    document.getElementById('avisEtoiles').innerHTML = etoiles(data.note);
+    document.getElementById('avisTotal').textContent = data.totalAvis + ' avis Google';
+
+    // Sans avis rediges, on garde la note et le lien vers Google : c'est verifiable
+    // et honnete. Le carousel disparait plutot que d'afficher des cartes vides.
+    if (liste.length === 0) {
+      if (wrapper) wrapper.hidden = true;
+      // Sans carousel, la marge basse de l'en-tete laisse un vide : on la retire
+      document.getElementById('sectionAvis').classList.add('avis-sans-cartes');
       return;
     }
 
-    document.getElementById('avisNote').textContent = data.note.toFixed(1).replace('.', ',');
-    document.getElementById('avisEtoiles').textContent = etoiles(data.note);
-    document.getElementById('avisTotal').textContent = data.totalAvis + ' avis Google';
-
+    if (wrapper) wrapper.hidden = false;
+    document.getElementById('sectionAvis').classList.remove('avis-sans-cartes');
     carousel.innerHTML = '';
-    data.reviews.forEach((r, i) => {
-      const initiale = r.nom.charAt(0).toUpperCase();
+    liste.forEach((r, i) => {
+      const initiale = (r.nom || '?').charAt(0).toUpperCase();
       const couleur = COLORS[i % COLORS.length];
       const card = document.createElement('div');
       card.className = 'avis-card';
-      card.innerHTML = `
-        <div class="avis-card-top">
-          ${r.avatar
-            ? `<img src="${r.avatar}" alt="${r.nom}" class="avis-avatar" style="object-fit:cover;" />`
-            : `<div class="avis-avatar" style="background:${couleur};">${initiale}</div>`
-          }
-          <div>
-            <div class="avis-nom">${r.nom}</div>
-            <div class="avis-stars" style="color:#FBBC05;">${etoiles(r.note)}</div>
-          </div>
-          <span class="avis-date">${r.date}</span>
+      const bloc = document.createElement('div');
+      bloc.className = 'avis-card-top';
+      bloc.innerHTML = `
+        <div class="avis-avatar" style="background:${couleur};">${initiale}</div>
+        <div>
+          <div class="avis-nom"></div>
+          <div class="avis-stars">${etoiles(r.note || 5)}</div>
         </div>
-        <p>"${r.texte}"</p>
-      `;
+        <span class="avis-date"></span>`;
+      // textContent, pas innerHTML : le texte vient d'un fichier edite a la main
+      bloc.querySelector('.avis-nom').textContent = r.nom || 'Client';
+      bloc.querySelector('.avis-date').textContent = r.date || '';
+      const p = document.createElement('p');
+      p.textContent = '"' + (r.texte || '') + '"';
+      card.appendChild(bloc);
+      card.appendChild(p);
       carousel.appendChild(card);
     });
 
-    const allCards = carousel.querySelectorAll('.avis-card');
-    initCarousel(Array.from(allCards));
+    initCarousel(Array.from(carousel.querySelectorAll('.avis-card')));
 
   } catch (e) {
     masquerAvis();
   }
 }
 
-// Plutot que d'afficher un message d'erreur au visiteur, on retire la section :
-// un bloc d'avis vide ou en panne fait plus de mal que pas de bloc du tout.
+// Si meme le fichier local ne repond pas, on retire la section : un bloc d'avis
+// vide ou en panne fait plus de mal que pas de bloc du tout.
 function masquerAvis() {
   const section = document.getElementById('sectionAvis');
   if (section) section.hidden = true;
