@@ -1,7 +1,20 @@
 {
-  "_lisezmoi": "Avis Google du magasin. Pour mettre a jour : corrigez note et totalAvis d'apres la fiche Google, et ajoutez des avis reels dans la liste ci-dessous. Ne jamais inventer d'avis. Laisser la liste vide affiche seulement la note et le lien vers Google.",
+  "_lisezmoi": "Avis Google du magasin. Uniquement de vrais avis recopies depuis la fiche Google, jamais d'avis inventes. Prenom seul, pas de nom de famille. Mettre a jour note et totalAvis de temps en temps.",
   "note": 4.6,
   "totalAvis": 159,
   "releveLe": "2026-09-19",
-  "avis": []
+  "avis": [
+    {
+      "nom": "Eugène",
+      "note": 5,
+      "date": "il y a 3 semaines",
+      "texte": "Équipe au top et agréable\nDe très bon conseil de pierre louis\nLarge choix\nJe recommande ce magasin"
+    },
+    {
+      "nom": "Guillaume",
+      "note": 5,
+      "date": "il y a 6 semaines",
+      "texte": "Nous sommes très satisfait de l'accueil souriant et de l'accompagnement lors de notre visite. Nous reviendrons pour de prochains projets."
+    }
+  ]
 }

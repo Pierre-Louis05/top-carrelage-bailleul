@@ -570,6 +570,8 @@ section { padding: 5rem 0; }
 .etoiles-plein { position: absolute; left: 0; top: 0; overflow: hidden; color: #FBBC05; }
 .avis-stars .etoiles { font-size: 0.9em; }
 .avis-sans-cartes .avis-header { margin-bottom: 0; }
+/* Les avis sont cites tels quels : on respecte les retours a la ligne de l'auteur */
+.avis-card p { white-space: pre-line; }
 .section-avis h2 { color: var(--marine); }
 .avis-header { display: grid; grid-template-columns: 1fr auto; gap: 3rem; align-items: center; margin-bottom: 2.5rem; }
 .avis-score-inner {
