@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=3" />
   <style>
     .calc-grille { display:grid; grid-template-columns:1.05fr 0.95fr; gap:2rem; align-items:start; }
     @media (max-width:900px) { .calc-grille { grid-template-columns:1fr; } }
@@ -142,14 +142,14 @@
     @media print {
       body > *:not(#zoneImpression) { display:none !important; }
       #zoneImpression { display:block !important; }
-      .imp-tete { border-bottom:2px solid #E2333F; padding-bottom:1rem; margin-bottom:1.4rem; }
-      .imp-tete h1 { font-size:19pt; color:#182D4E; }
+      .imp-tete { border-bottom:2px solid #ED2442; padding-bottom:1rem; margin-bottom:1.4rem; }
+      .imp-tete h1 { font-size:19pt; color:#14263C; }
       .imp-tete p { font-size:9pt; color:#555; margin-top:0.3rem; }
-      .imp-soustitre { font-size:11pt; color:#182D4E; margin:1.2rem 0 0.5rem; font-weight:700; }
+      .imp-soustitre { font-size:11pt; color:#14263C; margin:1.2rem 0 0.5rem; font-weight:700; }
       table.imp-tab { width:100%; border-collapse:collapse; font-size:10pt; }
-      .imp-tab th { text-align:left; padding:7px 9px; background:#f0f2f6; color:#182D4E; font-size:8.5pt; text-transform:uppercase; letter-spacing:0.05em; }
+      .imp-tab th { text-align:left; padding:7px 9px; background:#f0f2f6; color:#14263C; font-size:8.5pt; text-transform:uppercase; letter-spacing:0.05em; }
       .imp-tab td { padding:7px 9px; border-bottom:1px solid #ddd; }
-      .imp-tab td:last-child { text-align:right; font-weight:700; color:#182D4E; }
+      .imp-tab td:last-child { text-align:right; font-weight:700; color:#14263C; }
       .imp-pied { margin-top:1.4rem; padding-top:0.8rem; border-top:1px solid #ddd; font-size:8.5pt; color:#555; line-height:1.6; }
     }
   </style>
@@ -174,11 +174,7 @@
 <nav id="navbar">
   <div class="container nav-inner">
     <a href="index.html" class="nav-logo">
-      <div class="logo-badge"><div class="badge-back"></div><div class="badge-front"><span>TOP</span></div></div>
-      <div class="nav-logo-text">
-        <span class="nav-logo-main">Aménagement</span>
-        <span class="nav-logo-sub">Carrelage · Sanitaire · Parquets</span>
-      </div>
+      <img src="logo-top-amenagement.svg" alt="Top Aménagement" class="logo-img" width="674" height="154" />
     </a>
     <ul class="nav-links">
       <li><a href="index.html">Accueil</a></li>
@@ -227,11 +223,7 @@
 
   <div class="nav-mobile-head">
     <a href="index.html" class="nav-logo">
-      <div class="logo-badge"><div class="badge-back"></div><div class="badge-front"><span>TOP</span></div></div>
-      <div class="nav-logo-text">
-        <span class="nav-logo-main">Aménagement</span>
-        <span class="nav-logo-sub">Carrelage · Sanitaire · Parquets</span>
-      </div>
+      <img src="logo-top-amenagement-blanc.svg" alt="Top Aménagement" class="logo-img" width="674" height="154" />
     </a>
     <button class="nav-mobile-close" id="mobileClose" aria-label="Fermer le menu">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -615,11 +607,7 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <a href="index.html" class="nav-logo">
-          <div class="logo-badge"><div class="badge-back"></div><div class="badge-front"><span>TOP</span></div></div>
-          <div class="nav-logo-text">
-            <span class="nav-logo-main">Aménagement</span>
-            <span class="nav-logo-sub">Carrelage · Sanitaire · Parquets</span>
-          </div>
+          <img src="logo-top-amenagement-blanc.svg" alt="Top Aménagement" class="logo-img" width="674" height="154" />
         </a>
         <p>Top Aménagement réunit à Bailleul les enseignes Top Carrelage, Top Sanitaire et Top Parquets : 1 000 m² d'exposition pour vos sols, murs et salles de bains.</p>
       </div>

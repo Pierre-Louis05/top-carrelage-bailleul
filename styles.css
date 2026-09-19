@@ -6,11 +6,15 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* Couleurs de marque (logo Top Carrelage) */
-  --rouge: #E2333F;
-  --rouge-fonce: #C21E2E;
-  --marine: #182D4E;
-  --marine-fonce: #101F38;
+  /* Couleurs de marque, relevees dans le logo vectoriel */
+  --rouge: #ED2442;          /* Carrelage */
+  --rouge-clair: #ED4661;
+  --rouge-fonce: #C9162F;
+  --orange: #F5A62A;         /* Parquets */
+  --bleu: #4BC1F0;           /* Sanitaire */
+  --marine: #14263C;
+  --marine-clair: #223D56;
+  --marine-fonce: #0E1B2B;
   --blanc: #FFFFFF;
   --bg: #F5F6F9;
   --texte: #22304A;
@@ -88,33 +92,16 @@ section { padding: 5rem 0; }
 .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 72px; gap: 1rem; }
 
 /* Logo */
-.nav-logo { display: flex; align-items: center; gap: 0.65rem; flex-shrink: 0; }
-.logo-badge { width: 44px; height: 44px; position: relative; flex-shrink: 0; }
-.logo-badge .badge-back {
-  position: absolute; inset: 5px 0 0 7px;
-  background: var(--marine);
-  border-radius: 8px;
-  transform: rotate(45deg) scale(0.76);
-}
-.logo-badge .badge-front {
-  position: absolute; inset: 0 7px 5px 0;
-  background: linear-gradient(135deg, #EE4450, var(--rouge-fonce));
-  border-radius: 8px;
-  transform: rotate(45deg) scale(0.76);
-  display: flex; align-items: center; justify-content: center;
-}
-.logo-badge .badge-front span {
-  transform: rotate(-45deg);
-  color: #fff; font-family: var(--font-titre); font-weight: 800; font-size: 0.7rem; letter-spacing: 0.02em;
-}
-.nav-logo-text { display: flex; flex-direction: column; line-height: 1.15; }
-.nav-logo-main {
-  font-family: var(--font-titre); font-weight: 800; font-size: 1.14rem;
-  color: var(--marine); text-transform: uppercase; letter-spacing: 0.01em;
-}
-.nav-logo-sub {
-  font-size: 0.55rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--rouge); font-weight: 600;
-}
+.nav-logo { display: flex; align-items: center; flex-shrink: 0; }
+.logo-img { display: block; width: auto; height: 40px; }
+/* Le bloc est tres large (4,4:1) : il faut cette hauteur pour que le mot
+   reste aussi lisible que l ancien logo texte, soit ~13px de hauteur de lettre. */
+#navbar .logo-img { height: 46px; }
+.nav-mobile-head .logo-img { height: 38px; }
+.footer-brand .logo-img { height: 52px; }
+@media (max-width: 1400px) { #navbar .logo-img { height: 42px; } }
+@media (max-width: 1080px) { #navbar .logo-img { height: 40px; } }
+@media (max-width: 420px)  { #navbar .logo-img { height: 34px; } }
 
 /* Liens */
 .nav-links { display: flex; gap: 0.1rem; align-items: center; flex-wrap: nowrap; }
@@ -231,8 +218,6 @@ section { padding: 5rem 0; }
   gap: 1rem; padding: 0.9rem 1.3rem;
   border-bottom: 1px solid rgba(255,255,255,0.1);
 }
-.nav-mobile-head .nav-logo-main { color: #fff; font-size: 1rem; }
-.nav-mobile-head .nav-logo-sub { color: #FF6B75; }
 .nav-mobile-close {
   flex-shrink: 0; width: 40px; height: 40px; border-radius: 8px;
   background: rgba(255,255,255,0.08); border: none; color: #fff;
@@ -339,10 +324,6 @@ section { padding: 5rem 0; }
 @media (max-width: 1400px) {
   .nav-inner { gap: 0.7rem; }
   .nav-logo { gap: 0.5rem; }
-  .logo-badge { width: 38px; height: 38px; }
-  .logo-badge .badge-front span { font-size: 0.62rem; }
-  .nav-logo-main { font-size: 1rem; }
-  .nav-logo-sub { font-size: 0.5rem; letter-spacing: 0.1em; }
   .nav-links > li > a { padding: 0.7rem 0.34rem; font-size: 0.665rem; }
 }
 /* Le bouton d'appel passe en pastille pour libérer de la place */
@@ -783,7 +764,6 @@ section { padding: 5rem 0; }
 footer { background: var(--marine-fonce); color: rgba(255,255,255,0.7); padding: 4rem 0 0; }
 .footer-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1.3fr; gap: 2.5rem; padding-bottom: 3rem; }
 .footer-brand p { font-size: 0.85rem; line-height: 1.7; margin-top: 1rem; }
-.footer-brand .nav-logo-main { color: #fff; }
 .footer-col h4 {
   color: #fff; font-size: 0.73rem; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 1.2rem;
   position: relative; padding-bottom: 0.6rem;
