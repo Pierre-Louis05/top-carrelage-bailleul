@@ -21,6 +21,18 @@
       "note": 5,
       "date": "il y a 6 semaines",
       "texte": "Nous sommes très satisfait de l'accueil souriant et de l'accompagnement lors de notre visite. Nous reviendrons pour de prochains projets."
+    },
+    {
+      "nom": "Victor",
+      "note": 5,
+      "date": "il y a 2 mois",
+      "texte": "Un service exceptionnel ! Ce n’ai pas des vendeurs mais des Vrai conseillé ! Un grand merci à Pierre-Louis pour tout ces conseils et son sérieux ! Un vrai service luxe à prix abordable ! Une vrai raison d’acheter en boutique !!"
+    },
+    {
+      "nom": "David",
+      "note": 5,
+      "date": "il y a 4 mois",
+      "texte": "Excellent accueil, délais respectés, un très beau choix de produits de qualité.\nNous sommes ravis du résultat !"
     }
   ]
 }
