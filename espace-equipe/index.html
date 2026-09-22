@@ -10,6 +10,11 @@
   <meta name="theme-color" content="#14263C" />
   <link rel="stylesheet" href="../fonts/polices-equipe.css" />
   <link rel="stylesheet" href="app.css" />
+  <script>
+    // Un appareil qui ouvre l'espace equipe appartient a l'equipe : on l'exclut
+    // des statistiques du site public (reglage officiel d'Umami).
+    try { localStorage.setItem('umami.disabled', '1'); } catch (e) {}
+  </script>
 </head>
 <body>
 <div class="login-page">

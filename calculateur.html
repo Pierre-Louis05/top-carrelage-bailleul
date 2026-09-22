@@ -166,6 +166,8 @@
       .imp-pied { margin-top:1.4rem; padding-top:0.8rem; border-top:1px solid #ddd; font-size:8.5pt; color:#555; line-height:1.6; }
     }
   </style>
+  <!-- Mesure d'audience sans cookie, uniquement sur le site en ligne -->
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="5296d765-571a-41c7-b5e0-a37b10f469f3" data-domains="top-carrelage-bailleul.netlify.app"></script>
 </head>
 <body>
 
@@ -672,7 +674,7 @@
   </div>
 </footer>
 
-<script src="nav.js"></script>
+<script src="nav.js?v=2"></script>
 <script>
 /* =====================================================================
    CALCULATEUR CARRELAGE ET PLINTHES
@@ -880,6 +882,7 @@ $('veutPlinthes').addEventListener('change', e => {
 /* ===================== CALCUL ===================== */
 let dernier = null;
 
+let calculSignale = false;   // une seule mesure "Calculateur utilise" par visite
 function calculer() {
   const c = coteCarreau();
   const carre = Math.abs(c.A - c.B) < 0.01;
@@ -1051,11 +1054,13 @@ function calculer() {
     : 'Le joint, le primaire et les croisillons suivent les <b>recommandations usine</b>. La colle part de notre moyenne de comptoir : elle varie selon le support et la main du poseur. Nous vérifions tout cela avec vous au magasin, gratuitement.';
 
   $('btnImprimer').disabled = false;
+  if (!calculSignale) { calculSignale = true; window.suivre?.('Calculateur utilisé'); }
 }
 
 /* ===================== IMPRESSION ===================== */
 $('btnImprimer').addEventListener('click', () => {
   if (!dernier) return;
+  window.suivre?.('Estimation imprimée', { format: dernier.format, plinthes: dernier.pl ? 'oui' : 'non' });
   const d = dernier, pl = d.pl;
   const s = n => n > 1 ? 's' : '';
 

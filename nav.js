@@ -72,3 +72,33 @@ window.addEventListener('resize', revealCheck);
 document.addEventListener('DOMContentLoaded', revealCheck);
 revealCheck();
 setInterval(revealCheck, 800);
+
+/* =====================================================================
+   MESURE D'AUDIENCE (Umami, sans cookie)
+   suivre() enregistre une action ; sans effet si Umami n'est pas charge
+   (bloqueur de publicite, visite de l'equipe, test en local).
+   ===================================================================== */
+function suivre(nom, donnees) {
+  try { if (window.umami && typeof umami.track === 'function') umami.track(nom, donnees); } catch (e) {}
+}
+window.suivre = suivre;
+
+// Ou se trouve le lien clique : l'en-tete, le menu, le pied de page ou la page
+function emplacement(el) {
+  if (el.closest('.topbar-site')) return 'bandeau';
+  if (el.closest('#navbar')) return 'menu';
+  if (el.closest('.nav-mobile')) return 'menu mobile';
+  if (el.closest('footer')) return 'pied de page';
+  return 'contenu';
+}
+
+// Clics qui menent a un contact : appel, e-mail, itineraire
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href]');
+  if (!a) return;
+  const href = a.getAttribute('href');
+  const infos = { page: location.pathname.replace(/\.html$/, '') || '/', emplacement: emplacement(a) };
+  if (href.startsWith('tel:')) suivre('Appel téléphone', infos);
+  else if (href.startsWith('mailto:')) suivre('E-mail', infos);
+  else if (/google\.[a-z.]+\/maps/.test(href)) suivre('Itinéraire', infos);
+});
