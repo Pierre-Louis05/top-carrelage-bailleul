@@ -3,12 +3,53 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nos Produits | Top Aménagement Bailleul</title>
-  <meta name="description" content="Carrelage, salle de bain & sanitaire, parquet, pierre naturelle, outillage : les 5 univers produits de Top Aménagement Bailleul, réunis sur 1 000 m²." />
+  <title>Mentions légales et confidentialité | Top Aménagement Bailleul</title>
+  <meta name="description" content="Mentions légales du site Top Aménagement Bailleul, exploité par la société MARCAN : éditeur, hébergeur, protection des données personnelles et cookies." />
+  <meta name="robots" content="noindex, follow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=8" />
+  <style>
+    .legal { max-width: 780px; margin: 0 auto; }
+    .legal-sommaire {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2.6rem;
+    }
+    .legal-sommaire a {
+      font-size: 0.74rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--marine); background: var(--blanc); border: 1px solid var(--ligne);
+      padding: 0.5rem 0.9rem; border-radius: 30px; transition: var(--transition);
+    }
+    .legal-sommaire a:hover { border-color: var(--rouge); color: var(--rouge); }
+    .legal-bloc {
+      background: var(--blanc); border: 1px solid var(--ligne); border-radius: 12px;
+      padding: 2rem 2.2rem; margin-bottom: 1.4rem; scroll-margin-top: 140px;
+    }
+    .legal-bloc h2 { font-size: 1.1rem; margin-bottom: 1.1rem; }
+    .legal-bloc h3 { font-size: 0.92rem; margin: 1.4rem 0 0.5rem; color: var(--marine); }
+    .legal-bloc p, .legal-bloc li { font-size: 0.9rem; line-height: 1.75; color: var(--texte); }
+    .legal-bloc p + p { margin-top: 0.7rem; }
+    .legal-bloc ul { padding-left: 1.1rem; margin: 0.4rem 0; }
+    .legal-bloc li { list-style: square; margin-bottom: 0.25rem; }
+    .legal-bloc li::marker { color: var(--rouge); }
+    .legal-bloc a { color: var(--rouge); font-weight: 600; }
+    .legal-fiche {
+      display: grid; grid-template-columns: minmax(150px, 34%) 1fr; gap: 0;
+      border-top: 1px solid var(--ligne);
+    }
+    .legal-fiche dt, .legal-fiche dd {
+      padding: 0.65rem 0; border-bottom: 1px solid var(--ligne); font-size: 0.88rem;
+    }
+    .legal-fiche dt { color: var(--muted); font-weight: 600; padding-right: 1rem; }
+    .legal-fiche dd { color: var(--texte); font-variant-numeric: tabular-nums; }
+    .legal-maj { font-size: 0.8rem; color: var(--muted); text-align: center; margin-top: 2rem; }
+    @media (max-width: 560px) {
+      .legal-bloc { padding: 1.5rem 1.3rem; }
+      .legal-fiche { grid-template-columns: 1fr; }
+      .legal-fiche dt { border-bottom: none; padding-bottom: 0; }
+      .legal-fiche dd { padding-top: 0.15rem; }
+    }
+  </style>
 </head>
 <body>
 
@@ -138,88 +179,98 @@
 
 <!-- PAGE HERO -->
 <div class="page-hero">
-  <div class="page-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1600585152915-d208bec867a1?w=1920&q=80&auto=format&fit=crop');"></div>
+  <div class="page-hero-bg" style="background-image:url('photos/inspirations/inspi-05.jpg');"></div>
   <div class="page-hero-overlay"></div>
   <div class="container">
     <div class="page-hero-content">
-      <div class="breadcrumb"><a href="index.html">Accueil</a> <span>/</span> Nos Produits</div>
-      <h1>Nos Produits</h1>
+      <div class="breadcrumb"><a href="index.html">Accueil</a> <span>/</span> Mentions légales</div>
+      <h1>Mentions légales</h1>
       <div class="sep"></div>
-      <p style="color:rgba(255,255,255,0.75);">Cinq univers pour équiper et embellir toute la maison.</p>
+      <p style="color:rgba(255,255,255,0.78); max-width:54ch;">Qui édite ce site, qui l'héberge, et ce que nous faisons des informations que vous nous confiez.</p>
     </div>
   </div>
 </div>
 
-<!-- CARTES -->
-<section style="background:var(--blanc);">
+<section style="background:var(--bg); padding-top:3.5rem;">
   <div class="container">
-    <div class="section-header reveal">
-      <span class="tag">Trois enseignes réunies</span>
-      <h2>Explorez chaque univers</h2>
-      <div class="sep sep-center"></div>
-      <p>Chaque univers a sa page dédiée avec ses gammes, ses guides de choix et ses conseils de pose.</p>
-    </div>
-    <div class="cat-grid">
+    <div class="legal">
 
-      <a href="carrelage.html" class="cat-card reveal">
-        <img src="https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=700&q=80&auto=format&fit=crop" alt="Top Carrelage" loading="lazy" />
-        <div class="cat-card-overlay">
-          <h3>Top Carrelage</h3>
-          <p>Intérieur, extérieur, faïence, grands formats</p>
-          <span class="cat-btn">Découvrir</span>
-        </div>
-      </a>
+      <nav class="legal-sommaire" aria-label="Sommaire">
+        <a href="#editeur">Éditeur</a>
+        <a href="#publication">Publication</a>
+        <a href="#hebergement">Hébergement</a>
+        <a href="#propriete">Propriété intellectuelle</a>
+        <a href="#donnees">Données personnelles</a>
+        <a href="#cookies">Cookies</a>
+      </nav>
 
-      <a href="salle-de-bain.html" class="cat-card reveal">
-        <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=700&q=80&auto=format&fit=crop" alt="Top Sanitaire" loading="lazy" />
-        <div class="cat-card-overlay">
-          <h3>Top Sanitaire</h3>
-          <p>Douche, baignoire, meubles, robinetterie</p>
-          <span class="cat-btn">Découvrir</span>
-        </div>
-      </a>
+      <div class="legal-bloc" id="editeur">
+        <h2>Éditeur du site</h2>
+        <p>Le site Top Aménagement Bailleul est édité par la société <b>MARCAN</b>, qui exploite le magasin et les enseignes Top Carrelage, Top Sanitaire et Top Parquets.</p>
+        <dl class="legal-fiche" style="margin-top:1.2rem;">
+          <dt>Dénomination</dt><dd>MARCAN</dd>
+          <dt>Forme juridique</dt><dd>Société par actions simplifiée (SAS)</dd>
+          <dt>Capital social</dt><dd>10 000 €</dd>
+          <dt>Siège social</dt><dd>Zone industrielle, avenue de l'Europe, 59270 Bailleul</dd>
+          <dt>Immatriculation</dt><dd>RCS Dunkerque 915 103 865</dd>
+          <dt>SIRET du siège</dt><dd>915 103 865 00027</dd>
+          <dt>TVA intracommunautaire</dt><dd>FR50 915 103 865</dd>
+          <dt>Téléphone</dt><dd><a href="tel:+33328480808">03 28 48 08 08</a></dd>
+          <dt>E-mail</dt><dd><a href="mailto:topcarrelagebailleul@yahoo.com">topcarrelagebailleul@yahoo.com</a></dd>
+        </dl>
+      </div>
 
-      <a href="parquet.html" class="cat-card reveal">
-        <img src="https://images.unsplash.com/photo-1600210492493-0946911123ea?w=700&q=80&auto=format&fit=crop" alt="Top Parquets" loading="lazy" />
-        <div class="cat-card-overlay">
-          <h3>Top Parquets</h3>
-          <p>Stratifié, contrecollé, massif</p>
-          <span class="cat-btn">Découvrir</span>
-        </div>
-      </a>
+      <div class="legal-bloc" id="publication">
+        <h2>Directeur de la publication</h2>
+        <p>M. Jérémie Marcuzzi, gérant de la société SITOLOJE, elle-même présidente de la société MARCAN.</p>
+      </div>
 
-      <a href="pierre-naturelle.html" class="cat-card reveal">
-        <img src="https://images.unsplash.com/photo-1524230572899-a752b3835840?w=700&q=80&auto=format&fit=crop" alt="Pierre naturelle" loading="lazy" />
-        <div class="cat-card-overlay">
-          <h3>Pierre naturelle</h3>
-          <p>Travertin, marbre, granit, ardoise, parement</p>
-          <span class="cat-btn">Découvrir</span>
-        </div>
-      </a>
+      <div class="legal-bloc" id="hebergement">
+        <h2>Hébergement</h2>
+        <h3>Le site</h3>
+        <p>Netlify, Inc., 101 2nd Street, San Francisco, CA 94105, États-Unis. Contact : <a href="mailto:support@netlify.com">support@netlify.com</a>.</p>
+        <h3>Les messages envoyés par formulaire</h3>
+        <p>Supabase, Inc., société de droit américain, qui fournit la base de données dans laquelle sont enregistrées les demandes envoyées depuis le formulaire de contact.</p>
+      </div>
 
-      <a href="outillage.html" class="cat-card reveal">
-        <img src="https://images.unsplash.com/photo-1504148455328-c376907d081c?w=700&q=80&auto=format&fit=crop" alt="Outillage et accessoires" loading="lazy" />
-        <div class="cat-card-overlay">
-          <h3>Outillage<br>& Accessoires</h3>
-          <p>Colles, joints, étanchéité, outils de pose</p>
-          <span class="cat-btn">Découvrir</span>
-        </div>
-      </a>
+      <div class="legal-bloc" id="propriete">
+        <h2>Propriété intellectuelle</h2>
+        <p>Les textes, le logo et la charte graphique de ce site appartiennent à la société MARCAN. Toute reproduction, même partielle, sans autorisation écrite préalable est interdite.</p>
+        <p>Les photographies de réalisations et d'inspiration restent la propriété de leurs auteurs respectifs. Les marques citées appartiennent à leurs titulaires.</p>
+      </div>
 
-    </div>
-  </div>
-</section>
+      <div class="legal-bloc" id="donnees">
+        <h2>Données personnelles</h2>
+        <p>Nous ne collectons que les informations nécessaires pour vous répondre, et nous ne les vendons ni ne les cédons à qui que ce soit.</p>
 
-<!-- CTA -->
-<section style="background:var(--marine); text-align:center;">
-  <div class="container">
-    <span class="tag" style="color:#FF6B75;">Un projet en tête ?</span>
-    <h2 style="color:#fff; margin-bottom:1rem;">Venez en parler au magasin</h2>
-    <div class="sep sep-center"></div>
-    <p style="color:rgba(255,255,255,0.7); max-width:480px; margin:0 auto 2.5rem;">1 000 m² d'exposition au 22 avenue de l'Europe à Bailleul. Conseil gratuit, sans rendez-vous.</p>
-    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
-      <a href="tel:+33328480808" class="btn btn-rouge">Appelez-nous</a>
-      <a href="contact.html" class="btn btn-outline">Nous contacter</a>
+        <h3>Responsable du traitement</h3>
+        <p>La société MARCAN, dont les coordonnées figurent plus haut.</p>
+
+        <h3>Ce que nous recueillons</h3>
+        <p>Lorsque vous utilisez le formulaire de contact : votre nom, votre adresse e-mail, votre numéro de téléphone s'il est renseigné, et le contenu de votre message.</p>
+
+        <h3>Pourquoi</h3>
+        <p>Uniquement pour répondre à votre demande et, le cas échéant, établir un devis. Ce traitement repose sur les démarches que vous engagez vous-même auprès de nous avant un éventuel achat.</p>
+
+        <h3>Combien de temps</h3>
+        <p>Vos informations sont conservées trois ans après notre dernier échange, puis supprimées. Ce délai est celui que recommande la CNIL pour les relations avec les clients potentiels.</p>
+
+        <h3>Qui y a accès</h3>
+        <p>Seule l'équipe du magasin consulte vos demandes. Nos prestataires techniques, cités dans la rubrique Hébergement, les stockent pour notre compte sans pouvoir les utiliser à d'autres fins. Ces prestataires étant établis aux États-Unis, vos données peuvent y être transférées, dans le cadre des garanties contractuelles prévues par le règlement européen.</p>
+
+        <h3>Vos droits</h3>
+        <p>Vous pouvez à tout moment accéder à vos données, les faire rectifier ou effacer, vous opposer à leur utilisation, en demander la limitation ou la portabilité. Il suffit de nous écrire à <a href="mailto:topcarrelagebailleul@yahoo.com">topcarrelagebailleul@yahoo.com</a> ou par courrier au siège social.</p>
+        <p>Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la CNIL sur <a href="https://www.cnil.fr" target="_blank" rel="noopener">cnil.fr</a>.</p>
+      </div>
+
+      <div class="legal-bloc" id="cookies">
+        <h2>Cookies et mesure d'audience</h2>
+        <p>Ce site ne dépose <b>aucun cookie publicitaire ni de mesure d'audience</b>, et ne vous suit pas d'une page à l'autre. C'est pourquoi aucun bandeau de consentement ne vous est demandé.</p>
+        <p>La page Inspirations enregistre dans votre navigateur les photos que vous mettez de côté, pour que vous les retrouviez à votre prochaine visite. Cette information reste sur votre appareil, nous n'y avons pas accès, et vous pouvez l'effacer en vidant les données de votre navigateur.</p>
+        <p>Les polices de caractères du site sont chargées depuis les serveurs de Google, qui reçoivent à cette occasion l'adresse IP de votre appareil.</p>
+      </div>
+
+      <p class="legal-maj">Dernière mise à jour : 22 septembre 2026</p>
     </div>
   </div>
 </section>
