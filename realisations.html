@@ -199,9 +199,15 @@
 
     /* ================= IMPRESSION DE LA SÉLECTION ================= */
     #zoneImpression { display:none; }
+    @page { margin:14mm; }
     @media print {
       body > *:not(#zoneImpression) { display:none !important; }
-      #zoneImpression { display:block !important; }
+      /* Sans cela le navigateur supprime les aplats a l'impression : le logo
+         sortirait en niveaux de gris. */
+      #zoneImpression { display:block !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      .imp-marque { display:flex; align-items:center; justify-content:space-between; gap:1.5rem; margin-bottom:1rem; }
+      .imp-logo { height:44px; width:auto; display:block; }
+      .imp-coord { text-align:right; font-size:8.5pt; color:#555; line-height:1.55; }
       .imp-tete { border-bottom:2px solid #ED2442; padding-bottom:1rem; margin-bottom:1.5rem; }
       .imp-tete h1 { font-size:20pt; color:#14263C; }
       .imp-tete p { font-size:9pt; color:#555; margin-top:0.35rem; }
@@ -710,6 +716,13 @@ document.getElementById('btnImprimer').addEventListener('click', () => {
   if (!choisies.length) return;
   window.suivre?.('Sélection imprimée', { photos: choisies.length });
   document.getElementById('zoneImpression').innerHTML = `
+    <div class="imp-marque">
+      <img class="imp-logo" src="logo-top-amenagement.svg" alt="Top Aménagement" width="674" height="154" />
+      <div class="imp-coord">
+        22 avenue de l'Europe, 59270 Bailleul<br>
+        03 28 48 08 08
+      </div>
+    </div>
     <div class="imp-tete">
       <h1>Ma sélection d'inspirations</h1>
       <p>${choisies.length} ambiance${choisies.length > 1 ? 's' : ''} · Établie le ${new Date().toLocaleDateString('fr-FR')}</p>
@@ -722,7 +735,6 @@ document.getElementById('btnImprimer').addEventListener('click', () => {
         </div>`).join('')}
     </div>
     <div class="imp-pied">
-      <b>Top Aménagement</b> · 22 avenue de l'Europe, 59270 Bailleul · 03 28 48 08 08<br>
       Présentez cette feuille au comptoir : nos conseillers retrouveront les matériaux correspondants.
     </div>`;
   window.print();

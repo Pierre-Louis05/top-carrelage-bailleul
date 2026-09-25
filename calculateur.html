@@ -152,9 +152,15 @@
 
     /* ---- Impression ---- */
     #zoneImpression { display:none; }
+    @page { margin:14mm; }
     @media print {
       body > *:not(#zoneImpression) { display:none !important; }
-      #zoneImpression { display:block !important; }
+      /* Sans cela le navigateur supprime les aplats a l'impression : le logo
+         sortirait en niveaux de gris et les entetes de tableau en blanc. */
+      #zoneImpression { display:block !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      .imp-marque { display:flex; align-items:center; justify-content:space-between; gap:1.5rem; margin-bottom:1rem; }
+      .imp-logo { height:44px; width:auto; display:block; }
+      .imp-coord { text-align:right; font-size:8.5pt; color:#555; line-height:1.55; }
       .imp-tete { border-bottom:2px solid #ED2442; padding-bottom:1rem; margin-bottom:1.4rem; }
       .imp-tete h1 { font-size:19pt; color:#14263C; }
       .imp-tete p { font-size:9pt; color:#555; margin-top:0.3rem; }
@@ -162,7 +168,8 @@
       table.imp-tab { width:100%; border-collapse:collapse; font-size:10pt; }
       .imp-tab th { text-align:left; padding:7px 9px; background:#f0f2f6; color:#14263C; font-size:8.5pt; text-transform:uppercase; letter-spacing:0.05em; }
       .imp-tab td { padding:7px 9px; border-bottom:1px solid #ddd; }
-      .imp-tab td:last-child { text-align:right; font-weight:700; color:#14263C; }
+      /* nowrap : sans cela « 1 bidon de 5 L » se coupe entre le 5 et le L */
+      .imp-tab td:last-child { text-align:right; font-weight:700; color:#14263C; white-space:nowrap; }
       .imp-pied { margin-top:1.4rem; padding-top:0.8rem; border-top:1px solid #ddd; font-size:8.5pt; color:#555; line-height:1.6; }
     }
   </style>
@@ -1065,6 +1072,13 @@ $('btnImprimer').addEventListener('click', () => {
   const s = n => n > 1 ? 's' : '';
 
   $('zoneImpression').innerHTML = `
+    <div class="imp-marque">
+      <img class="imp-logo" src="logo-top-amenagement.svg" alt="Top Aménagement" width="674" height="154" />
+      <div class="imp-coord">
+        22 avenue de l'Europe, 59270 Bailleul<br>
+        03 28 48 08 08
+      </div>
+    </div>
     <div class="imp-tete">
       <h1>Estimation de quantités</h1>
       <p>Établie le ${new Date().toLocaleDateString('fr-FR')} · ${fmt1(d.surface)} m² · carreau ${d.format} · pose ${d.pose === 'decalee' ? 'décalée' : d.pose} · joint ${d.joint} mm</p>
@@ -1110,7 +1124,7 @@ $('btnImprimer').addEventListener('click', () => {
     <div class="imp-pied">
       Estimation indicative pour une pose standard sur support plan. Les quantités définitives sont
       vérifiées gratuitement au magasin selon votre support et le produit choisi.<br>
-      <b>Top Aménagement</b> · 22 avenue de l'Europe, 59270 Bailleul · 03 28 48 08 08
+      Présentez cette feuille au comptoir : nos conseillers la reprennent avec vous.
     </div>`;
   window.print();
 });
