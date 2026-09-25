@@ -375,7 +375,7 @@ section { padding: 5rem 0; }
 }
 .hero-bg {
   position: absolute; inset: 0;
-  background-image: url('https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=1920&q=80&auto=format&fit=crop');
+  background-image: url('photos/site/showroom-vue-large.jpg');
   background-size: cover; background-position: center;
   animation: heroZoom 16s ease-out forwards;
 }
