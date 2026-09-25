@@ -52,9 +52,13 @@ SERIE = [
     ('salle-de-bain-travertin', '16.jpg', (0, 100, 2000,  970), (300,  80, 2000, 1125), dict(expo=1.05)),
     ('espace-sanitaire',        '14.jpg', (0, 120, 2000,  920), (120, 100, 1620, 1100), dict(expo=1.04)),
     # --- pierre naturelle (mur en biais : recadrage serre sur la pierre) ---
-    # cadrages serres sur la pierre seule : ni cable, ni carreaux poses au sol,
-    # ni moquette. La matiere est le sujet de la page, autant la montrer de pres.
-    ('mur-pierre-naturelle', '11.jpg', (700, 330, 2000, 800), (1180, 250, 2000, 800), dict(expo=1.04, contraste=1.05)),
+    # ATTENTION : la source 11-retouche.webp est la photo 11.jpg passee dans un
+    # editeur d images IA. Le cable et les carreaux poses au sol ont ete effaces,
+    # mais l appareillage et le grain de la pierre ont aussi ete redessines : la
+    # matiere affichee n est pas exactement celle du mur d exposition.
+    # Choix assume par le magasin le 2026-09-25 pour l aspect vitrine.
+    # L originale non modifiee reste disponible en 11.jpg.
+    ('mur-pierre-naturelle', '11-retouche.webp', (150, 90, 1672, 720), (700, 150, 1500, 690), dict()),
     # --- parquet : on coupe tout le faux plafond et le poele ---
     ('salle-parquet', '22.jpg', (110, 450, 2000, 1090), (300, 400, 1388, 1125), dict(expo=1.10, contraste=1.05, wb=0.55)),
     # --- outillage : on coupe le comptoir encombre et le panneau interdiction ---
