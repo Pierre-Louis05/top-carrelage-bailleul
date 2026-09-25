@@ -640,6 +640,14 @@ section { padding: 5rem 0; }
 .contact-bloc-text a:hover { color: var(--rouge); }
 .contact-map { position: relative; border-radius: var(--radius); overflow: hidden; margin-top: 2rem; }
 .contact-map img { height: 220px; width: 100%; object-fit: cover; }
+.contact-acces {
+  margin-top: 2rem; border-radius: var(--radius); background: var(--marine); color: #fff;
+  padding: 1.8rem 2rem; display: flex; align-items: center; justify-content: space-between;
+  gap: 1.5rem; flex-wrap: wrap;
+}
+.contact-acces-adresse { font-family: var(--font-titre); font-weight: 700; font-size: 1.15rem; line-height: 1.35; margin: 0.5rem 0 0.4rem; }
+.contact-acces-detail { font-size: 0.83rem; color: rgba(255,255,255,0.7); line-height: 1.6; max-width: 40ch; }
+
 .contact-form {
   background: var(--bg); border: 1px solid var(--ligne); border-radius: var(--radius); padding: 2.5rem;
 }
