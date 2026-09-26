@@ -53,6 +53,53 @@
     .resume-txt { font-size:0.73rem; color:var(--text-muted); text-transform:uppercase;
       letter-spacing:0.07em; margin-top:0.15rem; }
 
+    /* ===== Etat du parc ===== */
+    .parc { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr));
+      gap:0.8rem; margin-bottom:1rem; }
+    .parc-case { background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:0.8rem 1rem; border-left:3px solid var(--archive);
+      display:flex; justify-content:space-between; align-items:center; gap:0.8rem; }
+    .parc-case.libre   { border-left-color:var(--confirme); }
+    .parc-case.occupe  { border-left-color:#f59e0b; }
+    .parc-case.retard  { border-left-color:#ef4444; background:rgba(239,68,68,0.07); }
+    .parc-nom { font-weight:700; font-size:0.9rem; color:var(--or); }
+    .parc-etat { font-size:0.78rem; margin-top:0.12rem; }
+    .parc-case.libre  .parc-etat { color:var(--confirme); }
+    .parc-case.occupe .parc-etat { color:#fcd34d; }
+    .parc-case.retard .parc-etat { color:#fca5a5; font-weight:700; }
+    .parc-detail { font-size:0.72rem; color:var(--text-muted); margin-top:0.1rem; }
+    .parc-reserver { background:var(--surface2); border:1px solid var(--border);
+      color:var(--text); border-radius:var(--radius); padding:0.38rem 0.7rem;
+      font-size:0.75rem; white-space:nowrap; transition:var(--transition); }
+    .parc-reserver:hover { border-color:var(--or); color:var(--or); }
+
+    /* ===== Vue liste ===== */
+    .liste { display:none; flex-direction:column; gap:0.5rem; }
+    .liste-ligne {
+      display:grid; grid-template-columns:104px 1fr auto; gap:0.9rem; align-items:center;
+      background:var(--surface); border:1px solid var(--border); border-left:3px solid;
+      border-radius:var(--radius); padding:0.7rem 0.95rem; cursor:pointer;
+      transition:var(--transition);
+    }
+    .liste-ligne:hover { border-color:var(--or); border-left-color:inherit; }
+    .liste-ligne.termine { opacity:0.55; }
+    .liste-ligne.annule { opacity:0.4; text-decoration:line-through; }
+    .liste-heure { font-family:var(--font-titre); font-size:0.95rem; white-space:nowrap; }
+    .liste-heure small { display:block; font-family:var(--font); font-size:0.7rem;
+      color:var(--text-muted); }
+    .liste-titre { font-weight:700; font-size:0.92rem; }
+    .liste-meta { font-size:0.77rem; color:var(--text-muted); margin-top:0.12rem; }
+    .liste-meta b { color:var(--text); font-weight:600; }
+    .liste-droite { display:flex; flex-direction:column; align-items:flex-end; gap:0.3rem; }
+    .etiquette { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em;
+      padding:0.2rem 0.55rem; border-radius:20px; white-space:nowrap; }
+    .liste-vide { text-align:center; padding:3rem 1rem; color:var(--text-muted);
+      border:1px dashed var(--border); border-radius:var(--radius); }
+    @media (max-width: 640px) {
+      .liste-ligne { grid-template-columns:1fr; gap:0.35rem; }
+      .liste-droite { flex-direction:row; align-items:center; }
+    }
+
     /* ===== Légende ===== */
     .legende { display:flex; gap:0.9rem 1.3rem; flex-wrap:wrap; font-size:0.75rem;
       color:var(--text-muted); align-items:center; margin:0 0 0.9rem; }
@@ -169,6 +216,13 @@
     .detail-ligne span:first-child { color:var(--text-muted); flex-shrink:0; }
     .detail-ligne span:last-child { text-align:right; }
 
+    @media (max-width: 640px) {
+      .resume { grid-template-columns:1fr 1fr; gap:0.5rem; }
+      .resume-case { padding:0.6rem 0.7rem; }
+      .resume-nb { font-size:1.2rem; }
+      .resume-txt { font-size:0.66rem; }
+      .parc { grid-template-columns:1fr; }
+    }
     @media (max-width: 880px) {
       .jour-titre { font-size:0.95rem; }
       .agenda-cadre { max-height:calc(100vh - 380px); }
@@ -252,7 +306,8 @@
             + Ajouter au planning
           </button>
           <div class="vue-bascule">
-            <button id="vueJour" class="active">Jour</button>
+            <button id="vueListe" class="active">Liste</button>
+            <button id="vueJour">Grille</button>
             <button id="vueSemaine">Semaine</button>
           </div>
           <div class="jour-nav">
@@ -265,7 +320,10 @@
         </div>
 
         <div class="resume" id="resume"></div>
+        <div class="parc" id="parc"></div>
         <div class="legende" id="legende"></div>
+
+        <div class="liste" id="grilleListe"></div>
 
         <div class="agenda-cadre" id="cadreJour">
           <div class="agenda" id="agenda">
@@ -432,7 +490,7 @@ const STATUTS = { prevu: 'Prévu', en_cours: 'En cours', termine: 'Terminé', an
 
 let currentUser = null, currentProfile = null;
 let jour = new Date();
-let vue = 'jour';
+let vue = 'liste';   /* la liste est plus lisible au quotidien que la grille */
 let equipe = [], vehicules = [];
 let evtCourant = null;
 let installe = false;
@@ -509,6 +567,14 @@ async function init() {
 
   remplirListes();
   dessinerLegende();
+  try {
+    const memorisee = localStorage.getItem('planning-vue');
+    if (['liste', 'jour', 'semaine'].includes(memorisee)) {
+      vue = memorisee;
+      ['liste', 'jour', 'semaine'].forEach(x =>
+        $('vue' + x[0].toUpperCase() + x.slice(1)).classList.toggle('active', x === vue));
+    }
+  } catch (e) {}
   await rafraichir();
 }
 
@@ -575,17 +641,22 @@ async function rafraichir() {
 
   majTitre();
   majResume(d);
-  if (vue === 'jour') {
-    $('cadreJour').style.display = ''; $('grilleSemaine').style.display = 'none'; dessinerJour(d);
-  } else {
-    $('cadreJour').style.display = 'none'; $('grilleSemaine').style.display = ''; dessinerSemaine(d);
-  }
+  dessinerParc(d);
+
+  $('cadreJour').style.display   = vue === 'jour'    ? '' : 'none';
+  $('grilleSemaine').style.display = vue === 'semaine' ? '' : 'none';
+  $('grilleListe').style.display = vue === 'liste'   ? 'flex' : 'none';
+  $('legende').style.display     = vue === 'liste'   ? 'none' : '';
+
+  if (vue === 'jour')    dessinerJour(d);
+  if (vue === 'semaine') dessinerSemaine(d);
+  if (vue === 'liste')   dessinerListe(d);
   $('lastRefresh').textContent = 'Mis à jour à ' + hhmm(new Date());
 }
 
 function majTitre() {
   $('selecteurDate').value = dateISO(jour);
-  if (vue === 'jour') {
+  if (vue !== 'semaine') {
     const libelle = jour.toLocaleDateString('fr-FR',
       { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     $('jourTitre').innerHTML = memeJour(jour, new Date())
@@ -612,7 +683,7 @@ function majResume({ evts }) {
     .reduce((s, e) => s + (Number(e.poids_kg) || 0), 0);
 
   const cases = [
-    { nb: livraisons,  txt: vue === 'jour' ? 'Livraisons du jour' : 'Livraisons de la semaine' },
+    { nb: livraisons,  txt: vue === 'semaine' ? 'Livraisons de la semaine' : 'Livraisons du jour' },
     { nb: enlevements, txt: 'Enlèvements au dépôt' },
     { nb: sortis,      txt: 'Camions sortis à cet instant' }
   ];
@@ -623,6 +694,143 @@ function majResume({ evts }) {
     `<div class="resume-case${c.alerte ? ' alerte' : ''}">
        <div class="resume-nb">${c.nb}</div><div class="resume-txt">${c.txt}</div>
      </div>`).join('');
+}
+
+/* ===== Etat du parc =====
+   Remplace la lecture des colonnes de camions : en une ligne on sait si on
+   peut promettre le camion a un client au telephone. */
+function dessinerParc({ evts }) {
+  const maintenant = new Date();
+  $('parc').innerHTML = vehicules.map(v => {
+    const siens = evts
+      .filter(e => e.vehicule_id === v.id && e.statut !== 'annule')
+      .sort((a, b) => new Date(a.debut) - new Date(b.debut));
+
+    const encours = siens.find(e => new Date(e.debut) <= maintenant && new Date(e.fin) >= maintenant);
+    const retard  = siens.find(e => (TYPES[e.type] || {}).retour && !e.rendu && new Date(e.fin) < maintenant);
+    const suivant = siens.find(e => new Date(e.debut) > maintenant);
+
+    let classe = 'libre', etat = 'Libre', detail = '';
+    if (retard) {
+      classe = 'retard';
+      etat = 'Non rendu depuis ' + hhmm(new Date(retard.fin));
+      detail = titreEvt(retard) + (retard.client_tel ? ' · ' + retard.client_tel : '');
+    } else if (encours) {
+      classe = 'occupe';
+      etat = 'Sorti jusqu\'à ' + hhmm(new Date(encours.fin));
+      detail = (TYPES[encours.type] || TYPES.autre).court + ' · ' + titreEvt(encours);
+    } else if (suivant) {
+      detail = 'Prochaine sortie à ' + hhmm(new Date(suivant.debut)) + ' · ' + titreEvt(suivant);
+    } else {
+      detail = 'Aucune sortie prévue ' + (vue === 'semaine' ? 'cette semaine' : 'ce jour');
+    }
+
+    const echeance = echeanceProche(v);
+    if (echeance) detail += ' · ' + echeance;
+
+    return `<div class="parc-case ${classe}">
+      <div>
+        <div class="parc-nom">${echappe(v.nom)}</div>
+        <div class="parc-etat">${echappe(etat)}</div>
+        <div class="parc-detail">${echappe(detail)}</div>
+      </div>
+      <button class="parc-reserver" data-reserver="${v.id}">Réserver</button>
+    </div>`;
+  }).join('');
+
+  $('parc').querySelectorAll('[data-reserver]').forEach(b =>
+    b.addEventListener('click', () => {
+      const dep = memeJour(jour, new Date()) ? new Date()
+                : (() => { const d = new Date(jour); d.setHours(9, 0, 0, 0); return d; })();
+      dep.setMinutes(Math.ceil(dep.getMinutes() / 30) * 30, 0, 0);
+      ouvrirCreation({ vehicule: b.dataset.reserver, minutes: minutesDepuisDebut(dep) });
+    }));
+}
+
+/* ===== Vue liste =====
+   Le deroule chronologique de la journee. Plus dense et plus lisible que la
+   grille, surtout sur un telephone au comptoir. */
+function dessinerListe({ evts, rdv, conges }) {
+  const jourISO = dateISO(jour);
+  const maintenant = new Date();
+
+  const lignes = [];
+
+  rdv.filter(r => r.confirmed_date === jourISO).forEach(r => {
+    const [hh, mm] = String(r.confirmed_time).split(':').map(Number);
+    const d = new Date(jour); d.setHours(hh, mm || 0, 0, 0);
+    lignes.push({
+      tri: d, lien: 'rdv-detail.html?id=' + r.id, couleur: '#ED2442',
+      heure: hhmm(d), duree: 'RDV magasin',
+      titre: [r.client_prenom, r.client_nom].filter(Boolean).join(' ') || 'Client',
+      meta: [(r.univers || []).join(', '), (r.assigned_to || []).join(', ')].filter(Boolean).join(' · '),
+      etiquettes: [{ txt: 'Demande du site', couleur: '#ED2442' }]
+    });
+  });
+
+  evts.forEach(e => {
+    const t = TYPES[e.type] || TYPES.autre;
+    const d = new Date(e.debut), f = new Date(e.fin);
+    const v = vehicules.find(x => x.id === e.vehicule_id);
+    const enRetard = t.retour && !e.rendu && e.statut !== 'annule' && f < maintenant;
+
+    const meta = [];
+    if (v) meta.push('<b>' + echappe(v.nom) + '</b>');
+    if (e.employee_name) meta.push(echappe(e.employee_name));
+    if (e.adresse) meta.push(echappe(e.adresse));
+    if (e.reference) meta.push('réf. ' + echappe(e.reference));
+    if (e.poids_kg) meta.push(e.poids_kg + ' kg');
+
+    const etiquettes = [{ txt: t.court, couleur: t.couleur }];
+    if (enRetard) etiquettes.push({ txt: 'Non rendu', couleur: '#ef4444' });
+    else if (e.statut !== 'prevu') etiquettes.push({ txt: STATUTS[e.statut], couleur: '#6b7280' });
+
+    lignes.push({
+      tri: d, evt: e.id, couleur: t.couleur,
+      heure: hhmm(d), duree: 'jusqu\'à ' + hhmm(f),
+      titre: titreEvt(e), meta: meta.join(' · '),
+      classe: e.statut === 'termine' ? 'termine' : (e.statut === 'annule' ? 'annule' : ''),
+      etiquettes
+    });
+  });
+
+  lignes.sort((a, b) => a.tri - b.tri);
+
+  const absents = conges.filter(c => c.date_debut <= jourISO && c.date_fin >= jourISO);
+  let html = '';
+
+  if (!lignes.length) {
+    html = `<div class="liste-vide">
+      <p>Rien de prévu ce jour.</p>
+      <p style="font-size:0.82rem; margin-top:0.4rem;">
+        Utilisez « Ajouter au planning » pour inscrire une livraison, un métrage
+        ou une sortie de camion.</p></div>`;
+  } else {
+    html = lignes.map(l => {
+      const etiq = l.etiquettes.map(e =>
+        `<span class="etiquette" style="background:${e.couleur}2e; color:${e.couleur};">${echappe(e.txt)}</span>`).join('');
+      const corps = `
+        <div class="liste-heure">${l.heure}<small>${l.duree}</small></div>
+        <div>
+          <div class="liste-titre">${echappe(l.titre)}</div>
+          <div class="liste-meta">${l.meta || ''}</div>
+        </div>
+        <div class="liste-droite">${etiq}</div>`;
+      return l.lien
+        ? `<a class="liste-ligne ${l.classe || ''}" href="${l.lien}" style="border-left-color:${l.couleur};">${corps}</a>`
+        : `<div class="liste-ligne ${l.classe || ''}" data-evt="${l.evt}" style="border-left-color:${l.couleur};">${corps}</div>`;
+    }).join('');
+  }
+
+  if (absents.length) {
+    html += `<div class="liste-vide" style="padding:0.8rem; border-style:solid; text-align:left;
+      color:var(--attente); font-size:0.82rem;">
+      Absent aujourd'hui : ${echappe(absents.map(a => a.employee_name).join(', '))}</div>`;
+  }
+
+  $('grilleListe').innerHTML = html;
+  $('grilleListe').querySelectorAll('[data-evt]').forEach(b =>
+    b.addEventListener('click', () => ouvrirDetail(b.dataset.evt)));
 }
 
 /* ===== Vue jour ===== */
@@ -1032,12 +1240,18 @@ $('selecteurDate').addEventListener('change', e => {
   jour = new Date(a, m - 1, j);
   rafraichir();
 });
-$('vueJour').addEventListener('click', () => {
-  vue = 'jour'; $('vueJour').classList.add('active'); $('vueSemaine').classList.remove('active'); rafraichir();
-});
-$('vueSemaine').addEventListener('click', () => {
-  vue = 'semaine'; $('vueSemaine').classList.add('active'); $('vueJour').classList.remove('active'); rafraichir();
-});
+function choisirVue(nom) {
+  vue = nom;
+  ['liste', 'jour', 'semaine'].forEach(v => {
+    const b = $('vue' + v[0].toUpperCase() + v.slice(1));
+    b.classList.toggle('active', v === nom);
+  });
+  try { localStorage.setItem('planning-vue', nom); } catch (e) {}
+  rafraichir();
+}
+$('vueListe').addEventListener('click',   () => choisirVue('liste'));
+$('vueJour').addEventListener('click',    () => choisirVue('jour'));
+$('vueSemaine').addEventListener('click', () => choisirVue('semaine'));
 
 document.querySelectorAll('.fenetre').forEach(f =>
   f.addEventListener('click', e => { if (e.target === f) f.classList.remove('ouverte'); }));
@@ -1053,5 +1267,6 @@ $('logoutBtn').addEventListener('click', async () => {
 
 init();
 </script>
+<script src="sidebar.js"></script>
 </body>
 </html>
