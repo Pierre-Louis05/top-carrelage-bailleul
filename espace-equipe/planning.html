@@ -10,59 +10,74 @@
   <link rel="stylesheet" href="../fonts/polices-equipe.css" />
   <link rel="stylesheet" href="app.css" />
   <style>
-    /* ===== Barre de navigation du jour ===== */
-    .jour-barre {
-      display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;
-      margin-bottom:1.2rem;
+    /* ===== Panneau d'installation ===== */
+    .installation {
+      display:none; background:var(--surface); border:1px solid rgba(245,158,11,0.4);
+      border-left:4px solid #f59e0b; border-radius:var(--radius); padding:1.6rem;
     }
+    .installation.visible { display:block; }
+    .installation h2 { font-family:var(--font-titre); font-size:1.2rem; margin-bottom:0.6rem; }
+    .installation p { font-size:0.9rem; color:var(--text-muted); margin-bottom:0.9rem; }
+    .installation ol { margin:0 0 1.1rem 1.1rem; font-size:0.9rem; }
+    .installation li { margin-bottom:0.45rem; }
+    .installation .boutons { display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; }
+    .installation code { background:var(--surface2); padding:0.1rem 0.35rem; border-radius:3px; }
+
+    /* ===== Barre de commandes ===== */
+    .commandes-barre { display:flex; align-items:center; gap:0.7rem; flex-wrap:wrap; margin-bottom:0.9rem; }
+    .vue-bascule { display:flex; background:var(--surface2); border:1px solid var(--border);
+      border-radius:var(--radius); overflow:hidden; }
+    .vue-bascule button { background:none; border:none; color:var(--text-muted);
+      padding:0.5rem 1rem; font-size:0.82rem; transition:var(--transition); }
+    .vue-bascule button.active { background:var(--or); color:#1a1a1a; font-weight:700; }
     .jour-nav { display:flex; align-items:center; gap:0.35rem; }
-    .jour-btn {
-      background:var(--surface2); border:1px solid var(--border); color:var(--text);
+    .jour-btn { background:var(--surface2); border:1px solid var(--border); color:var(--text);
       border-radius:var(--radius); padding:0.45rem 0.7rem; font-size:0.85rem;
-      transition:var(--transition);
-    }
+      transition:var(--transition); }
     .jour-btn:hover { border-color:var(--or); color:var(--or); }
-    .jour-titre {
-      font-family:var(--font-titre); font-size:1.15rem; text-transform:capitalize;
-      min-width:250px;
-    }
-    .jour-titre .aujourdhui { color:var(--or); font-size:0.7rem; letter-spacing:0.12em;
+    .jour-titre { font-family:var(--font-titre); font-size:1.1rem; text-transform:capitalize; }
+    .jour-titre .aujourdhui { color:var(--or); font-size:0.66rem; letter-spacing:0.12em;
       text-transform:uppercase; display:block; font-family:var(--font); }
-    .jour-barre input[type="date"] {
+    .commandes-barre input[type="date"] {
       background:var(--surface2); border:1px solid var(--border); color:var(--text);
-      border-radius:var(--radius); padding:0.45rem 0.6rem; font-size:0.85rem;
-    }
+      border-radius:var(--radius); padding:0.45rem 0.6rem; font-size:0.85rem; }
+
+    /* ===== Bandeau du jour ===== */
+    .resume { display:grid; grid-template-columns:repeat(auto-fit, minmax(168px,1fr));
+      gap:0.8rem; margin-bottom:1rem; }
+    .resume-case { background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:0.8rem 1rem; border-left:3px solid var(--or); }
+    .resume-case.alerte { border-left-color:#ef4444; background:rgba(239,68,68,0.07); }
+    .resume-nb { font-family:var(--font-titre); font-size:1.5rem; line-height:1.1; }
+    .resume-case.alerte .resume-nb { color:#fca5a5; }
+    .resume-txt { font-size:0.73rem; color:var(--text-muted); text-transform:uppercase;
+      letter-spacing:0.07em; margin-top:0.15rem; }
 
     /* ===== Légende ===== */
-    .legende { display:flex; gap:1.1rem 1.4rem; flex-wrap:wrap; font-size:0.76rem;
-      color:var(--text-muted); align-items:center; margin:0 0 1rem; }
+    .legende { display:flex; gap:0.9rem 1.3rem; flex-wrap:wrap; font-size:0.75rem;
+      color:var(--text-muted); align-items:center; margin:0 0 0.9rem; }
     .legende span { display:inline-flex; align-items:center; gap:0.35rem; }
-    .pastille { width:11px; height:11px; border-radius:3px; flex-shrink:0; }
+    .pastille { width:11px; height:11px; border-radius:3px; flex-shrink:0; display:inline-block; }
 
-    /* ===== Grille ===== */
-    .agenda-cadre {
-      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-      overflow:auto; max-height:calc(100vh - 230px);
-    }
+    /* ===== Grille jour ===== */
+    .agenda-cadre { background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); overflow:auto; max-height:calc(100vh - 330px); }
     .agenda { display:grid; min-width:max-content; position:relative; }
-
-    .agenda-entete {
-      position:sticky; top:0; z-index:5; background:var(--surface2);
-      border-bottom:1px solid var(--border); padding:0.6rem 0.5rem; text-align:center;
-    }
-    .agenda-entete.gouttiere { left:0; z-index:6; }
-    .col-nom { font-size:0.82rem; font-weight:700; white-space:nowrap; }
-    .col-sous { font-size:0.68rem; color:var(--text-muted); margin-top:0.15rem; min-height:1em; }
+    .agenda-entete { position:sticky; top:0; z-index:5; background:var(--surface2);
+      border-bottom:1px solid var(--border); padding:0.55rem 0.4rem; text-align:center; }
+    .col-nom { font-size:0.8rem; font-weight:700; white-space:nowrap; }
+    .col-sous { font-size:0.66rem; color:var(--text-muted); margin-top:0.12rem;
+      display:block; min-height:1em; }
     .col-sous.present { color:var(--confirme); }
     .col-sous.absent  { color:var(--attente); }
+    .col-sous.echeance{ color:#f59e0b; }
     .col-vehicule .col-nom { color:var(--or); }
 
     .gouttiere { background:var(--surface2); position:sticky; left:0; z-index:4;
       border-right:1px solid var(--border); }
-    .heure-trait {
-      font-size:0.7rem; color:var(--text-muted); text-align:right;
-      padding-right:0.5rem; border-top:1px solid var(--border);
-    }
+    .agenda-entete.gouttiere { left:0; z-index:6; }
+    .heure-trait { font-size:0.68rem; color:var(--text-muted); text-align:right;
+      padding-right:0.45rem; border-top:1px solid var(--border); }
 
     .colonne { position:relative; border-right:1px solid var(--border); }
     .colonne.separee { border-left:2px solid var(--or); }
@@ -73,94 +88,93 @@
     .ligne-heure.fermee { background:rgba(0,0,0,0.25); }
 
     .maintenant { position:absolute; left:0; right:0; height:2px; background:#ef4444; z-index:3; }
-    /* Le point ne s'affiche que sur la premiere colonne, sinon il se repete
-       a chaque separation et la ligne devient pointillee. */
-    .colonne:first-of-type .maintenant::before { content:''; position:absolute; left:-4px; top:-3px;
-      width:8px; height:8px; border-radius:50%; background:#ef4444; }
+    .colonne:first-of-type .maintenant::before { content:''; position:absolute; left:-4px;
+      top:-3px; width:8px; height:8px; border-radius:50%; background:#ef4444; }
 
-    /* ===== Blocs ===== */
-    .bloc {
-      position:absolute; left:3px; right:3px; border-radius:4px; padding:4px 6px;
-      font-size:0.72rem; line-height:1.3; overflow:hidden; cursor:pointer;
-      border-left:3px solid; transition:var(--transition);
-    }
-    .bloc:hover { filter:brightness(1.25); }
+    .bloc { position:absolute; left:3px; right:3px; border-radius:4px; padding:3px 6px;
+      font-size:0.71rem; line-height:1.28; overflow:hidden; cursor:pointer;
+      border-left:3px solid; transition:var(--transition); color:var(--text); }
+    .bloc:hover { filter:brightness(1.3); }
     .bloc-titre { font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .bloc-sous { color:rgba(255,255,255,0.7); white-space:nowrap; overflow:hidden;
+    .bloc-sous { color:rgba(255,255,255,0.65); white-space:nowrap; overflow:hidden;
       text-overflow:ellipsis; }
-    .bloc-heure { font-size:0.66rem; opacity:0.65; }
+    .bloc-heure { font-size:0.65rem; opacity:0.6; }
+    .bloc.en-retard { outline:1px solid #ef4444; }
+    .bloc.termine { opacity:0.5; }
+    .bloc.annule { opacity:0.35; text-decoration:line-through; }
+    .retard-txt { color:#fca5a5; font-weight:700; }
 
-    .bloc.carrelage { background:rgba(237,36,66,0.18);  border-color:#ED2442; }
-    .bloc.sanitaire { background:rgba(75,193,240,0.18); border-color:#4BC1F0; }
-    .bloc.parquet   { background:rgba(245,166,42,0.18); border-color:#F5A62A; }
-    .bloc.autre     { background:rgba(148,163,184,0.18);border-color:#94a3b8; }
+    .creer-ici { position:absolute; inset:0; z-index:1; display:flex; align-items:center;
+      justify-content:center; opacity:0; transition:var(--transition);
+      font-size:0.74rem; color:var(--or); }
+    .colonne.cliquable:hover .creer-ici { opacity:0.5; }
 
-    .bloc.interne           { background:rgba(16,185,129,0.18); border-color:#10b981; }
-    .bloc.pret_client       { background:rgba(59,130,246,0.20); border-color:#3b82f6; }
-    .bloc.emprunt_personnel { background:rgba(139,92,246,0.20); border-color:#8b5cf6; }
-    .bloc.en-retard { background:rgba(239,68,68,0.28); border-color:#ef4444; }
-    .bloc .retard-txt { color:#fca5a5; font-weight:700; }
+    /* ===== Grille semaine ===== */
+    .semaine { display:grid; grid-template-columns:repeat(6, minmax(150px,1fr)); gap:1px;
+      background:var(--border); border:1px solid var(--border);
+      border-radius:var(--radius); overflow:hidden; }
+    .semaine-jour { background:var(--surface); min-height:190px; padding:0.55rem; }
+    .semaine-jour.aujourdhui { background:rgba(201,168,76,0.07); }
+    .semaine-jour.ferme { background:rgba(0,0,0,0.25); }
+    .semaine-entete { font-size:0.78rem; font-weight:700; margin-bottom:0.5rem;
+      display:flex; justify-content:space-between; align-items:baseline;
+      text-transform:capitalize; }
+    .semaine-entete .num { color:var(--text-muted); font-size:0.7rem; text-transform:none; }
+    .semaine-jour.aujourdhui .semaine-entete { color:var(--or); }
+    .puce-evt { display:block; border-radius:4px; padding:3px 6px; margin-bottom:4px;
+      font-size:0.7rem; border-left:3px solid; cursor:pointer; line-height:1.3;
+      transition:var(--transition); color:var(--text); }
+    .puce-evt:hover { filter:brightness(1.3); }
+    .puce-evt b { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .puce-evt small { color:rgba(255,255,255,0.6); }
+    .semaine-vide { font-size:0.72rem; color:var(--text-muted); font-style:italic; }
+    .semaine-ajout { width:100%; background:none; border:1px dashed var(--border);
+      color:var(--text-muted); border-radius:4px; padding:0.25rem; font-size:0.7rem;
+      margin-top:0.2rem; transition:var(--transition); }
+    .semaine-ajout:hover { border-color:var(--or); color:var(--or); }
 
-    .creer-ici {
-      position:absolute; inset:0; z-index:1;
-      display:flex; align-items:center; justify-content:center;
-      opacity:0; transition:var(--transition); font-size:0.75rem; color:var(--or);
-    }
-    .colonne.vehicule:hover .creer-ici { opacity:0.55; }
-
-    /* ===== Fenêtre ===== */
-    .fenetre {
-      position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:100;
-      display:none; align-items:center; justify-content:center; padding:1rem;
-    }
+    /* ===== Fenêtres ===== */
+    .fenetre { position:fixed; inset:0; background:rgba(0,0,0,0.72); z-index:100;
+      display:none; align-items:center; justify-content:center; padding:1rem; }
     .fenetre.ouverte { display:flex; }
-    .fenetre-boite {
-      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-      width:100%; max-width:440px; max-height:90vh; overflow-y:auto; padding:1.6rem;
-    }
+    .fenetre-boite { background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); width:100%; max-width:480px; max-height:92vh;
+      overflow-y:auto; padding:1.6rem; }
     .fenetre-boite h3 { font-family:var(--font-titre); font-size:1.15rem; margin-bottom:1.1rem; }
-    .champ { margin-bottom:0.9rem; }
-    .champ label { display:block; font-size:0.74rem; text-transform:uppercase;
-      letter-spacing:0.08em; color:var(--text-muted); margin-bottom:0.3rem; }
+    .champ { margin-bottom:0.85rem; }
+    .champ label { display:block; font-size:0.72rem; text-transform:uppercase;
+      letter-spacing:0.08em; color:var(--text-muted); margin-bottom:0.28rem; }
     .champ input, .champ select, .champ textarea {
       width:100%; background:var(--surface2); border:1px solid var(--border);
-      color:var(--text); border-radius:var(--radius); padding:0.55rem 0.7rem; font-size:0.88rem;
-    }
+      color:var(--text); border-radius:var(--radius); padding:0.55rem 0.7rem; font-size:0.88rem; }
+    .champ textarea { min-height:64px; resize:vertical; }
     .champ input:focus, .champ select:focus, .champ textarea:focus {
-      outline:none; border-color:var(--or);
-    }
+      outline:none; border-color:var(--or); }
     .champ-duo { display:grid; grid-template-columns:1fr 1fr; gap:0.7rem; }
-    .fenetre-actions { display:flex; gap:0.6rem; margin-top:1.3rem; }
-    .fenetre-actions .btn-primary { flex:1; }
-    .btn-neutre {
-      background:var(--surface2); border:1px solid var(--border); color:var(--text);
-      border-radius:var(--radius); padding:0.6rem 1rem; font-size:0.85rem;
-    }
-    .btn-danger {
-      background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#fca5a5;
-      border-radius:var(--radius); padding:0.6rem 1rem; font-size:0.85rem;
-    }
-    .avertissement {
-      background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.35);
-      color:#fcd34d; border-radius:var(--radius); padding:0.6rem 0.8rem;
-      font-size:0.78rem; margin-bottom:0.9rem; display:none;
-    }
-    .avertissement.visible { display:block; }
-    .erreur-fenetre {
-      background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.4);
-      color:#fca5a5; border-radius:var(--radius); padding:0.6rem 0.8rem;
-      font-size:0.8rem; margin-bottom:0.9rem; display:none;
-    }
-    .erreur-fenetre.visible { display:block; }
+    .fenetre-actions { display:flex; gap:0.6rem; margin-top:1.3rem; flex-wrap:wrap; }
+    .fenetre-actions .btn-primary { flex:1; width:auto; min-width:130px; }
+    .btn-neutre { background:var(--surface2); border:1px solid var(--border); color:var(--text);
+      border-radius:var(--radius); padding:0.6rem 1rem; font-size:0.85rem; }
+    .btn-danger { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4);
+      color:#fca5a5; border-radius:var(--radius); padding:0.6rem 1rem; font-size:0.85rem; }
+    .encart { border-radius:var(--radius); padding:0.6rem 0.8rem; font-size:0.79rem;
+      margin-bottom:0.85rem; display:none; }
+    .encart.visible { display:block; }
+    .encart.alerte { background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.35);
+      color:#fcd34d; }
+    .encart.erreur { background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.4);
+      color:#fca5a5; }
+    .detail-ligne { display:flex; justify-content:space-between; gap:1rem; padding:0.48rem 0;
+      border-bottom:1px solid var(--border); font-size:0.85rem; }
+    .detail-ligne span:first-child { color:var(--text-muted); flex-shrink:0; }
+    .detail-ligne span:last-child { text-align:right; }
 
-    .detail-ligne { display:flex; justify-content:space-between; gap:1rem;
-      padding:0.5rem 0; border-bottom:1px solid var(--border); font-size:0.85rem; }
-    .detail-ligne span:first-child { color:var(--text-muted); }
-
-    @media (max-width: 760px) {
-      .jour-titre { min-width:auto; font-size:1rem; }
-      .legende { margin-left:0; width:100%; }
-      .agenda-cadre { max-height:calc(100vh - 300px); }
+    @media (max-width: 880px) {
+      .jour-titre { font-size:0.95rem; }
+      .agenda-cadre { max-height:calc(100vh - 380px); }
+      .semaine { grid-template-columns:1fr; }
+      .semaine-jour { min-height:auto; }
+      .semaine-jour.ferme { display:none; }
     }
   </style>
 </head>
@@ -210,81 +224,108 @@
 
     <div class="page-content">
 
-      <div class="jour-barre">
-        <button class="btn-primary" id="btnNouvelle" style="width:auto; padding:0.55rem 1.1rem; font-size:0.85rem; white-space:nowrap;">+ Réserver un camion</button>
-        <div class="jour-nav">
-          <button class="jour-btn" id="btnPrec" aria-label="Jour précédent">◀</button>
-          <button class="jour-btn" id="btnAujourdhui">Aujourd'hui</button>
-          <button class="jour-btn" id="btnSuiv" aria-label="Jour suivant">▶</button>
-        </div>
-        <input type="date" id="selecteurDate" />
-        <div class="jour-titre" id="jourTitre">…</div>
-      </div>
-
-      <div class="legende">
-          <span><i class="pastille" style="background:#ED2442"></i> Carrelage</span>
-          <span><i class="pastille" style="background:#4BC1F0"></i> Sanitaire</span>
-          <span><i class="pastille" style="background:#F5A62A"></i> Parquet</span>
-          <span><i class="pastille" style="background:#10b981"></i> Camion, usage magasin</span>
-          <span><i class="pastille" style="background:#3b82f6"></i> Prêt client</span>
-        <span><i class="pastille" style="background:#8b5cf6"></i> Emprunt salarié</span>
-      </div>
-
-      <div class="agenda-cadre">
-        <div class="agenda" id="agenda">
-          <div class="loading" style="grid-column:1/-1; padding:3rem;"><div class="spinner"></div> Chargement du planning…</div>
+      <div class="installation" id="installation">
+        <h2 id="instTitre">Le planning n'est pas encore installé</h2>
+        <p id="instTexte">
+          Les tables du planning n'existent pas encore dans la base. C'est une opération
+          à faire une seule fois, elle prend une minute.
+        </p>
+        <ol>
+          <li>Cliquez sur <b>Copier le script SQL</b>.</li>
+          <li>Ouvrez Supabase, menu <code>SQL Editor</code>, puis <code>New query</code>.</li>
+          <li>Collez le script et cliquez sur <code>Run</code>.</li>
+          <li>Revenez ici et rechargez la page.</li>
+        </ol>
+        <div class="boutons">
+          <button class="btn-primary" id="btnCopierSql" style="width:auto;">Copier le script SQL</button>
+          <a class="btn-neutre" href="https://supabase.com/dashboard/project/hzploaweyewjyxdhpmvo/sql/new"
+             target="_blank" rel="noopener">Ouvrir Supabase</a>
+          <a class="btn-neutre" href="../sql/planning_setup.sql" target="_blank" rel="noopener">Voir le script</a>
         </div>
       </div>
 
-      <p style="margin-top:0.9rem; font-size:0.78rem; color:var(--text-muted);">
-        Pour réserver, utilisez le bouton en haut ou cliquez directement à l'heure voulue
-        dans la colonne d'un camion. Cliquez sur une réservation pour la modifier ou la
-        marquer rendue. Les rendez-vous, eux, proviennent des demandes confirmées et se
-        modifient depuis leur fiche.
-      </p>
+      <div id="zonePlanning" style="display:none;">
 
+        <div class="commandes-barre">
+          <button class="btn-primary" id="btnNouveau"
+                  style="width:auto; padding:0.55rem 1.1rem; font-size:0.85rem; white-space:nowrap;">
+            + Ajouter au planning
+          </button>
+          <div class="vue-bascule">
+            <button id="vueJour" class="active">Jour</button>
+            <button id="vueSemaine">Semaine</button>
+          </div>
+          <div class="jour-nav">
+            <button class="jour-btn" id="btnPrec" aria-label="Précédent">◀</button>
+            <button class="jour-btn" id="btnAujourdhui">Aujourd'hui</button>
+            <button class="jour-btn" id="btnSuiv" aria-label="Suivant">▶</button>
+          </div>
+          <input type="date" id="selecteurDate" />
+          <div class="jour-titre" id="jourTitre">…</div>
+        </div>
+
+        <div class="resume" id="resume"></div>
+        <div class="legende" id="legende"></div>
+
+        <div class="agenda-cadre" id="cadreJour">
+          <div class="agenda" id="agenda">
+            <div class="loading" style="grid-column:1/-1; padding:3rem;">
+              <div class="spinner"></div> Chargement du planning…
+            </div>
+          </div>
+        </div>
+
+        <div class="semaine" id="grilleSemaine" style="display:none;"></div>
+
+        <p style="margin-top:0.9rem; font-size:0.78rem; color:var(--text-muted);">
+          Utilisez le bouton en haut, ou cliquez directement à l'heure voulue dans une colonne.
+          Cliquez sur une ligne du planning pour la modifier, changer son statut ou la supprimer.
+          Les rendez-vous venus du site apparaissent aussi ici, ils se modifient depuis leur fiche.
+        </p>
+
+      </div>
     </div>
   </div>
 </div>
 
-<!-- FENETRE : creer ou modifier une reservation -->
-<div class="fenetre" id="fenetreResa">
+<div class="fenetre" id="fenetreEvt">
   <div class="fenetre-boite">
-    <h3 id="titreResa">Réserver un camion</h3>
-    <div class="avertissement" id="avertExceptionnel"></div>
-    <div class="erreur-fenetre" id="erreurResa"></div>
+    <h3 id="titreEvt">Ajouter au planning</h3>
+    <div class="encart alerte" id="alerteEvt"></div>
+    <div class="encart erreur" id="erreurEvt"></div>
 
-    <form id="formResa">
+    <form id="formEvt">
       <div class="champ">
-        <label for="fVehicule">Camion</label>
-        <select id="fVehicule" required></select>
-      </div>
-
-      <div class="champ">
-        <label for="fType">Nature de la sortie</label>
-        <select id="fType" required>
-          <option value="interne">Usage magasin : livraison, métrage, déplacement</option>
-          <option value="pret_client">Prêt à un client</option>
-          <option value="emprunt_personnel">Emprunt d'un salarié sur son repos</option>
-        </select>
+        <label for="fType">Nature</label>
+        <select id="fType" required></select>
       </div>
 
       <div class="champ-duo">
         <div class="champ">
-          <label for="fDebut">Départ</label>
+          <label for="fDebut">Début</label>
           <input type="datetime-local" id="fDebut" required />
         </div>
         <div class="champ">
-          <label for="fFin">Retour prévu</label>
+          <label for="fFin">Fin prévue</label>
           <input type="datetime-local" id="fFin" required />
         </div>
       </div>
 
-      <div id="blocClient" style="display:none;">
+      <div class="champ" id="grpVehicule">
+        <label for="fVehicule">Camion</label>
+        <select id="fVehicule"></select>
+      </div>
+
+      <div class="champ" id="grpPersonne">
+        <label for="fPersonne">Qui s'en occupe</label>
+        <select id="fPersonne"></select>
+      </div>
+
+      <div id="grpClient">
         <div class="champ-duo">
           <div class="champ">
-            <label for="fClientNom">Nom du client</label>
-            <input type="text" id="fClientNom" placeholder="M. Dupont" />
+            <label for="fClientNom">Client</label>
+            <input type="text" id="fClientNom" placeholder="M. Dupont, SCI Lamartine…" />
           </div>
           <div class="champ">
             <label for="fClientTel">Téléphone</label>
@@ -293,23 +334,38 @@
         </div>
       </div>
 
+      <div class="champ" id="grpAdresse">
+        <label for="fAdresse">Adresse du chantier</label>
+        <input type="text" id="fAdresse" placeholder="12 rue de Lille, Bailleul" />
+      </div>
+
+      <div class="champ-duo">
+        <div class="champ" id="grpRef">
+          <label for="fRef">Référence</label>
+          <input type="text" id="fRef" placeholder="N° commande, bon, enlèvement" />
+        </div>
+        <div class="champ" id="grpPoids">
+          <label for="fPoids">Poids (kg)</label>
+          <input type="number" id="fPoids" step="1" min="0" placeholder="Ex : 1250" />
+        </div>
+      </div>
+
       <div class="champ">
-        <label for="fMotif">Motif ou précision</label>
-        <input type="text" id="fMotif" placeholder="Livraison chantier Bailleul, métrage…" />
+        <label for="fNotes">Précisions</label>
+        <textarea id="fNotes" placeholder="Accès difficile, livrer avant 11h, prévoir le transpalette…"></textarea>
       </div>
 
       <div class="fenetre-actions">
         <button type="submit" class="btn-primary" id="btnEnregistrer">Enregistrer</button>
-        <button type="button" class="btn-neutre" id="btnFermerResa">Annuler</button>
+        <button type="button" class="btn-neutre" id="btnFermerEvt">Annuler</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- FENETRE : detail d une reservation -->
 <div class="fenetre" id="fenetreDetail">
   <div class="fenetre-boite">
-    <h3 id="titreDetail">Réservation</h3>
+    <h3 id="titreDetail">Détail</h3>
     <div id="corpsDetail"></div>
     <div class="fenetre-actions" id="actionsDetail"></div>
   </div>
@@ -324,13 +380,13 @@ const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* La journee affichee va de 7h a 20h : le magasin ouvre a 9h mais les
-   livraisons partent plus tot et les camions rentrent parfois tard. */
+/* La journee va de 7h a 20h : les livraisons partent avant l'ouverture et
+   les camions rentrent parfois apres la fermeture. */
 const H_DEBUT = 7, H_FIN = 20;
 const PX_PAR_MIN = 1.0;
 const HAUTEUR = (H_FIN - H_DEBUT) * 60 * PX_PAR_MIN;
 
-/* Le magasin est ferme le dimanche, le lundi matin, et entre midi et 14h. */
+/* Horaires reels : ferme le dimanche, le lundi matin, et entre midi et 14h. */
 const OUVERTURE = {
   0: [],
   1: [[14, 18.5]],
@@ -338,46 +394,85 @@ const OUVERTURE = {
   4: [[9, 12], [14, 18.5]], 5: [[9, 12], [14, 18.5]], 6: [[9, 12], [14, 18.5]]
 };
 
-const LIBELLE_TYPE = {
-  interne: 'Usage magasin',
-  pret_client: 'Prêt client',
-  emprunt_personnel: 'Emprunt salarié'
+/* Catalogue des natures. Chaque nature decide des champs affiches et de la
+   colonne ou le bloc se place.
+   camion / personne / client : true = obligatoire, 'option' = facultatif,
+   absent = champ masque. */
+const TYPES = {
+  rdv_magasin: {
+    label: 'Rendez-vous client au magasin', court: 'RDV magasin', couleur: '#ED2442',
+    personne: true, client: true, ref: 'option' },
+  metrage: {
+    label: 'Métrage ou visite de chantier', court: 'Métrage', couleur: '#F5A62A',
+    personne: true, camion: 'option', client: true, adresse: true },
+  livraison: {
+    label: 'Livraison chez un client', court: 'Livraison', couleur: '#3b82f6',
+    camion: true, personne: true, client: true, adresse: true, ref: true, poids: true },
+  enlevement: {
+    label: 'Enlèvement du client au dépôt', court: 'Enlèvement', couleur: '#10b981',
+    personne: 'option', client: true, ref: true, poids: true },
+  reception: {
+    label: 'Réception d\'un camion fournisseur', court: 'Réception', couleur: '#8b5cf6',
+    personne: 'option', client: 'option', ref: true, poids: true },
+  pret_camion: {
+    label: 'Prêt d\'un camion à un client', court: 'Prêt client', couleur: '#06b6d4',
+    camion: true, client: true, retour: true },
+  emprunt_perso: {
+    label: 'Emprunt d\'un camion par un salarié', court: 'Emprunt salarié', couleur: '#a855f7',
+    camion: true, personne: true, retour: true },
+  indispo_vehicule: {
+    label: 'Camion indisponible : garage, révision, CT', court: 'Indisponible', couleur: '#6b7280',
+    camion: true },
+  autre: {
+    label: 'Autre', court: 'Autre', couleur: '#94a3b8',
+    camion: 'option', personne: 'option', client: 'option' }
 };
+
+const STATUTS = { prevu: 'Prévu', en_cours: 'En cours', termine: 'Terminé', annule: 'Annulé' };
 
 let currentUser = null, currentProfile = null;
 let jour = new Date();
-let equipe = [], vehicules = [], resaCourante = null;
+let vue = 'jour';
+let equipe = [], vehicules = [];
+let evtCourant = null;
+let installe = false;
 
-/* ===== Utilitaires ===== */
 const $ = id => document.getElementById(id);
 
+/* ===== Dates ===== */
 function dateISO(d) {
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
-       + '-' + String(d.getDate()).padStart(2, '0');
+  const p = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
 }
 function memeJour(a, b) { return dateISO(a) === dateISO(b); }
-
-function minutesDepuisDebut(d) {
-  return (d.getHours() - H_DEBUT) * 60 + d.getMinutes();
-}
+function minutesDepuisDebut(d) { return (d.getHours() - H_DEBUT) * 60 + d.getMinutes(); }
 function hhmm(d) {
-  return String(d.getHours()).padStart(2, '0') + 'h' + String(d.getMinutes()).padStart(2, '0');
+  const p = n => String(n).padStart(2, '0');
+  return p(d.getHours()) + 'h' + p(d.getMinutes());
+}
+function pourChampLocal(d) {
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function lundiDe(d) {
+  const x = new Date(d);
+  x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+function echappe(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g,
+    c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
 function toast(msg, erreur) {
   const t = $('toast');
   t.textContent = msg;
   t.style.borderColor = erreur ? 'rgba(239,68,68,0.5)' : 'var(--or)';
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3200);
+  setTimeout(() => t.classList.remove('show'), 3400);
 }
 
-/* datetime-local attend une heure locale, pas un ISO en UTC */
-function pourChampLocal(d) {
-  const p = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
-}
-
-/* ===== Authentification ===== */
+/* ===== Demarrage ===== */
 async function init() {
   const { data: { session } } = await db.auth.getSession();
   if (!session) { window.location.href = 'index.html'; return; }
@@ -385,13 +480,12 @@ async function init() {
 
   const { data: profile } = await db.from('employee_profiles')
     .select('*').eq('id', currentUser.id).single();
-
   if (profile) {
     currentProfile = profile;
     $('sidebarName').textContent = profile.prenom + ' ' + profile.nom;
     $('sidebarRole').textContent = profile.poste;
     $('sidebarAvatar').textContent = (profile.prenom[0] || '') + (profile.nom[0] || '');
-    if (profile.poste === 'Dirigeant de la société' || profile.poste === 'Responsable magasin') {
+    if (['Dirigeant de la société', 'Responsable magasin'].includes(profile.poste)) {
       $('lienPresenceEquipe').style.display = '';
     }
   }
@@ -400,146 +494,219 @@ async function init() {
     .select('id, prenom, nom, poste').order('nom');
   equipe = profils || [];
 
-  const { data: vh } = await db.from('vehicules')
-    .select('*').eq('actif', true).order('ordre');
-  vehicules = vh || [];
+  /* Les tables existent-elles ? Sans cela la page reste muette. */
+  const essaiV = await db.from('vehicules').select('*').order('ordre');
+  if (essaiV.error) { montrerInstallation('tables'); return; }
+  const essaiE = await db.from('planning_evenements').select('id').limit(1);
+  if (essaiE.error) { montrerInstallation('tables'); return; }
 
-  if (!vehicules.length) {
-    $('agenda').innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
-      <div class="empty-state-icon">⚠</div>
-      <p>Aucun camion enregistré.</p>
-      <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.4rem;">
-        Exécutez <code>sql/vehicules_setup.sql</code> dans Supabase pour créer le parc.</p>
-    </div>`;
+  vehicules = (essaiV.data || []).filter(v => v.actif !== false);
+  if (!vehicules.length) { montrerInstallation('vide'); return; }
+
+  installe = true;
+  $('installation').classList.remove('visible');
+  $('zonePlanning').style.display = '';
+
+  remplirListes();
+  dessinerLegende();
+  await rafraichir();
+}
+
+function montrerInstallation(cause) {
+  $('zonePlanning').style.display = 'none';
+  if (cause === 'vide') {
+    $('instTitre').textContent = 'Aucun camion enregistré';
+    $('instTexte').textContent = 'La table des véhicules existe mais elle est vide. '
+      + 'Relancez le script : il ajoute le camion blanc et le camion gris sans rien détruire.';
   }
-
-  remplirSelecteurVehicules();
-  await afficherJour();
+  $('installation').classList.add('visible');
 }
 
-function remplirSelecteurVehicules() {
-  $('fVehicule').innerHTML = vehicules
-    .map(v => `<option value="${v.id}">${v.nom}${v.modele ? ' · ' + v.modele : ''}</option>`)
-    .join('');
+$('btnCopierSql').addEventListener('click', async () => {
+  try {
+    const sql = await fetch('../sql/planning_setup.sql').then(r => r.text());
+    await navigator.clipboard.writeText(sql);
+    toast('Script copié. Collez-le dans Supabase, SQL Editor.');
+  } catch (e) {
+    window.open('../sql/planning_setup.sql', '_blank');
+    toast('Copie impossible, le script s\'ouvre dans un onglet.', true);
+  }
+});
+
+/* ===== Listes ===== */
+function remplirListes() {
+  $('fType').innerHTML = Object.entries(TYPES)
+    .map(([k, t]) => `<option value="${k}">${echappe(t.label)}</option>`).join('');
+  $('fVehicule').innerHTML = '<option value="">Aucun</option>' + vehicules
+    .map(v => `<option value="${v.id}">${echappe(v.nom)}${v.modele ? ' · ' + echappe(v.modele) : ''}</option>`).join('');
+  $('fPersonne').innerHTML = '<option value="">Non attribué</option>' + equipe
+    .map(p => `<option value="${p.id}">${echappe(p.prenom + ' ' + p.nom)}</option>`).join('');
+}
+function dessinerLegende() {
+  $('legende').innerHTML = Object.values(TYPES)
+    .map(t => `<span><i class="pastille" style="background:${t.couleur}"></i> ${echappe(t.court)}</span>`).join('');
 }
 
-/* ===== Chargement d une journee ===== */
-async function afficherJour() {
-  const iso = dateISO(jour);
-  $('selecteurDate').value = iso;
-  const libelle = jour.toLocaleDateString('fr-FR',
-    { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  $('jourTitre').innerHTML = memeJour(jour, new Date())
-    ? `<span class="aujourdhui">Aujourd'hui</span>${libelle}`
-    : libelle;
+/* ===== Chargement ===== */
+async function rafraichir() {
+  if (!installe) return;
+  const debut = vue === 'jour' ? new Date(jour) : lundiDe(jour);
+  debut.setHours(0, 0, 0, 0);
+  const fin = new Date(debut);
+  fin.setDate(fin.getDate() + (vue === 'jour' ? 1 : 7));
 
-  const debutJour = new Date(jour); debutJour.setHours(0, 0, 0, 0);
-  const finJour   = new Date(jour); finJour.setHours(23, 59, 59, 999);
-
-  const [rdv, pointages, conges, resas] = await Promise.all([
-    db.from('rdv_requests').select('*').eq('confirmed_date', iso),
-    db.from('pointages').select('*').eq('date', iso),
+  const [evts, rdv, pointages, conges] = await Promise.all([
+    db.from('planning_evenements').select('*')
+      .lt('debut', fin.toISOString()).gt('fin', debut.toISOString()).order('debut'),
+    db.from('rdv_requests').select('*')
+      .gte('confirmed_date', dateISO(debut)).lt('confirmed_date', dateISO(fin)),
+    db.from('pointages').select('*')
+      .gte('date', dateISO(debut)).lt('date', dateISO(fin)),
     db.from('conges').select('*').eq('status', 'approuve')
-      .lte('date_debut', iso).gte('date_fin', iso),
-    db.from('reservations_vehicules').select('*')
-      .lt('debut', finJour.toISOString()).gt('fin', debutJour.toISOString())
+      .lte('date_debut', dateISO(fin)).gte('date_fin', dateISO(debut))
   ]);
 
-  dessiner({
-    rdv: rdv.data || [], pointages: pointages.data || [],
-    conges: conges.data || [], resas: resas.data || []
-  });
+  const d = {
+    evts: evts.data || [],
+    rdv: (rdv.data || []).filter(r => r.confirmed_time),
+    pointages: pointages.data || [],
+    conges: conges.data || []
+  };
 
+  majTitre();
+  majResume(d);
+  if (vue === 'jour') {
+    $('cadreJour').style.display = ''; $('grilleSemaine').style.display = 'none'; dessinerJour(d);
+  } else {
+    $('cadreJour').style.display = 'none'; $('grilleSemaine').style.display = ''; dessinerSemaine(d);
+  }
   $('lastRefresh').textContent = 'Mis à jour à ' + hhmm(new Date());
 }
 
-/* ===== Dessin de la grille ===== */
-function dessiner({ rdv, pointages, conges, resas }) {
-  const agenda = $('agenda');
-  const colonnes = equipe.length + vehicules.length;
-  agenda.style.gridTemplateColumns = `48px repeat(${colonnes}, minmax(122px, 1fr))`;
-
-  let html = '';
-
-  /* --- Entetes --- */
-  html += `<div class="agenda-entete gouttiere"></div>`;
-
-  vehicules.forEach(v => {
-    html += `<div class="agenda-entete col-vehicule">
-      <div class="col-nom">${v.nom}</div>
-      <span class="col-sous">${v.modele || ''}</span></div>`;
-  });
-
-  equipe.forEach(p => {
-    const nom = p.prenom + ' ' + p.nom;
-    const pt = pointages.find(x => x.employee_name === nom);
-    const cg = conges.find(x => x.employee_name === nom);
-    let sous = '<span class="col-sous">&nbsp;</span>';
-    if (cg) {
-      sous = `<span class="col-sous absent">${cg.type || 'Absent'}</span>`;
-    } else if (pt && pt.arrivee) {
-      const a = 'arrivé ' + hhmm(new Date(pt.arrivee));
-      const d = pt.depart ? ' · parti ' + hhmm(new Date(pt.depart)) : '';
-      sous = `<span class="col-sous present">${a}${d}</span>`;
-    }
-    html += `<div class="agenda-entete">
-      <div class="col-nom">${p.prenom}</div>${sous}</div>`;
-  });
-
-  /* --- Gouttiere des heures --- */
-  html += `<div class="gouttiere" style="height:${HAUTEUR}px;">`;
-  for (let h = H_DEBUT; h < H_FIN; h++) {
-    html += `<div class="heure-trait" style="height:${60 * PX_PAR_MIN}px;">${h}h</div>`;
+function majTitre() {
+  $('selecteurDate').value = dateISO(jour);
+  if (vue === 'jour') {
+    const libelle = jour.toLocaleDateString('fr-FR',
+      { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    $('jourTitre').innerHTML = memeJour(jour, new Date())
+      ? `<span class="aujourdhui">Aujourd'hui</span>${libelle}` : libelle;
+  } else {
+    const l = lundiDe(jour), s = new Date(l); s.setDate(s.getDate() + 5);
+    const fmt = x => x.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+    $('jourTitre').innerHTML = `<span class="aujourdhui">Semaine</span>${fmt(l)} au ${fmt(s)}`;
   }
-  html += `</div>`;
+}
 
-  const jourSemaine = jour.getDay();
-  const plages = OUVERTURE[jourSemaine] || [];
+/* ===== Bandeau ===== */
+function majResume({ evts }) {
+  const maintenant = new Date();
+  const base = evts.filter(e => e.statut !== 'annule');
+
+  const livraisons  = base.filter(e => e.type === 'livraison').length;
+  const enlevements = base.filter(e => e.type === 'enlevement').length;
+  const sortis = base.filter(e => e.vehicule_id
+    && new Date(e.debut) <= maintenant && new Date(e.fin) >= maintenant).length;
+  const retards = base.filter(e => (TYPES[e.type] || {}).retour
+    && !e.rendu && new Date(e.fin) < maintenant).length;
+  const poids = base.filter(e => e.type === 'livraison')
+    .reduce((s, e) => s + (Number(e.poids_kg) || 0), 0);
+
+  const cases = [
+    { nb: livraisons,  txt: vue === 'jour' ? 'Livraisons du jour' : 'Livraisons de la semaine' },
+    { nb: enlevements, txt: 'Enlèvements au dépôt' },
+    { nb: sortis,      txt: 'Camions sortis à cet instant' }
+  ];
+  if (poids > 0) cases.push({ nb: (poids / 1000).toFixed(1) + ' t', txt: 'Tonnage à livrer' });
+  if (retards > 0) cases.push({ nb: retards, txt: 'Retours en retard', alerte: true });
+
+  $('resume').innerHTML = cases.map(c =>
+    `<div class="resume-case${c.alerte ? ' alerte' : ''}">
+       <div class="resume-nb">${c.nb}</div><div class="resume-txt">${c.txt}</div>
+     </div>`).join('');
+}
+
+/* ===== Vue jour ===== */
+function dessinerJour({ evts, rdv, pointages, conges }) {
+  const agenda = $('agenda');
+  agenda.style.gridTemplateColumns =
+    `48px repeat(${vehicules.length + equipe.length}, minmax(124px, 1fr))`;
+
+  const jourISO = dateISO(jour);
+  const plages = OUVERTURE[jour.getDay()] || [];
   const ouvert = h => plages.some(([a, b]) => h >= a && h < b);
-
   const fondHeures = () => {
     let f = '';
-    for (let h = H_DEBUT; h < H_FIN; h++) {
-      f += `<div class="ligne-heure pleine${ouvert(h) ? '' : ' fermee'}"
-              style="height:${60 * PX_PAR_MIN}px;"></div>`;
-    }
+    for (let h = H_DEBUT; h < H_FIN; h++)
+      f += `<div class="ligne-heure pleine${ouvert(h) ? '' : ' fermee'}" style="height:${60 * PX_PAR_MIN}px;"></div>`;
     return f;
   };
 
-  /* --- Colonnes des camions, placees en premier --- */
+  let html = `<div class="agenda-entete gouttiere"></div>`;
+
+  /* Les camions d'abord : c'est la ressource rare, celle qu'on vient consulter */
   vehicules.forEach(v => {
-    const siennes = resas.filter(r => r.vehicule_id === v.id);
-    html += `<div class="colonne vehicule" data-vehicule="${v.id}" style="height:${HAUTEUR}px;">
-      ${fondHeures()}
-      <div class="creer-ici">+ réserver</div>
-      ${blocsResa(siennes)}${traitMaintenant()}</div>`;
+    const alerte = echeanceProche(v);
+    html += `<div class="agenda-entete col-vehicule">
+      <div class="col-nom">${echappe(v.nom)}</div>
+      <span class="col-sous${alerte ? ' echeance' : ''}">${echappe(alerte || v.modele || '')}</span></div>`;
+  });
+  equipe.forEach(p => {
+    const nom = p.prenom + ' ' + p.nom;
+    const pt = pointages.find(x => x.employee_name === nom && x.date === jourISO);
+    const cg = conges.find(x => x.employee_name === nom);
+    let sous = '<span class="col-sous">&nbsp;</span>';
+    if (cg) sous = `<span class="col-sous absent">${echappe(cg.type || 'Absent')}</span>`;
+    else if (pt && pt.arrivee) {
+      const dep = pt.depart ? ' · parti ' + hhmm(new Date(pt.depart)) : '';
+      sous = `<span class="col-sous present">arrivé ${hhmm(new Date(pt.arrivee))}${dep}</span>`;
+    }
+    html += `<div class="agenda-entete"><div class="col-nom">${echappe(p.prenom)}</div>${sous}</div>`;
   });
 
-  /* --- Colonnes des collaborateurs --- */
+  html += `<div class="gouttiere" style="height:${HAUTEUR}px;">`;
+  for (let h = H_DEBUT; h < H_FIN; h++)
+    html += `<div class="heure-trait" style="height:${60 * PX_PAR_MIN}px;">${h}h</div>`;
+  html += `</div>`;
+
+  vehicules.forEach(v => {
+    const siens = evts.filter(e => e.vehicule_id === v.id);
+    html += `<div class="colonne cliquable" data-vehicule="${v.id}" style="height:${HAUTEUR}px;">
+      ${fondHeures()}<div class="creer-ici">+ ajouter</div>
+      ${siens.map(blocEvt).join('')}${traitMaintenant()}</div>`;
+  });
+
   equipe.forEach((p, i) => {
     const nom = p.prenom + ' ' + p.nom;
     const cg = conges.find(x => x.employee_name === nom);
-    const mes = rdv.filter(r =>
-      Array.isArray(r.assigned_to) && r.assigned_to.includes(nom) && r.confirmed_time);
-
-    html += `<div class="colonne${cg ? ' congelee' : ''}${i === 0 ? ' separee' : ''}"
-                  style="height:${HAUTEUR}px;">
-      ${fondHeures()}${blocsRdv(mes)}${traitMaintenant()}</div>`;
+    const siens = evts.filter(e => e.employee_id === p.id || e.employee_name === nom);
+    const sesRdv = rdv.filter(r => Array.isArray(r.assigned_to)
+      && r.assigned_to.includes(nom) && r.confirmed_date === jourISO);
+    html += `<div class="colonne cliquable${cg ? ' congelee' : ''}${i === 0 ? ' separee' : ''}"
+                  data-personne="${p.id}" style="height:${HAUTEUR}px;">
+      ${fondHeures()}<div class="creer-ici">+ ajouter</div>
+      ${siens.map(blocEvt).join('')}${sesRdv.map(blocRdv).join('')}${traitMaintenant()}</div>`;
   });
 
   agenda.innerHTML = html;
 
-  agenda.querySelectorAll('.colonne.vehicule').forEach(col => {
-    col.addEventListener('click', e => {
-      if (e.target.closest('.bloc')) return;
+  agenda.querySelectorAll('.colonne.cliquable').forEach(col => {
+    col.addEventListener('click', ev => {
+      if (ev.target.closest('.bloc')) return;
       const rect = col.getBoundingClientRect();
-      const minutes = Math.max(0, Math.round((e.clientY - rect.top) / PX_PAR_MIN / 30) * 30);
-      ouvrirCreation(col.dataset.vehicule, minutes);
+      const minutes = Math.max(0, Math.round((ev.clientY - rect.top) / PX_PAR_MIN / 30) * 30);
+      ouvrirCreation({ vehicule: col.dataset.vehicule || '', personne: col.dataset.personne || '', minutes });
     });
   });
-  agenda.querySelectorAll('.bloc[data-resa]').forEach(b => {
-    b.addEventListener('click', () => ouvrirDetail(b.dataset.resa));
-  });
+  agenda.querySelectorAll('[data-evt]').forEach(b =>
+    b.addEventListener('click', ev => { ev.stopPropagation(); ouvrirDetail(b.dataset.evt); }));
+}
+
+function echeanceProche(v) {
+  const dans = x => x ? Math.round((new Date(x) - new Date()) / 86400000) : null;
+  const ct = dans(v.prochain_ct), rev = dans(v.prochaine_revision);
+  if (ct !== null && ct <= 30)  return ct < 0  ? 'CT dépassé'        : `CT dans ${ct} j`;
+  if (rev !== null && rev <= 30) return rev < 0 ? 'Révision dépassée' : `Révision dans ${rev} j`;
+  return null;
 }
 
 function traitMaintenant() {
@@ -549,227 +716,331 @@ function traitMaintenant() {
   return `<div class="maintenant" style="top:${m * PX_PAR_MIN}px;"></div>`;
 }
 
-function blocsRdv(liste) {
-  return liste.map(r => {
-    const [hh, mm] = String(r.confirmed_time).split(':').map(Number);
-    const debut = (hh - H_DEBUT) * 60 + (mm || 0);
-    if (debut < 0) return '';
-    /* La duree n'est pas saisie aujourd'hui : on affiche une heure par defaut. */
-    const duree = 60;
-    const univers = (Array.isArray(r.univers) && r.univers[0] || 'autre').toLowerCase();
-    const classe = ['carrelage', 'sanitaire', 'parquet'].includes(univers) ? univers : 'autre';
-    const client = [r.client_prenom, r.client_nom].filter(Boolean).join(' ') || 'Client';
-    return `<a class="bloc ${classe}" href="rdv-detail.html?id=${r.id}"
-      style="top:${debut * PX_PAR_MIN}px; height:${duree * PX_PAR_MIN}px;">
-      <div class="bloc-heure">${String(hh).padStart(2,'0')}h${String(mm||0).padStart(2,'0')}</div>
-      <div class="bloc-titre">${client}</div>
-      <div class="bloc-sous">${(r.univers || []).join(', ')}</div></a>`;
-  }).join('');
+function blocEvt(e) {
+  const t = TYPES[e.type] || TYPES.autre;
+  const d = new Date(e.debut), f = new Date(e.fin);
+  const minuit = new Date(jour); minuit.setHours(0, 0, 0, 0);
+  const basse = new Date(minuit); basse.setHours(H_DEBUT, 0, 0, 0);
+  const haute = new Date(minuit); haute.setHours(H_FIN, 0, 0, 0);
+
+  const haut = Math.max(0, minutesDepuisDebut(d < basse ? basse : d));
+  const bas  = Math.min((H_FIN - H_DEBUT) * 60, minutesDepuisDebut(f > haute ? haute : f));
+  if (bas <= 0 || haut >= (H_FIN - H_DEBUT) * 60) return '';
+  const hauteur = Math.max(24, (bas - haut) * PX_PAR_MIN);
+
+  const enRetard = t.retour && !e.rendu && e.statut !== 'annule' && f < new Date();
+  const cl = [e.statut === 'termine' ? 'termine' : '', e.statut === 'annule' ? 'annule' : '',
+              enRetard ? 'en-retard' : ''].filter(Boolean).join(' ');
+
+  return `<div class="bloc ${cl}" data-evt="${e.id}"
+    style="top:${haut * PX_PAR_MIN}px; height:${hauteur}px;
+           background:${t.couleur}2e; border-color:${t.couleur};">
+    <div class="bloc-heure">${hhmm(d)} → ${hhmm(f)}</div>
+    <div class="bloc-titre">${echappe(titreEvt(e))}</div>
+    <div class="bloc-sous">${enRetard ? '<span class="retard-txt">Non rendu</span>'
+      : echappe(e.adresse || e.notes || t.court)}</div></div>`;
 }
 
-function blocsResa(liste) {
-  const debutJour = new Date(jour); debutJour.setHours(0, 0, 0, 0);
-  const maintenant = new Date();
-
-  return liste.map(r => {
-    const d = new Date(r.debut), f = new Date(r.fin);
-    /* Une reservation peut deborder sur plusieurs jours : on coupe aux bornes
-       de la journee affichee pour que le bloc reste dans la colonne. */
-    let borneBasse = new Date(debutJour); borneBasse.setHours(H_DEBUT, 0, 0, 0);
-    const haut = Math.max(0, minutesDepuisDebut(d < borneBasse ? borneBasse : d));
-    const finJourAffiche = new Date(debutJour); finJourAffiche.setHours(H_FIN, 0, 0, 0);
-    const bas = Math.min((H_FIN - H_DEBUT) * 60, minutesDepuisDebut(f > finJourAffiche ? finJourAffiche : f));
-    const hauteur = Math.max(22, (bas - haut) * PX_PAR_MIN);
-    if (bas <= 0 || haut >= (H_FIN - H_DEBUT) * 60) return '';
-
-    const enRetard = !r.rendu && f < maintenant;
-    const qui = r.type === 'pret_client'
-      ? (r.client_nom || 'Client')
-      : (r.employee_name || 'Équipe');
-
-    return `<div class="bloc ${r.type}${enRetard ? ' en-retard' : ''}" data-resa="${r.id}"
-      style="top:${haut * PX_PAR_MIN}px; height:${hauteur}px;">
-      <div class="bloc-heure">${hhmm(d)} → ${hhmm(f)}</div>
-      <div class="bloc-titre">${qui}</div>
-      <div class="bloc-sous">${enRetard
-        ? '<span class="retard-txt">Non rendu</span>'
-        : (r.motif || LIBELLE_TYPE[r.type])}</div></div>`;
-  }).join('');
+function blocRdv(r) {
+  const [hh, mm] = String(r.confirmed_time).split(':').map(Number);
+  const haut = (hh - H_DEBUT) * 60 + (mm || 0);
+  if (haut < 0 || haut > (H_FIN - H_DEBUT) * 60) return '';
+  const client = [r.client_prenom, r.client_nom].filter(Boolean).join(' ') || 'Client';
+  return `<a class="bloc" href="rdv-detail.html?id=${r.id}"
+    style="top:${haut * PX_PAR_MIN}px; height:${60 * PX_PAR_MIN}px;
+           background:#ED24422e; border-color:#ED2442;">
+    <div class="bloc-heure">${String(hh).padStart(2,'0')}h${String(mm||0).padStart(2,'0')}</div>
+    <div class="bloc-titre">${echappe(client)}</div>
+    <div class="bloc-sous">${echappe((r.univers || []).join(', ') || 'Demande du site')}</div></a>`;
 }
 
-/* ===== Creation ===== */
-function ouvrirCreation(vehiculeId, minutes) {
-  resaCourante = null;
-  $('titreResa').textContent = 'Réserver un camion';
-  $('erreurResa').classList.remove('visible');
-  $('formResa').reset();
-  $('fVehicule').value = vehiculeId;
+function titreEvt(e) {
+  if (e.titre) return e.titre;
+  if (e.client_nom) return e.client_nom;
+  if (e.employee_name) return e.employee_name;
+  return (TYPES[e.type] || TYPES.autre).court;
+}
 
-  /* Avant 7h ou apres 19h, on ramene le creneau dans la journee affichee. */
+/* ===== Vue semaine ===== */
+function dessinerSemaine({ evts, rdv, conges }) {
+  const lundi = lundiDe(jour);
+  let html = '';
+
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(lundi); d.setDate(d.getDate() + i);
+    const iso = dateISO(d);
+    const j0 = new Date(d); j0.setHours(0, 0, 0, 0);
+    const j1 = new Date(d); j1.setHours(23, 59, 59, 999);
+
+    const duJour = evts
+      .filter(e => new Date(e.debut) <= j1 && new Date(e.fin) >= j0)
+      .sort((a, b) => new Date(a.debut) - new Date(b.debut));
+    const rdvJour = rdv.filter(r => r.confirmed_date === iso)
+      .sort((a, b) => String(a.confirmed_time).localeCompare(String(b.confirmed_time)));
+    const absents = conges.filter(c => c.date_debut <= iso && c.date_fin >= iso);
+
+    let corps = '';
+    rdvJour.forEach(r => {
+      const client = [r.client_prenom, r.client_nom].filter(Boolean).join(' ') || 'Client';
+      corps += `<a class="puce-evt" href="rdv-detail.html?id=${r.id}"
+        style="background:#ED24422e; border-color:#ED2442;">
+        <b>${echappe(client)}</b><small>${echappe(String(r.confirmed_time).slice(0,5))} · RDV magasin</small></a>`;
+    });
+    duJour.forEach(e => {
+      const t = TYPES[e.type] || TYPES.autre;
+      const enRetard = t.retour && !e.rendu && e.statut !== 'annule' && new Date(e.fin) < new Date();
+      corps += `<div class="puce-evt" data-evt="${e.id}"
+        style="background:${t.couleur}2e; border-color:${t.couleur};${e.statut === 'annule' ? 'opacity:.4;' : ''}">
+        <b>${echappe(titreEvt(e))}</b>
+        <small>${hhmm(new Date(e.debut))} · ${echappe(t.court)}${
+          enRetard ? ' · <span class="retard-txt">non rendu</span>' : ''}</small></div>`;
+    });
+    if (!corps) corps = '<div class="semaine-vide">Rien de prévu</div>';
+    if (absents.length) corps += `<div class="semaine-vide" style="margin-top:0.4rem; color:var(--attente);">
+      Absent : ${echappe(absents.map(a => String(a.employee_name || '').split(' ')[0]).join(', '))}</div>`;
+
+    html += `<div class="semaine-jour${memeJour(d, new Date()) ? ' aujourdhui' : ''}${
+        (OUVERTURE[d.getDay()] || []).length === 0 ? ' ferme' : ''}">
+      <div class="semaine-entete">
+        <span>${d.toLocaleDateString('fr-FR', { weekday: 'long' })}</span>
+        <span class="num">${d.getDate()}/${String(d.getMonth() + 1).padStart(2, '0')}</span>
+      </div>
+      ${corps}
+      <button class="semaine-ajout" data-ajout="${iso}">+ ajouter</button>
+    </div>`;
+  }
+
+  $('grilleSemaine').innerHTML = html;
+  $('grilleSemaine').querySelectorAll('[data-evt]').forEach(b =>
+    b.addEventListener('click', () => ouvrirDetail(b.dataset.evt)));
+  $('grilleSemaine').querySelectorAll('[data-ajout]').forEach(b =>
+    b.addEventListener('click', () => {
+      const [a, m, j] = b.dataset.ajout.split('-').map(Number);
+      jour = new Date(a, m - 1, j);
+      ouvrirCreation({ minutes: 120 });   /* 9h */
+    }));
+}
+
+/* ===== Creation et modification ===== */
+function ouvrirCreation({ vehicule = '', personne = '', minutes = 120 } = {}) {
+  evtCourant = null;
+  $('titreEvt').textContent = 'Ajouter au planning';
+  $('erreurEvt').classList.remove('visible');
+  $('formEvt').reset();
+
   minutes = Math.max(0, Math.min(minutes, (H_FIN - H_DEBUT) * 60 - 60));
   const d = new Date(jour);
   d.setHours(H_DEBUT + Math.floor(minutes / 60), minutes % 60, 0, 0);
-  const f = new Date(d.getTime() + 2 * 3600000);
   $('fDebut').value = pourChampLocal(d);
-  $('fFin').value = pourChampLocal(f);
+  $('fFin').value = pourChampLocal(new Date(d.getTime() + 2 * 3600000));
 
-  majChampsType();
-  majAvertissement();
-  $('fenetreResa').classList.add('ouverte');
+  $('fType').value = vehicule ? 'livraison' : 'rdv_magasin';
+  $('fVehicule').value = vehicule;
+  $('fPersonne').value = personne || (currentUser ? currentUser.id : '');
+  majChamps();
+  $('fenetreEvt').classList.add('ouverte');
 }
 
-function majChampsType() {
-  $('blocClient').style.display = $('fType').value === 'pret_client' ? '' : 'none';
+function ouvrirModification(e) {
+  evtCourant = e;
+  $('titreEvt').textContent = 'Modifier';
+  $('erreurEvt').classList.remove('visible');
+  $('fType').value = e.type;
+  $('fDebut').value = pourChampLocal(new Date(e.debut));
+  $('fFin').value   = pourChampLocal(new Date(e.fin));
+  $('fVehicule').value = e.vehicule_id || '';
+  $('fPersonne').value = e.employee_id || '';
+  $('fClientNom').value = e.client_nom || '';
+  $('fClientTel').value = e.client_tel || '';
+  $('fAdresse').value = e.adresse || '';
+  $('fRef').value = e.reference || '';
+  $('fPoids').value = e.poids_kg || '';
+  $('fNotes').value = e.notes || '';
+  majChamps();
+  $('fenetreDetail').classList.remove('ouverte');
+  $('fenetreEvt').classList.add('ouverte');
 }
-function majAvertissement() {
+
+function majChamps() {
+  const t = TYPES[$('fType').value] || TYPES.autre;
+  const bascule = (id, regle) => { $(id).style.display = regle ? '' : 'none'; };
+  bascule('grpVehicule', t.camion);
+  bascule('grpPersonne', t.personne);
+  bascule('grpClient', t.client);
+  bascule('grpAdresse', t.adresse);
+  bascule('grpRef', t.ref);
+  bascule('grpPoids', t.poids);
+  if (!t.camion) $('fVehicule').value = '';
+
   const v = vehicules.find(x => x.id === $('fVehicule').value);
-  const a = $('avertExceptionnel');
-  if (v && v.pret_exceptionnel) {
+  const a = $('alerteEvt');
+  if (v && v.pret_exceptionnel && ['pret_camion', 'emprunt_perso'].includes($('fType').value)) {
     a.textContent = `${v.nom} n'est prêté qu'exceptionnellement. Assurez-vous d'avoir l'accord avant de valider.`;
     a.classList.add('visible');
-  } else {
-    a.classList.remove('visible');
-  }
+  } else a.classList.remove('visible');
 }
+$('fType').addEventListener('change', majChamps);
+$('fVehicule').addEventListener('change', majChamps);
 
-$('fType').addEventListener('change', majChampsType);
-$('fVehicule').addEventListener('change', majAvertissement);
-
-$('formResa').addEventListener('submit', async e => {
-  e.preventDefault();
-  const err = $('erreurResa');
+$('formEvt').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const err = $('erreurEvt');
   err.classList.remove('visible');
 
-  const debut = new Date($('fDebut').value);
-  const fin   = new Date($('fFin').value);
-  if (!(fin > debut)) {
-    err.textContent = "Le retour doit être après le départ.";
-    err.classList.add('visible'); return;
-  }
-
   const type = $('fType').value;
-  if (type === 'pret_client' && !$('fClientNom').value.trim()) {
-    err.textContent = "Indiquez le nom du client : c'est ce qui permet de savoir qui a le camion.";
+  const t = TYPES[type] || TYPES.autre;
+  const debut = new Date($('fDebut').value), fin = new Date($('fFin').value);
+
+  if (!(fin > debut)) {
+    err.textContent = 'La fin doit être après le début.';
+    err.classList.add('visible'); return;
+  }
+  if (t.camion === true && !$('fVehicule').value) {
+    err.textContent = 'Choisissez un camion : cette nature en mobilise un.';
+    err.classList.add('visible'); return;
+  }
+  if (t.client === true && !$('fClientNom').value.trim()) {
+    err.textContent = 'Indiquez le nom du client.';
     err.classList.add('visible'); return;
   }
 
-  const monNom = currentProfile ? currentProfile.prenom + ' ' + currentProfile.nom : '';
+  const p = equipe.find(x => x.id === $('fPersonne').value);
   const ligne = {
-    vehicule_id: $('fVehicule').value,
     type,
     debut: debut.toISOString(),
     fin: fin.toISOString(),
-    employee_id: currentUser.id,
-    employee_name: monNom,
-    client_nom: type === 'pret_client' ? $('fClientNom').value.trim() : null,
-    client_tel: type === 'pret_client' ? $('fClientTel').value.trim() : null,
-    motif: $('fMotif').value.trim() || null,
-    cree_par: monNom
+    vehicule_id: $('fVehicule').value || null,
+    employee_id: $('fPersonne').value || null,
+    employee_name: p ? p.prenom + ' ' + p.nom : null,
+    client_nom: $('fClientNom').value.trim() || null,
+    client_tel: $('fClientTel').value.trim() || null,
+    adresse: $('fAdresse').value.trim() || null,
+    reference: $('fRef').value.trim() || null,
+    poids_kg: $('fPoids').value ? Number($('fPoids').value) : null,
+    notes: $('fNotes').value.trim() || null
   };
 
   $('btnEnregistrer').disabled = true;
-  const { error } = await db.from('reservations_vehicules').insert(ligne);
+  const moi = currentProfile ? currentProfile.prenom + ' ' + currentProfile.nom : '';
+  const reponse = evtCourant
+    ? await db.from('planning_evenements').update(ligne).eq('id', evtCourant.id)
+    : await db.from('planning_evenements').insert({ ...ligne, cree_par: moi });
   $('btnEnregistrer').disabled = false;
 
-  if (error) {
-    /* 23P01 : la contrainte d exclusion a refuse un chevauchement. C'est
-       exactement le cas « le camion etait deja pris ». */
-    const chevauche = error.code === '23P01' || /exclu|overlap/i.test(error.message || '');
+  if (reponse.error) {
+    const e = reponse.error;
+    /* 23P01 : la contrainte d'exclusion a refuse un chevauchement.
+       C'est exactement le cas « le camion etait deja pris ». */
+    const chevauche = e.code === '23P01' || /exclu|overlap/i.test(e.message || '');
     err.textContent = chevauche
-      ? 'Ce camion est déjà réservé sur ce créneau. Choisissez un autre horaire ou l\'autre camion.'
-      : 'Enregistrement impossible : ' + error.message;
+      ? 'Ce camion est déjà pris sur ce créneau. Changez l\'horaire, ou prenez l\'autre camion.'
+      : 'Enregistrement impossible : ' + e.message;
     err.classList.add('visible');
     return;
   }
 
-  $('fenetreResa').classList.remove('ouverte');
-  toast('Réservation enregistrée');
-  afficherJour();
+  $('fenetreEvt').classList.remove('ouverte');
+  toast(evtCourant ? 'Modification enregistrée' : 'Ajouté au planning');
+  rafraichir();
 });
 
-$('btnFermerResa').addEventListener('click', () => $('fenetreResa').classList.remove('ouverte'));
+$('btnFermerEvt').addEventListener('click', () => $('fenetreEvt').classList.remove('ouverte'));
 
-/* Ouvre la reservation sans passer par un clic dans la grille : sur un petit
-   ecran les colonnes des camions peuvent demander de faire defiler. */
-$('btnNouvelle').addEventListener('click', () => {
-  if (!vehicules.length) { toast('Aucun camion enregistré', true); return; }
-  const dep = memeJour(jour, new Date()) ? new Date() : (() => {
-    const d = new Date(jour); d.setHours(9, 0, 0, 0); return d;
-  })();
+$('btnNouveau').addEventListener('click', () => {
+  const dep = memeJour(jour, new Date()) ? new Date()
+            : (() => { const d = new Date(jour); d.setHours(9, 0, 0, 0); return d; })();
   dep.setMinutes(Math.ceil(dep.getMinutes() / 30) * 30, 0, 0);
-  ouvrirCreation(vehicules[0].id, minutesDepuisDebut(dep));
+  ouvrirCreation({ minutes: minutesDepuisDebut(dep) });
 });
 
 /* ===== Detail ===== */
 async function ouvrirDetail(id) {
-  const { data } = await db.from('reservations_vehicules').select('*').eq('id', id).single();
-  if (!data) return;
-  resaCourante = data;
-
-  const v = vehicules.find(x => x.id === data.vehicule_id);
-  const d = new Date(data.debut), f = new Date(data.fin);
+  const { data: e } = await db.from('planning_evenements').select('*').eq('id', id).single();
+  if (!e) return;
+  const t = TYPES[e.type] || TYPES.autre;
+  const v = vehicules.find(x => x.id === e.vehicule_id);
   const fmt = x => x.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })
                  + ' à ' + hhmm(x);
 
-  $('titreDetail').textContent = v ? v.nom : 'Réservation';
-  $('corpsDetail').innerHTML = `
-    <div class="detail-ligne"><span>Nature</span><span>${LIBELLE_TYPE[data.type]}</span></div>
-    <div class="detail-ligne"><span>Départ</span><span>${fmt(d)}</span></div>
-    <div class="detail-ligne"><span>Retour prévu</span><span>${fmt(f)}</span></div>
-    ${data.client_nom ? `<div class="detail-ligne"><span>Client</span><span>${data.client_nom}</span></div>` : ''}
-    ${data.client_tel ? `<div class="detail-ligne"><span>Téléphone</span><span><a href="tel:${data.client_tel}" style="color:var(--or);">${data.client_tel}</a></span></div>` : ''}
-    ${data.employee_name ? `<div class="detail-ligne"><span>Responsable</span><span>${data.employee_name}</span></div>` : ''}
-    ${data.motif ? `<div class="detail-ligne"><span>Motif</span><span>${data.motif}</span></div>` : ''}
-    <div class="detail-ligne"><span>Rendu</span><span>${
-      data.rendu ? 'Oui, le ' + fmt(new Date(data.rendu_le)) : 'Pas encore'
-    }</span></div>`;
+  $('titreDetail').textContent = titreEvt(e);
+  const l = (k, val) => val ? `<div class="detail-ligne"><span>${k}</span><span>${val}</span></div>` : '';
+  $('corpsDetail').innerHTML =
+    l('Nature', echappe(t.label)) +
+    l('Début', fmt(new Date(e.debut))) + l('Fin prévue', fmt(new Date(e.fin))) +
+    l('Camion', v ? echappe(v.nom) : '') +
+    l('Qui', echappe(e.employee_name || '')) +
+    l('Client', echappe(e.client_nom || '')) +
+    l('Téléphone', e.client_tel ? `<a href="tel:${echappe(e.client_tel)}" style="color:var(--or);">${echappe(e.client_tel)}</a>` : '') +
+    l('Adresse', e.adresse ? `<a href="https://maps.google.com/?q=${encodeURIComponent(e.adresse)}" target="_blank" rel="noopener" style="color:var(--or);">${echappe(e.adresse)}</a>` : '') +
+    l('Référence', echappe(e.reference || '')) +
+    l('Poids', e.poids_kg ? e.poids_kg + ' kg' : '') +
+    l('Statut', STATUTS[e.statut] || e.statut) +
+    (t.retour ? l('Rendu', e.rendu ? 'Oui, le ' + fmt(new Date(e.rendu_le)) : 'Pas encore') : '') +
+    l('Précisions', echappe(e.notes || '')) +
+    l('Créé par', echappe(e.cree_par || ''));
 
-  const peutModifier = data.employee_id === currentUser.id
+  const moi = currentProfile ? currentProfile.prenom + ' ' + currentProfile.nom : '';
+  const peut = e.employee_id === currentUser.id || e.cree_par === moi
     || (currentProfile && ['Dirigeant de la société', 'Responsable magasin'].includes(currentProfile.poste));
 
-  $('actionsDetail').innerHTML = `
-    ${!data.rendu && peutModifier ? '<button class="btn-primary" id="btnRendu">Marquer rendu</button>' : ''}
-    ${peutModifier ? '<button class="btn-danger" id="btnSupprimer">Supprimer</button>' : ''}
-    <button class="btn-neutre" id="btnFermerDetail">Fermer</button>`;
+  let boutons = '';
+  if (peut) {
+    if (t.retour && !e.rendu) boutons += '<button class="btn-primary" id="btnRendu">Marquer rendu</button>';
+    if (e.statut === 'prevu') boutons += '<button class="btn-neutre" id="btnEnCours">Démarrer</button>';
+    if (e.statut !== 'termine' && e.statut !== 'annule')
+      boutons += '<button class="btn-neutre" id="btnTermine">Terminé</button>';
+    boutons += '<button class="btn-neutre" id="btnModifier">Modifier</button>';
+    boutons += '<button class="btn-danger" id="btnSupprimer">Supprimer</button>';
+  }
+  boutons += '<button class="btn-neutre" id="btnFermerDetail">Fermer</button>';
+  $('actionsDetail').innerHTML = boutons;
 
-  $('btnFermerDetail').addEventListener('click', () => $('fenetreDetail').classList.remove('ouverte'));
-  const br = $('btnRendu');
-  if (br) br.addEventListener('click', async () => {
-    const { error } = await db.from('reservations_vehicules')
-      .update({ rendu: true, rendu_le: new Date().toISOString() }).eq('id', data.id);
+  const maj = async (champs, message) => {
+    const { error } = await db.from('planning_evenements').update(champs).eq('id', e.id);
     if (error) { toast('Impossible : ' + error.message, true); return; }
     $('fenetreDetail').classList.remove('ouverte');
-    toast('Camion marqué comme rendu');
-    afficherJour();
-  });
-  const bs = $('btnSupprimer');
-  if (bs) bs.addEventListener('click', async () => {
-    if (!confirm('Supprimer cette réservation ?')) return;
-    const { error } = await db.from('reservations_vehicules').delete().eq('id', data.id);
+    toast(message); rafraichir();
+  };
+  const brancher = (bid, fn) => { const b = $(bid); if (b) b.addEventListener('click', fn); };
+  brancher('btnFermerDetail', () => $('fenetreDetail').classList.remove('ouverte'));
+  brancher('btnRendu',   () => maj({ rendu: true, rendu_le: new Date().toISOString(), statut: 'termine' }, 'Camion marqué rendu'));
+  brancher('btnEnCours', () => maj({ statut: 'en_cours' }, 'Marqué en cours'));
+  brancher('btnTermine', () => maj({ statut: 'termine' }, 'Marqué terminé'));
+  brancher('btnModifier', () => ouvrirModification(e));
+  brancher('btnSupprimer', async () => {
+    if (!confirm('Supprimer définitivement cette ligne du planning ?')) return;
+    const { error } = await db.from('planning_evenements').delete().eq('id', e.id);
     if (error) { toast('Impossible : ' + error.message, true); return; }
     $('fenetreDetail').classList.remove('ouverte');
-    toast('Réservation supprimée');
-    afficherJour();
+    toast('Supprimé'); rafraichir();
   });
 
   $('fenetreDetail').classList.add('ouverte');
 }
 
 /* ===== Navigation ===== */
-function decaler(n) { jour.setDate(jour.getDate() + n); afficherJour(); }
+function decaler(n) {
+  jour.setDate(jour.getDate() + (vue === 'jour' ? n : n * 7));
+  rafraichir();
+}
 $('btnPrec').addEventListener('click', () => decaler(-1));
 $('btnSuiv').addEventListener('click', () => decaler(1));
-$('btnAujourdhui').addEventListener('click', () => { jour = new Date(); afficherJour(); });
+$('btnAujourdhui').addEventListener('click', () => { jour = new Date(); rafraichir(); });
 $('selecteurDate').addEventListener('change', e => {
   if (!e.target.value) return;
   const [a, m, j] = e.target.value.split('-').map(Number);
   jour = new Date(a, m - 1, j);
-  afficherJour();
+  rafraichir();
+});
+$('vueJour').addEventListener('click', () => {
+  vue = 'jour'; $('vueJour').classList.add('active'); $('vueSemaine').classList.remove('active'); rafraichir();
+});
+$('vueSemaine').addEventListener('click', () => {
+  vue = 'semaine'; $('vueSemaine').classList.add('active'); $('vueJour').classList.remove('active'); rafraichir();
 });
 
-document.querySelectorAll('.fenetre').forEach(f => {
-  f.addEventListener('click', e => { if (e.target === f) f.classList.remove('ouverte'); });
-});
+document.querySelectorAll('.fenetre').forEach(f =>
+  f.addEventListener('click', e => { if (e.target === f) f.classList.remove('ouverte'); }));
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.querySelectorAll('.fenetre.ouverte')
     .forEach(f => f.classList.remove('ouverte'));
