@@ -872,8 +872,11 @@ footer { background: var(--marine-fonce); color: rgba(255,255,255,0.7); padding:
   content: ''; position: absolute; left: 0; top: 0.55em;
   width: 6px; height: 6px; border-radius: 1px; background: var(--rouge);
 }
+/* Variante a 4 cartes : sans cela la quatrieme se retrouve seule sur sa ligne */
+.subcat-grid-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 1100px) { .subcat-grid-4 { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 900px) { .subcat-grid { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 560px) { .subcat-grid { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .subcat-grid, .subcat-grid-4 { grid-template-columns: 1fr; } }
 
 /* ============ TABLEAU SPÉCIFICATIONS ============ */
 .spec-table-wrap { overflow-x: auto; margin-top: 2rem; border: 1px solid var(--ligne); border-radius: var(--radius); }
