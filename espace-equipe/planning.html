@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Planning · Espace Équipe Top Carrelage</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../fonts/polices-equipe.css" />
+  <link rel="stylesheet" href="app.css" />
+  <style>
+    /* ===== Barre de navigation du jour ===== */
+    .jour-barre {
+      display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;
+      margin-bottom:1.2rem;
+    }
+    .jour-nav { display:flex; align-items:center; gap:0.35rem; }
+    .jour-btn {
+      background:var(--surface2); border:1px solid var(--border); color:var(--text);
+      border-radius:var(--radius); padding:0.45rem 0.7rem; font-size:0.85rem;
+      transition:var(--transition);
+    }
+    .jour-btn:hover { border-color:var(--or); color:var(--or); }
+    .jour-titre {
+      font-family:var(--font-titre); font-size:1.15rem; text-transform:capitalize;
+      min-width:250px;
+    }
+    .jour-titre .aujourdhui { color:var(--or); font-size:0.7rem; letter-spacing:0.12em;
+      text-transform:uppercase; display:block; font-family:var(--font); }
+    .jour-barre input[type="date"] {
+      background:var(--surface2); border:1px solid var(--border); color:var(--text);
+      border-radius:var(--radius); padding:0.45rem 0.6rem; font-size:0.85rem;
+    }
+
+    /* ===== Légende ===== */
+    .legende { display:flex; gap:1.1rem 1.4rem; flex-wrap:wrap; font-size:0.76rem;
+      color:var(--text-muted); align-items:center; margin:0 0 1rem; }
+    .legende span { display:inline-flex; align-items:center; gap:0.35rem; }
+    .pastille { width:11px; height:11px; border-radius:3px; flex-shrink:0; }
+
+    /* ===== Grille ===== */
+    .agenda-cadre {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+      overflow:auto; max-height:calc(100vh - 230px);
+    }
+    .agenda { display:grid; min-width:max-content; position:relative; }
+
+    .agenda-entete {
+      position:sticky; top:0; z-index:5; background:var(--surface2);
+      border-bottom:1px solid var(--border); padding:0.6rem 0.5rem; text-align:center;
+    }
+    .agenda-entete.gouttiere { left:0; z-index:6; }
+    .col-nom { font-size:0.82rem; font-weight:700; white-space:nowrap; }
+    .col-sous { font-size:0.68rem; color:var(--text-muted); margin-top:0.15rem; min-height:1em; }
+    .col-sous.present { color:var(--confirme); }
+    .col-sous.absent  { color:var(--attente); }
+    .col-vehicule .col-nom { color:var(--or); }
+
+    .gouttiere { background:var(--surface2); position:sticky; left:0; z-index:4;
+      border-right:1px solid var(--border); }
+    .heure-trait {
+      font-size:0.7rem; color:var(--text-muted); text-align:right;
+      padding-right:0.5rem; border-top:1px solid var(--border);
+    }
+
+    .colonne { position:relative; border-right:1px solid var(--border); }
+    .colonne.separee { border-left:2px solid var(--or); }
+    .colonne.congelee { background:repeating-linear-gradient(45deg,
+      rgba(255,255,255,0.02) 0 8px, transparent 8px 16px); }
+    .ligne-heure { border-top:1px solid rgba(255,255,255,0.04); }
+    .ligne-heure.pleine { border-top-color:var(--border); }
+    .ligne-heure.fermee { background:rgba(0,0,0,0.25); }
+
+    .maintenant { position:absolute; left:0; right:0; height:2px; background:#ef4444; z-index:3; }
+    /* Le point ne s'affiche que sur la premiere colonne, sinon il se repete
+       a chaque separation et la ligne devient pointillee. */
+    .colonne:first-of-type .maintenant::before { content:''; position:absolute; left:-4px; top:-3px;
+      width:8px; height:8px; border-radius:50%; background:#ef4444; }
+
+    /* ===== Blocs ===== */
+    .bloc {
+      position:absolute; left:3px; right:3px; border-radius:4px; padding:4px 6px;
+      font-size:0.72rem; line-height:1.3; overflow:hidden; cursor:pointer;
+      border-left:3px solid; transition:var(--transition);
+    }
+    .bloc:hover { filter:brightness(1.25); }
+    .bloc-titre { font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .bloc-sous { color:rgba(255,255,255,0.7); white-space:nowrap; overflow:hidden;
+      text-overflow:ellipsis; }
+    .bloc-heure { font-size:0.66rem; opacity:0.65; }
+
+    .bloc.carrelage { background:rgba(237,36,66,0.18);  border-color:#ED2442; }
+    .bloc.sanitaire { background:rgba(75,193,240,0.18); border-color:#4BC1F0; }
+    .bloc.parquet   { background:rgba(245,166,42,0.18); border-color:#F5A62A; }
+    .bloc.autre     { background:rgba(148,163,184,0.18);border-color:#94a3b8; }
+
+    .bloc.interne           { background:rgba(16,185,129,0.18); border-color:#10b981; }
+    .bloc.pret_client       { background:rgba(59,130,246,0.20); border-color:#3b82f6; }
+    .bloc.emprunt_personnel { background:rgba(139,92,246,0.20); border-color:#8b5cf6; }
+    .bloc.en-retard { background:rgba(239,68,68,0.28); border-color:#ef4444; }
+    .bloc .retard-txt { color:#fca5a5; font-weight:700; }
+
+    .creer-ici {
+      position:absolute; inset:0; z-index:1;
+      display:flex; align-items:center; justify-content:center;
+      opacity:0; transition:var(--transition); font-size:0.75rem; color:var(--or);
+    }
+    .colonne.vehicule:hover .creer-ici { opacity:0.55; }
+
+    /* ===== Fenêtre ===== */
+    .fenetre {
+      position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:100;
+      display:none; align-items:center; justify-content:center; padding:1rem;
+    }
+    .fenetre.ouverte { display:flex; }
+    .fenetre-boite {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+      width:100%; max-width:440px; max-height:90vh; overflow-y:auto; padding:1.6rem;
+    }
+    .fenetre-boite h3 { font-family:var(--font-titre); font-size:1.15rem; margin-bottom:1.1rem; }
+    .champ { margin-bottom:0.9rem; }
+    .champ label { display:block; font-size:0.74rem; text-transform:uppercase;
+      letter-spacing:0.08em; color:var(--text-muted); margin-bottom:0.3rem; }
+    .champ input, .champ select, .champ textarea {
+      width:100%; background:var(--surface2); border:1px solid var(--border);
+      color:var(--text); border-radius:var(--radius); padding:0.55rem 0.7rem; font-size:0.88rem;
+    }
+    .champ input:focus, .champ select:focus, .champ textarea:focus {
+      outline:none; border-color:var(--or);
+    }
+    .champ-duo { display:grid; grid-template-columns:1fr 1fr; gap:0.7rem; }
+    .fenetre-actions { display:flex; gap:0.6rem; margin-top:1.3rem; }
+    .fenetre-actions .btn-primary { flex:1; }
+    .btn-neutre {
+      background:var(--surface2); border:1px solid var(--border); color:var(--text);
+      border-radius:var(--radius); padding:0.6rem 1rem; font-size:0.85rem;
+    }
+    .btn-danger {
+      background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#fca5a5;
+      border-radius:var(--radius); padding:0.6rem 1rem; font-size:0.85rem;
+    }
+    .avertissement {
+      background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.35);
+      color:#fcd34d; border-radius:var(--radius); padding:0.6rem 0.8rem;
+      font-size:0.78rem; margin-bottom:0.9rem; display:none;
+    }
+    .avertissement.visible { display:block; }
+    .erreur-fenetre {
+      background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.4);
+      color:#fca5a5; border-radius:var(--radius); padding:0.6rem 0.8rem;
+      font-size:0.8rem; margin-bottom:0.9rem; display:none;
+    }
+    .erreur-fenetre.visible { display:block; }
+
+    .detail-ligne { display:flex; justify-content:space-between; gap:1rem;
+      padding:0.5rem 0; border-bottom:1px solid var(--border); font-size:0.85rem; }
+    .detail-ligne span:first-child { color:var(--text-muted); }
+
+    @media (max-width: 760px) {
+      .jour-titre { min-width:auto; font-size:1rem; }
+      .legende { margin-left:0; width:100%; }
+      .agenda-cadre { max-height:calc(100vh - 300px); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Top Carrelage</div>
+      <span class="sidebar-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">Chargement…</div>
+        <div class="sidebar-user-role" id="sidebarRole"></div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">Demandes RDV</div>
+      <a href="dashboard.html" class="sidebar-link"><span>📅</span> Tableau de bord</a>
+      <div class="sidebar-section">Site web</div>
+      <a href="messages.html" class="sidebar-link"><span>💬</span> Messages de contact</a>
+      <a href="temoignages.html" class="sidebar-link"><span>⭐</span> Témoignages</a>
+      <div class="sidebar-section">Dépôt</div>
+      <a href="consommables.html" class="sidebar-link"><span>🧱</span> Stock consommables</a>
+      <div class="sidebar-section">Équipe</div>
+      <a href="planning.html" class="sidebar-link active"><span>🗓️</span> Planning</a>
+      <a href="pointage.html" class="sidebar-link"><span>🕐</span> Mon pointage</a>
+      <a href="conges.html" class="sidebar-link"><span>🏖️</span> Mes congés</a>
+      <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span>👥</span> Présence équipe</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">Planning</div>
+      <div class="topbar-actions">
+        <span style="font-size:0.78rem; color:var(--text-muted);" id="lastRefresh"></span>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <div class="jour-barre">
+        <div class="jour-nav">
+          <button class="jour-btn" id="btnPrec" aria-label="Jour précédent">◀</button>
+          <button class="jour-btn" id="btnAujourdhui">Aujourd'hui</button>
+          <button class="jour-btn" id="btnSuiv" aria-label="Jour suivant">▶</button>
+        </div>
+        <input type="date" id="selecteurDate" />
+        <div class="jour-titre" id="jourTitre">…</div>
+      </div>
+
+      <div class="legende">
+          <span><i class="pastille" style="background:#ED2442"></i> Carrelage</span>
+          <span><i class="pastille" style="background:#4BC1F0"></i> Sanitaire</span>
+          <span><i class="pastille" style="background:#F5A62A"></i> Parquet</span>
+          <span><i class="pastille" style="background:#10b981"></i> Camion, usage magasin</span>
+          <span><i class="pastille" style="background:#3b82f6"></i> Prêt client</span>
+        <span><i class="pastille" style="background:#8b5cf6"></i> Emprunt salarié</span>
+      </div>
+
+      <div class="agenda-cadre">
+        <div class="agenda" id="agenda">
+          <div class="loading" style="grid-column:1/-1; padding:3rem;"><div class="spinner"></div> Chargement du planning…</div>
+        </div>
+      </div>
+
+      <p style="margin-top:0.9rem; font-size:0.78rem; color:var(--text-muted);">
+        Cliquez dans une colonne de camion pour créer une réservation. Les rendez-vous
+        proviennent des demandes confirmées, ils se modifient depuis leur fiche.
+      </p>
+
+    </div>
+  </div>
+</div>
+
+<!-- FENETRE : creer ou modifier une reservation -->
+<div class="fenetre" id="fenetreResa">
+  <div class="fenetre-boite">
+    <h3 id="titreResa">Réserver un camion</h3>
+    <div class="avertissement" id="avertExceptionnel"></div>
+    <div class="erreur-fenetre" id="erreurResa"></div>
+
+    <form id="formResa">
+      <div class="champ">
+        <label for="fVehicule">Camion</label>
+        <select id="fVehicule" required></select>
+      </div>
+
+      <div class="champ">
+        <label for="fType">Nature de la sortie</label>
+        <select id="fType" required>
+          <option value="interne">Usage magasin : livraison, métrage, déplacement</option>
+          <option value="pret_client">Prêt à un client</option>
+          <option value="emprunt_personnel">Emprunt d'un salarié sur son repos</option>
+        </select>
+      </div>
+
+      <div class="champ-duo">
+        <div class="champ">
+          <label for="fDebut">Départ</label>
+          <input type="datetime-local" id="fDebut" required />
+        </div>
+        <div class="champ">
+          <label for="fFin">Retour prévu</label>
+          <input type="datetime-local" id="fFin" required />
+        </div>
+      </div>
+
+      <div id="blocClient" style="display:none;">
+        <div class="champ-duo">
+          <div class="champ">
+            <label for="fClientNom">Nom du client</label>
+            <input type="text" id="fClientNom" placeholder="M. Dupont" />
+          </div>
+          <div class="champ">
+            <label for="fClientTel">Téléphone</label>
+            <input type="tel" id="fClientTel" placeholder="06 12 34 56 78" />
+          </div>
+        </div>
+      </div>
+
+      <div class="champ">
+        <label for="fMotif">Motif ou précision</label>
+        <input type="text" id="fMotif" placeholder="Livraison chantier Bailleul, métrage…" />
+      </div>
+
+      <div class="fenetre-actions">
+        <button type="submit" class="btn-primary" id="btnEnregistrer">Enregistrer</button>
+        <button type="button" class="btn-neutre" id="btnFermerResa">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- FENETRE : detail d une reservation -->
+<div class="fenetre" id="fenetreDetail">
+  <div class="fenetre-boite">
+    <h3 id="titreDetail">Réservation</h3>
+    <div id="corpsDetail"></div>
+    <div class="fenetre-actions" id="actionsDetail"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* La journee affichee va de 7h a 20h : le magasin ouvre a 9h mais les
+   livraisons partent plus tot et les camions rentrent parfois tard. */
+const H_DEBUT = 7, H_FIN = 20;
+const PX_PAR_MIN = 1.0;
+const HAUTEUR = (H_FIN - H_DEBUT) * 60 * PX_PAR_MIN;
+
+/* Le magasin est ferme le dimanche, le lundi matin, et entre midi et 14h. */
+const OUVERTURE = {
+  0: [],
+  1: [[14, 18.5]],
+  2: [[9, 12], [14, 18.5]], 3: [[9, 12], [14, 18.5]],
+  4: [[9, 12], [14, 18.5]], 5: [[9, 12], [14, 18.5]], 6: [[9, 12], [14, 18.5]]
+};
+
+const LIBELLE_TYPE = {
+  interne: 'Usage magasin',
+  pret_client: 'Prêt client',
+  emprunt_personnel: 'Emprunt salarié'
+};
+
+let currentUser = null, currentProfile = null;
+let jour = new Date();
+let equipe = [], vehicules = [], resaCourante = null;
+
+/* ===== Utilitaires ===== */
+const $ = id => document.getElementById(id);
+
+function dateISO(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+       + '-' + String(d.getDate()).padStart(2, '0');
+}
+function memeJour(a, b) { return dateISO(a) === dateISO(b); }
+
+function minutesDepuisDebut(d) {
+  return (d.getHours() - H_DEBUT) * 60 + d.getMinutes();
+}
+function hhmm(d) {
+  return String(d.getHours()).padStart(2, '0') + 'h' + String(d.getMinutes()).padStart(2, '0');
+}
+function toast(msg, erreur) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.style.borderColor = erreur ? 'rgba(239,68,68,0.5)' : 'var(--or)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+/* datetime-local attend une heure locale, pas un ISO en UTC */
+function pourChampLocal(d) {
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+/* ===== Authentification ===== */
+async function init() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
+  currentUser = session.user;
+
+  const { data: profile } = await db.from('employee_profiles')
+    .select('*').eq('id', currentUser.id).single();
+
+  if (profile) {
+    currentProfile = profile;
+    $('sidebarName').textContent = profile.prenom + ' ' + profile.nom;
+    $('sidebarRole').textContent = profile.poste;
+    $('sidebarAvatar').textContent = (profile.prenom[0] || '') + (profile.nom[0] || '');
+    if (profile.poste === 'Dirigeant de la société' || profile.poste === 'Responsable magasin') {
+      $('lienPresenceEquipe').style.display = '';
+    }
+  }
+
+  const { data: profils } = await db.from('employee_profiles')
+    .select('id, prenom, nom, poste').order('nom');
+  equipe = profils || [];
+
+  const { data: vh } = await db.from('vehicules')
+    .select('*').eq('actif', true).order('ordre');
+  vehicules = vh || [];
+
+  if (!vehicules.length) {
+    $('agenda').innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <div class="empty-state-icon">⚠</div>
+      <p>Aucun camion enregistré.</p>
+      <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.4rem;">
+        Exécutez <code>sql/vehicules_setup.sql</code> dans Supabase pour créer le parc.</p>
+    </div>`;
+  }
+
+  remplirSelecteurVehicules();
+  await afficherJour();
+}
+
+function remplirSelecteurVehicules() {
+  $('fVehicule').innerHTML = vehicules
+    .map(v => `<option value="${v.id}">${v.nom}${v.modele ? ' · ' + v.modele : ''}</option>`)
+    .join('');
+}
+
+/* ===== Chargement d une journee ===== */
+async function afficherJour() {
+  const iso = dateISO(jour);
+  $('selecteurDate').value = iso;
+  const libelle = jour.toLocaleDateString('fr-FR',
+    { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  $('jourTitre').innerHTML = memeJour(jour, new Date())
+    ? `<span class="aujourdhui">Aujourd'hui</span>${libelle}`
+    : libelle;
+
+  const debutJour = new Date(jour); debutJour.setHours(0, 0, 0, 0);
+  const finJour   = new Date(jour); finJour.setHours(23, 59, 59, 999);
+
+  const [rdv, pointages, conges, resas] = await Promise.all([
+    db.from('rdv_requests').select('*').eq('confirmed_date', iso),
+    db.from('pointages').select('*').eq('date', iso),
+    db.from('conges').select('*').eq('status', 'approuve')
+      .lte('date_debut', iso).gte('date_fin', iso),
+    db.from('reservations_vehicules').select('*')
+      .lt('debut', finJour.toISOString()).gt('fin', debutJour.toISOString())
+  ]);
+
+  dessiner({
+    rdv: rdv.data || [], pointages: pointages.data || [],
+    conges: conges.data || [], resas: resas.data || []
+  });
+
+  $('lastRefresh').textContent = 'Mis à jour à ' + hhmm(new Date());
+}
+
+/* ===== Dessin de la grille ===== */
+function dessiner({ rdv, pointages, conges, resas }) {
+  const agenda = $('agenda');
+  const colonnes = equipe.length + vehicules.length;
+  agenda.style.gridTemplateColumns = `56px repeat(${colonnes}, minmax(150px, 1fr))`;
+
+  let html = '';
+
+  /* --- Entetes --- */
+  html += `<div class="agenda-entete gouttiere"></div>`;
+
+  equipe.forEach(p => {
+    const nom = p.prenom + ' ' + p.nom;
+    const pt = pointages.find(x => x.employee_name === nom);
+    const cg = conges.find(x => x.employee_name === nom);
+    let sous = '<span class="col-sous">&nbsp;</span>';
+    if (cg) {
+      sous = `<span class="col-sous absent">${cg.type || 'Absent'}</span>`;
+    } else if (pt && pt.arrivee) {
+      const a = 'arrivé ' + hhmm(new Date(pt.arrivee));
+      const d = pt.depart ? ' · parti ' + hhmm(new Date(pt.depart)) : '';
+      sous = `<span class="col-sous present">${a}${d}</span>`;
+    }
+    html += `<div class="agenda-entete">
+      <div class="col-nom">${p.prenom}</div>${sous}</div>`;
+  });
+
+  vehicules.forEach(v => {
+    html += `<div class="agenda-entete col-vehicule">
+      <div class="col-nom">${v.nom}</div>
+      <span class="col-sous">${v.modele || ''}</span></div>`;
+  });
+
+  /* --- Gouttiere des heures --- */
+  html += `<div class="gouttiere" style="height:${HAUTEUR}px;">`;
+  for (let h = H_DEBUT; h < H_FIN; h++) {
+    html += `<div class="heure-trait" style="height:${60 * PX_PAR_MIN}px;">${h}h</div>`;
+  }
+  html += `</div>`;
+
+  const jourSemaine = jour.getDay();
+  const plages = OUVERTURE[jourSemaine] || [];
+  const ouvert = h => plages.some(([a, b]) => h >= a && h < b);
+
+  const fondHeures = () => {
+    let f = '';
+    for (let h = H_DEBUT; h < H_FIN; h++) {
+      f += `<div class="ligne-heure pleine${ouvert(h) ? '' : ' fermee'}"
+              style="height:${60 * PX_PAR_MIN}px;"></div>`;
+    }
+    return f;
+  };
+
+  /* --- Colonnes des collaborateurs --- */
+  equipe.forEach(p => {
+    const nom = p.prenom + ' ' + p.nom;
+    const cg = conges.find(x => x.employee_name === nom);
+    const mes = rdv.filter(r =>
+      Array.isArray(r.assigned_to) && r.assigned_to.includes(nom) && r.confirmed_time);
+
+    html += `<div class="colonne${cg ? ' congelee' : ''}" style="height:${HAUTEUR}px;">
+      ${fondHeures()}${blocsRdv(mes)}${traitMaintenant()}</div>`;
+  });
+
+  /* --- Colonnes des camions --- */
+  vehicules.forEach((v, i) => {
+    const siennes = resas.filter(r => r.vehicule_id === v.id);
+    html += `<div class="colonne vehicule${i === 0 ? ' separee' : ''}"
+                  data-vehicule="${v.id}" style="height:${HAUTEUR}px;">
+      ${fondHeures()}
+      <div class="creer-ici">+ réserver</div>
+      ${blocsResa(siennes)}${traitMaintenant()}</div>`;
+  });
+
+  agenda.innerHTML = html;
+
+  agenda.querySelectorAll('.colonne.vehicule').forEach(col => {
+    col.addEventListener('click', e => {
+      if (e.target.closest('.bloc')) return;
+      const rect = col.getBoundingClientRect();
+      const minutes = Math.max(0, Math.round((e.clientY - rect.top) / PX_PAR_MIN / 30) * 30);
+      ouvrirCreation(col.dataset.vehicule, minutes);
+    });
+  });
+  agenda.querySelectorAll('.bloc[data-resa]').forEach(b => {
+    b.addEventListener('click', () => ouvrirDetail(b.dataset.resa));
+  });
+}
+
+function traitMaintenant() {
+  if (!memeJour(jour, new Date())) return '';
+  const m = minutesDepuisDebut(new Date());
+  if (m < 0 || m > (H_FIN - H_DEBUT) * 60) return '';
+  return `<div class="maintenant" style="top:${m * PX_PAR_MIN}px;"></div>`;
+}
+
+function blocsRdv(liste) {
+  return liste.map(r => {
+    const [hh, mm] = String(r.confirmed_time).split(':').map(Number);
+    const debut = (hh - H_DEBUT) * 60 + (mm || 0);
+    if (debut < 0) return '';
+    /* La duree n'est pas saisie aujourd'hui : on affiche une heure par defaut. */
+    const duree = 60;
+    const univers = (Array.isArray(r.univers) && r.univers[0] || 'autre').toLowerCase();
+    const classe = ['carrelage', 'sanitaire', 'parquet'].includes(univers) ? univers : 'autre';
+    const client = [r.client_prenom, r.client_nom].filter(Boolean).join(' ') || 'Client';
+    return `<a class="bloc ${classe}" href="rdv-detail.html?id=${r.id}"
+      style="top:${debut * PX_PAR_MIN}px; height:${duree * PX_PAR_MIN}px;">
+      <div class="bloc-heure">${String(hh).padStart(2,'0')}h${String(mm||0).padStart(2,'0')}</div>
+      <div class="bloc-titre">${client}</div>
+      <div class="bloc-sous">${(r.univers || []).join(', ')}</div></a>`;
+  }).join('');
+}
+
+function blocsResa(liste) {
+  const debutJour = new Date(jour); debutJour.setHours(0, 0, 0, 0);
+  const maintenant = new Date();
+
+  return liste.map(r => {
+    const d = new Date(r.debut), f = new Date(r.fin);
+    /* Une reservation peut deborder sur plusieurs jours : on coupe aux bornes
+       de la journee affichee pour que le bloc reste dans la colonne. */
+    let borneBasse = new Date(debutJour); borneBasse.setHours(H_DEBUT, 0, 0, 0);
+    const haut = Math.max(0, minutesDepuisDebut(d < borneBasse ? borneBasse : d));
+    const finJourAffiche = new Date(debutJour); finJourAffiche.setHours(H_FIN, 0, 0, 0);
+    const bas = Math.min((H_FIN - H_DEBUT) * 60, minutesDepuisDebut(f > finJourAffiche ? finJourAffiche : f));
+    const hauteur = Math.max(22, (bas - haut) * PX_PAR_MIN);
+    if (bas <= 0 || haut >= (H_FIN - H_DEBUT) * 60) return '';
+
+    const enRetard = !r.rendu && f < maintenant;
+    const qui = r.type === 'pret_client'
+      ? (r.client_nom || 'Client')
+      : (r.employee_name || 'Équipe');
+
+    return `<div class="bloc ${r.type}${enRetard ? ' en-retard' : ''}" data-resa="${r.id}"
+      style="top:${haut * PX_PAR_MIN}px; height:${hauteur}px;">
+      <div class="bloc-heure">${hhmm(d)} → ${hhmm(f)}</div>
+      <div class="bloc-titre">${qui}</div>
+      <div class="bloc-sous">${enRetard
+        ? '<span class="retard-txt">Non rendu</span>'
+        : (r.motif || LIBELLE_TYPE[r.type])}</div></div>`;
+  }).join('');
+}
+
+/* ===== Creation ===== */
+function ouvrirCreation(vehiculeId, minutes) {
+  resaCourante = null;
+  $('titreResa').textContent = 'Réserver un camion';
+  $('erreurResa').classList.remove('visible');
+  $('formResa').reset();
+  $('fVehicule').value = vehiculeId;
+
+  const d = new Date(jour);
+  d.setHours(H_DEBUT + Math.floor(minutes / 60), minutes % 60, 0, 0);
+  const f = new Date(d.getTime() + 2 * 3600000);
+  $('fDebut').value = pourChampLocal(d);
+  $('fFin').value = pourChampLocal(f);
+
+  majChampsType();
+  majAvertissement();
+  $('fenetreResa').classList.add('ouverte');
+}
+
+function majChampsType() {
+  $('blocClient').style.display = $('fType').value === 'pret_client' ? '' : 'none';
+}
+function majAvertissement() {
+  const v = vehicules.find(x => x.id === $('fVehicule').value);
+  const a = $('avertExceptionnel');
+  if (v && v.pret_exceptionnel) {
+    a.textContent = `${v.nom} n'est prêté qu'exceptionnellement. Assurez-vous d'avoir l'accord avant de valider.`;
+    a.classList.add('visible');
+  } else {
+    a.classList.remove('visible');
+  }
+}
+
+$('fType').addEventListener('change', majChampsType);
+$('fVehicule').addEventListener('change', majAvertissement);
+
+$('formResa').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('erreurResa');
+  err.classList.remove('visible');
+
+  const debut = new Date($('fDebut').value);
+  const fin   = new Date($('fFin').value);
+  if (!(fin > debut)) {
+    err.textContent = "Le retour doit être après le départ.";
+    err.classList.add('visible'); return;
+  }
+
+  const type = $('fType').value;
+  if (type === 'pret_client' && !$('fClientNom').value.trim()) {
+    err.textContent = "Indiquez le nom du client : c'est ce qui permet de savoir qui a le camion.";
+    err.classList.add('visible'); return;
+  }
+
+  const monNom = currentProfile ? currentProfile.prenom + ' ' + currentProfile.nom : '';
+  const ligne = {
+    vehicule_id: $('fVehicule').value,
+    type,
+    debut: debut.toISOString(),
+    fin: fin.toISOString(),
+    employee_id: currentUser.id,
+    employee_name: monNom,
+    client_nom: type === 'pret_client' ? $('fClientNom').value.trim() : null,
+    client_tel: type === 'pret_client' ? $('fClientTel').value.trim() : null,
+    motif: $('fMotif').value.trim() || null,
+    cree_par: monNom
+  };
+
+  $('btnEnregistrer').disabled = true;
+  const { error } = await db.from('reservations_vehicules').insert(ligne);
+  $('btnEnregistrer').disabled = false;
+
+  if (error) {
+    /* 23P01 : la contrainte d exclusion a refuse un chevauchement. C'est
+       exactement le cas « le camion etait deja pris ». */
+    const chevauche = error.code === '23P01' || /exclu|overlap/i.test(error.message || '');
+    err.textContent = chevauche
+      ? 'Ce camion est déjà réservé sur ce créneau. Choisissez un autre horaire ou l\'autre camion.'
+      : 'Enregistrement impossible : ' + error.message;
+    err.classList.add('visible');
+    return;
+  }
+
+  $('fenetreResa').classList.remove('ouverte');
+  toast('Réservation enregistrée');
+  afficherJour();
+});
+
+$('btnFermerResa').addEventListener('click', () => $('fenetreResa').classList.remove('ouverte'));
+
+/* ===== Detail ===== */
+async function ouvrirDetail(id) {
+  const { data } = await db.from('reservations_vehicules').select('*').eq('id', id).single();
+  if (!data) return;
+  resaCourante = data;
+
+  const v = vehicules.find(x => x.id === data.vehicule_id);
+  const d = new Date(data.debut), f = new Date(data.fin);
+  const fmt = x => x.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })
+                 + ' à ' + hhmm(x);
+
+  $('titreDetail').textContent = v ? v.nom : 'Réservation';
+  $('corpsDetail').innerHTML = `
+    <div class="detail-ligne"><span>Nature</span><span>${LIBELLE_TYPE[data.type]}</span></div>
+    <div class="detail-ligne"><span>Départ</span><span>${fmt(d)}</span></div>
+    <div class="detail-ligne"><span>Retour prévu</span><span>${fmt(f)}</span></div>
+    ${data.client_nom ? `<div class="detail-ligne"><span>Client</span><span>${data.client_nom}</span></div>` : ''}
+    ${data.client_tel ? `<div class="detail-ligne"><span>Téléphone</span><span><a href="tel:${data.client_tel}" style="color:var(--or);">${data.client_tel}</a></span></div>` : ''}
+    ${data.employee_name ? `<div class="detail-ligne"><span>Responsable</span><span>${data.employee_name}</span></div>` : ''}
+    ${data.motif ? `<div class="detail-ligne"><span>Motif</span><span>${data.motif}</span></div>` : ''}
+    <div class="detail-ligne"><span>Rendu</span><span>${
+      data.rendu ? 'Oui, le ' + fmt(new Date(data.rendu_le)) : 'Pas encore'
+    }</span></div>`;
+
+  const peutModifier = data.employee_id === currentUser.id
+    || (currentProfile && ['Dirigeant de la société', 'Responsable magasin'].includes(currentProfile.poste));
+
+  $('actionsDetail').innerHTML = `
+    ${!data.rendu && peutModifier ? '<button class="btn-primary" id="btnRendu">Marquer rendu</button>' : ''}
+    ${peutModifier ? '<button class="btn-danger" id="btnSupprimer">Supprimer</button>' : ''}
+    <button class="btn-neutre" id="btnFermerDetail">Fermer</button>`;
+
+  $('btnFermerDetail').addEventListener('click', () => $('fenetreDetail').classList.remove('ouverte'));
+  const br = $('btnRendu');
+  if (br) br.addEventListener('click', async () => {
+    const { error } = await db.from('reservations_vehicules')
+      .update({ rendu: true, rendu_le: new Date().toISOString() }).eq('id', data.id);
+    if (error) { toast('Impossible : ' + error.message, true); return; }
+    $('fenetreDetail').classList.remove('ouverte');
+    toast('Camion marqué comme rendu');
+    afficherJour();
+  });
+  const bs = $('btnSupprimer');
+  if (bs) bs.addEventListener('click', async () => {
+    if (!confirm('Supprimer cette réservation ?')) return;
+    const { error } = await db.from('reservations_vehicules').delete().eq('id', data.id);
+    if (error) { toast('Impossible : ' + error.message, true); return; }
+    $('fenetreDetail').classList.remove('ouverte');
+    toast('Réservation supprimée');
+    afficherJour();
+  });
+
+  $('fenetreDetail').classList.add('ouverte');
+}
+
+/* ===== Navigation ===== */
+function decaler(n) { jour.setDate(jour.getDate() + n); afficherJour(); }
+$('btnPrec').addEventListener('click', () => decaler(-1));
+$('btnSuiv').addEventListener('click', () => decaler(1));
+$('btnAujourdhui').addEventListener('click', () => { jour = new Date(); afficherJour(); });
+$('selecteurDate').addEventListener('change', e => {
+  if (!e.target.value) return;
+  const [a, m, j] = e.target.value.split('-').map(Number);
+  jour = new Date(a, m - 1, j);
+  afficherJour();
+});
+
+document.querySelectorAll('.fenetre').forEach(f => {
+  f.addEventListener('click', e => { if (e.target === f) f.classList.remove('ouverte'); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.fenetre.ouverte')
+    .forEach(f => f.classList.remove('ouverte'));
+});
+
+$('logoutBtn').addEventListener('click', async () => {
+  await db.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+init();
+</script>
+</body>
+</html>
