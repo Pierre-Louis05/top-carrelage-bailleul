@@ -10,6 +10,12 @@
   <link rel="stylesheet" href="../fonts/polices-equipe.css" />
   <link rel="stylesheet" href="app.css" />
   <style>
+    /* Sans min-width:0 la colonne flex refuse de retrecir : le tableau
+       poussait la page au lieu de defiler dans son cadre sur telephone. */
+    .main-content { min-width:0; }
+    .page-content { min-width:0; max-width:100%; }
+    .agenda-cadre { max-width:100%; }
+
     /* ===== Panneau d'installation ===== */
     .installation {
       display:none; background:var(--surface); border:1px solid rgba(245,158,11,0.4);
@@ -258,6 +264,7 @@
       <a href="consommables.html" class="sidebar-link"><span>🧱</span> Stock consommables</a>
       <div class="sidebar-section">Équipe</div>
       <a href="planning.html" class="sidebar-link active"><span>🗓️</span> Planning</a>
+      <a href="horaires.html" class="sidebar-link"><span>⏰</span> Emploi du temps</a>
       <a href="pointage.html" class="sidebar-link"><span>🕐</span> Mon pointage</a>
       <a href="conges.html" class="sidebar-link"><span>🏖️</span> Mes congés</a>
       <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>

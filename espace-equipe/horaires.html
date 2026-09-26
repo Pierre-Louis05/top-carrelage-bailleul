@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emploi du temps · Espace Équipe Top Carrelage</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../fonts/polices-equipe.css" />
+  <link rel="stylesheet" href="app.css" />
+  <style>
+    /* Sans min-width:0 la colonne flex refuse de retrecir : le tableau
+       poussait la page au lieu de defiler dans son cadre sur telephone. */
+    .main-content { min-width:0; }
+    .page-content { min-width:0; max-width:100%; }
+    .cadre { max-width:100%; }
+
+    .installation { display:none; background:var(--surface);
+      border:1px solid rgba(245,158,11,0.4); border-left:4px solid #f59e0b;
+      border-radius:var(--radius); padding:1.6rem; }
+    .installation.visible { display:block; }
+    .installation h2 { font-family:var(--font-titre); font-size:1.2rem; margin-bottom:0.6rem; }
+    .installation p { font-size:0.9rem; color:var(--text-muted); margin-bottom:0.9rem; }
+    .installation ol { margin:0 0 1.1rem 1.1rem; font-size:0.9rem; }
+    .installation li { margin-bottom:0.45rem; }
+    .installation .boutons { display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; }
+    .installation code { background:var(--surface2); padding:0.1rem 0.35rem; border-radius:3px; }
+
+    .barre { display:flex; align-items:center; gap:0.7rem; flex-wrap:wrap; margin-bottom:1rem; }
+    .jour-btn { background:var(--surface2); border:1px solid var(--border); color:var(--text);
+      border-radius:var(--radius); padding:0.45rem 0.7rem; font-size:0.85rem;
+      transition:var(--transition); }
+    .jour-btn:hover { border-color:var(--or); color:var(--or); }
+    .semaine-titre { font-family:var(--font-titre); font-size:1.1rem; }
+    .semaine-titre .encours { color:var(--or); font-size:0.66rem; letter-spacing:0.12em;
+      text-transform:uppercase; display:block; font-family:var(--font); }
+
+    .lecture-seule { background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.35);
+      color:#93c5fd; border-radius:var(--radius); padding:0.6rem 0.9rem;
+      font-size:0.82rem; margin-bottom:1rem; }
+
+    /* ===== Tableau ===== */
+    .cadre { background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); overflow-x:auto; }
+    table.edt { width:100%; border-collapse:collapse; min-width:720px; }
+    .edt th, .edt td { border-bottom:1px solid var(--border); padding:0; }
+    .edt thead th { background:var(--surface2); padding:0.6rem 0.5rem; font-size:0.76rem;
+      text-transform:capitalize; position:sticky; top:0; z-index:2; }
+    .edt thead th .num { display:block; font-size:0.68rem; color:var(--text-muted);
+      text-transform:none; font-weight:400; }
+    .edt thead th.aujourdhui { color:var(--or); }
+    .edt thead th.ferme { color:var(--text-muted); }
+    .edt th.nom { text-align:left; padding-left:0.9rem; min-width:132px;
+      position:sticky; left:0; z-index:3; background:var(--surface2); }
+    .edt td.nom { text-align:left; padding:0.55rem 0.9rem; font-size:0.85rem; font-weight:600;
+      position:sticky; left:0; background:var(--surface); z-index:1; border-right:1px solid var(--border); }
+    .edt td.nom small { display:block; font-weight:400; font-size:0.7rem; color:var(--text-muted); }
+
+    .case { width:100%; min-height:52px; border:none; background:none; color:var(--text);
+      padding:0.45rem 0.35rem; font-size:0.75rem; line-height:1.3; text-align:center;
+      cursor:pointer; transition:var(--transition); display:block; }
+    .case:hover { background:rgba(201,168,76,0.12); }
+    .case.vide { color:var(--text-muted); }
+    .case.vide::after { content:'+'; font-size:1rem; opacity:0.4; }
+    .case b { display:block; font-size:0.78rem; }
+    .case small { color:rgba(255,255,255,0.55); font-size:0.68rem; }
+    .case.journee    { background:rgba(16,185,129,0.16);  box-shadow:inset 3px 0 0 #10b981; }
+    .case.matin      { background:rgba(59,130,246,0.16);  box-shadow:inset 3px 0 0 #3b82f6; }
+    .case.apres_midi { background:rgba(245,166,42,0.16);  box-shadow:inset 3px 0 0 #F5A62A; }
+    .case.perso      { background:rgba(168,85,247,0.16);  box-shadow:inset 3px 0 0 #a855f7; }
+    .case.formation  { background:rgba(139,92,246,0.14);  box-shadow:inset 3px 0 0 #8b5cf6; }
+    .case.repos      { background:rgba(255,255,255,0.03); color:var(--text-muted); }
+    .case.conge      { background:repeating-linear-gradient(45deg,
+      rgba(245,158,11,0.16) 0 7px, rgba(245,158,11,0.06) 7px 14px);
+      box-shadow:inset 3px 0 0 #f59e0b; cursor:not-allowed; }
+    .edt td.ferme { background:rgba(0,0,0,0.25); }
+    .edt td.ferme .case { cursor:default; }
+    .edt td.ferme .case:hover { background:none; }
+    .edt td.ferme .case.vide::after { content:''; }
+
+    .total { font-family:var(--font-titre); font-size:0.92rem; text-align:center; }
+    .total small { display:block; font-family:var(--font); font-size:0.66rem;
+      color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; }
+
+    .edt tfoot td { background:var(--surface2); padding:0.5rem 0.4rem; text-align:center;
+      font-size:0.72rem; }
+    .edt tfoot td.nom { text-align:left; font-size:0.74rem; text-transform:uppercase;
+      letter-spacing:0.07em; color:var(--text-muted); }
+    .couverture { display:flex; flex-direction:column; gap:0.15rem; align-items:center; }
+    .couverture span { white-space:nowrap; }
+    .couverture .ok    { color:var(--confirme); }
+    .couverture .seul  { color:#fcd34d; }
+    .couverture .trou  { color:#fca5a5; font-weight:700; }
+
+    .legende { display:flex; gap:0.9rem 1.3rem; flex-wrap:wrap; font-size:0.75rem;
+      color:var(--text-muted); align-items:center; margin:0.9rem 0 0; }
+    .legende span { display:inline-flex; align-items:center; gap:0.35rem; }
+    .pastille { width:11px; height:11px; border-radius:3px; flex-shrink:0; display:inline-block; }
+
+    /* ===== Fenêtre ===== */
+    .fenetre { position:fixed; inset:0; background:rgba(0,0,0,0.72); z-index:100;
+      display:none; align-items:center; justify-content:center; padding:1rem; }
+    .fenetre.ouverte { display:flex; }
+    .fenetre-boite { background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); width:100%; max-width:420px; max-height:92vh;
+      overflow-y:auto; padding:1.6rem; }
+    .fenetre-boite h3 { font-family:var(--font-titre); font-size:1.15rem; margin-bottom:0.3rem; }
+    .fenetre-boite .sous { font-size:0.8rem; color:var(--text-muted); margin-bottom:1.1rem; }
+    .choix { display:grid; grid-template-columns:1fr 1fr; gap:0.55rem; margin-bottom:1rem; }
+    .choix button { background:var(--surface2); border:1px solid var(--border);
+      color:var(--text); border-radius:var(--radius); padding:0.7rem 0.5rem;
+      font-size:0.82rem; text-align:left; transition:var(--transition); }
+    .choix button:hover { border-color:var(--or); }
+    .choix button.actif { border-color:var(--or); background:rgba(201,168,76,0.12); }
+    .choix button small { display:block; color:var(--text-muted); font-size:0.68rem; margin-top:0.1rem; }
+    .champ { margin-bottom:0.85rem; }
+    .champ label { display:block; font-size:0.72rem; text-transform:uppercase;
+      letter-spacing:0.08em; color:var(--text-muted); margin-bottom:0.28rem; }
+    .champ input { width:100%; background:var(--surface2); border:1px solid var(--border);
+      color:var(--text); border-radius:var(--radius); padding:0.55rem 0.7rem; font-size:0.88rem; }
+    .champ input:focus { outline:none; border-color:var(--or); }
+    .champ-duo { display:grid; grid-template-columns:1fr 1fr; gap:0.7rem; }
+    .fenetre-actions { display:flex; gap:0.6rem; margin-top:1.2rem; flex-wrap:wrap; }
+    .fenetre-actions .btn-primary { flex:1; width:auto; min-width:120px; }
+    .btn-neutre { background:var(--surface2); border:1px solid var(--border); color:var(--text);
+      border-radius:var(--radius); padding:0.6rem 1rem; font-size:0.85rem; }
+    .btn-danger { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4);
+      color:#fca5a5; border-radius:var(--radius); padding:0.6rem 1rem; font-size:0.85rem; }
+    .encart { border-radius:var(--radius); padding:0.6rem 0.8rem; font-size:0.79rem;
+      margin-bottom:0.85rem; display:none; }
+    .encart.visible { display:block; }
+    .encart.erreur { background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.4);
+      color:#fca5a5; }
+
+    @media (max-width: 640px) {
+      .choix { grid-template-columns:1fr; }
+      .semaine-titre { font-size:0.95rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Top Carrelage</div>
+      <span class="sidebar-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">Chargement…</div>
+        <div class="sidebar-user-role" id="sidebarRole"></div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">Demandes RDV</div>
+      <a href="dashboard.html" class="sidebar-link"><span>📅</span> Tableau de bord</a>
+      <div class="sidebar-section">Site web</div>
+      <a href="messages.html" class="sidebar-link"><span>💬</span> Messages de contact</a>
+      <a href="temoignages.html" class="sidebar-link"><span>⭐</span> Témoignages</a>
+      <div class="sidebar-section">Dépôt</div>
+      <a href="consommables.html" class="sidebar-link"><span>🧱</span> Stock consommables</a>
+      <div class="sidebar-section">Équipe</div>
+      <a href="planning.html" class="sidebar-link"><span>🗓️</span> Planning</a>
+      <a href="horaires.html" class="sidebar-link active"><span>⏰</span> Emploi du temps</a>
+      <a href="pointage.html" class="sidebar-link"><span>🕐</span> Mon pointage</a>
+      <a href="conges.html" class="sidebar-link"><span>🏖️</span> Mes congés</a>
+      <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span>👥</span> Présence équipe</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">Emploi du temps</div>
+      <div class="topbar-actions">
+        <span style="font-size:0.78rem; color:var(--text-muted);" id="lastRefresh"></span>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <div class="installation" id="installation">
+        <h2>L'emploi du temps n'est pas encore installé</h2>
+        <p>Les tables n'existent pas encore dans la base. C'est une opération à faire
+           une seule fois, elle prend une minute.</p>
+        <ol>
+          <li>Cliquez sur <b>Copier le script SQL</b>.</li>
+          <li>Ouvrez Supabase, menu <code>SQL Editor</code>, puis <code>New query</code>.</li>
+          <li>Collez le script et cliquez sur <code>Run</code>.</li>
+          <li>Revenez ici et rechargez la page.</li>
+        </ol>
+        <div class="boutons">
+          <button class="btn-primary" id="btnCopierSql" style="width:auto;">Copier le script SQL</button>
+          <a class="btn-neutre" href="https://supabase.com/dashboard/project/hzploaweyewjyxdhpmvo/sql/new"
+             target="_blank" rel="noopener">Ouvrir Supabase</a>
+          <a class="btn-neutre" href="../sql/horaires_setup.sql" target="_blank" rel="noopener">Voir le script</a>
+        </div>
+      </div>
+
+      <div id="zone" style="display:none;">
+
+        <div class="lecture-seule" id="lectureSeule" style="display:none;">
+          Vous consultez l'emploi du temps de l'équipe. Seuls le dirigeant et le responsable
+          magasin peuvent le modifier.
+        </div>
+
+        <div class="barre">
+          <button class="jour-btn" id="btnPrec">◀ Semaine précédente</button>
+          <button class="jour-btn" id="btnCourante">Cette semaine</button>
+          <button class="jour-btn" id="btnSuiv">Semaine suivante ▶</button>
+          <div class="semaine-titre" id="titreSemaine">…</div>
+        </div>
+
+        <div class="barre" id="outilsResponsable" style="display:none;">
+          <button class="btn-primary" id="btnCopier" style="width:auto; padding:0.5rem 1rem; font-size:0.82rem;">
+            Reprendre la semaine précédente
+          </button>
+          <button class="jour-btn" id="btnAppliquerModele">Appliquer la semaine type</button>
+          <button class="jour-btn" id="btnEnregistrerModele">Enregistrer comme semaine type</button>
+          <button class="jour-btn" id="btnVider">Vider la semaine</button>
+        </div>
+
+        <div class="cadre">
+          <table class="edt" id="tableau">
+            <tbody><tr><td style="padding:3rem; text-align:center;">
+              <div class="loading"><div class="spinner"></div> Chargement…</div>
+            </td></tr></tbody>
+          </table>
+        </div>
+
+        <div class="legende">
+          <span><i class="pastille" style="background:#10b981"></i> Journée</span>
+          <span><i class="pastille" style="background:#3b82f6"></i> Matin</span>
+          <span><i class="pastille" style="background:#F5A62A"></i> Après-midi</span>
+          <span><i class="pastille" style="background:#a855f7"></i> Horaire sur mesure</span>
+          <span><i class="pastille" style="background:#8b5cf6"></i> Formation</span>
+          <span><i class="pastille" style="background:#f59e0b"></i> Congé validé</span>
+          <span><i class="pastille" style="background:#3a3a3a"></i> Repos</span>
+        </div>
+
+        <p style="margin-top:0.9rem; font-size:0.78rem; color:var(--text-muted);">
+          La ligne du bas indique la couverture du magasin, matin et après-midi. Elle passe
+          en rouge si personne n'est prévu sur une plage d'ouverture. Les congés validés
+          se placent tout seuls et ne peuvent pas être écrasés.
+        </p>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fenetre" id="fenetre">
+  <div class="fenetre-boite">
+    <h3 id="titreFenetre">Horaire</h3>
+    <div class="sous" id="sousFenetre"></div>
+    <div class="encart erreur" id="erreur"></div>
+
+    <div class="choix" id="choix"></div>
+
+    <div id="blocPerso" style="display:none;">
+      <div class="champ-duo">
+        <div class="champ">
+          <label for="fDebut">De</label>
+          <input type="time" id="fDebut" value="09:00" />
+        </div>
+        <div class="champ">
+          <label for="fFin">À</label>
+          <input type="time" id="fFin" value="17:00" />
+        </div>
+      </div>
+    </div>
+
+    <div class="champ">
+      <label for="fNote">Note</label>
+      <input type="text" id="fNote" placeholder="Ouverture, livraison le matin, formation…" />
+    </div>
+
+    <div class="fenetre-actions">
+      <button class="btn-primary" id="btnValider">Enregistrer</button>
+      <button class="btn-danger" id="btnEffacer">Effacer</button>
+      <button class="btn-neutre" id="btnFermer">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* Horaires reels du magasin. Indice 1 = lundi, 6 = samedi.
+   Le magasin n'ouvre pas le lundi matin, et ferme entre midi et 14h. */
+const OUVERTURE = {
+  1: { matin: null,          apres_midi: [14, 18.5] },
+  2: { matin: [9, 12],       apres_midi: [14, 18.5] },
+  3: { matin: [9, 12],       apres_midi: [14, 18.5] },
+  4: { matin: [9, 12],       apres_midi: [14, 18.5] },
+  5: { matin: [9, 12],       apres_midi: [14, 18.5] },
+  6: { matin: [9, 12],       apres_midi: [14, 18.5] }
+};
+
+const CRENEAUX = {
+  journee:    { label: 'Journée',     detail: 'Matin et après-midi', couleur: '#10b981' },
+  matin:      { label: 'Matin',       detail: '9h - 12h',            couleur: '#3b82f6' },
+  apres_midi: { label: 'Après-midi',  detail: '14h - 18h30',         couleur: '#F5A62A' },
+  perso:      { label: 'Sur mesure',  detail: 'Horaires précis',     couleur: '#a855f7' },
+  formation:  { label: 'Formation',   detail: 'Semaine d\'école',    couleur: '#8b5cf6' },
+  repos:      { label: 'Repos',       detail: 'Jour non travaillé',  couleur: '#3a3a3a' }
+};
+
+let currentUser = null, currentProfile = null, responsable = false;
+let lundi = lundiDe(new Date());
+let equipe = [], horaires = [], conges = [], modele = [];
+let celluleCourante = null, choixCourant = null;
+
+const $ = id => document.getElementById(id);
+
+/* ===== Dates ===== */
+function dateISO(d) {
+  const p = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+function lundiDe(d) {
+  const x = new Date(d);
+  x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+function jourDe(i) { const d = new Date(lundi); d.setDate(d.getDate() + i); return d; }
+function echappe(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g,
+    c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+function toast(msg, erreur) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.style.borderColor = erreur ? 'rgba(239,68,68,0.5)' : 'var(--or)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3400);
+}
+function heuresTexte(h) {
+  const ent = Math.floor(h), min = Math.round((h - ent) * 60);
+  return ent + 'h' + (min ? String(min).padStart(2, '0') : '');
+}
+
+/* Duree d'un creneau selon le jour : le lundi matin le magasin est ferme,
+   une « journee » ne vaut donc que l'apres-midi. */
+function dureeCreneau(creneau, jourSemaine, ligne) {
+  const o = OUVERTURE[jourSemaine];
+  if (!o) return 0;
+  const m = o.matin ? o.matin[1] - o.matin[0] : 0;
+  const a = o.apres_midi ? o.apres_midi[1] - o.apres_midi[0] : 0;
+  if (creneau === 'journee') return m + a;
+  if (creneau === 'matin') return m;
+  if (creneau === 'apres_midi') return a;
+  if (creneau === 'perso' && ligne && ligne.debut && ligne.fin) {
+    const [h1, m1] = ligne.debut.split(':').map(Number);
+    const [h2, m2] = ligne.fin.split(':').map(Number);
+    return Math.max(0, (h2 + m2 / 60) - (h1 + m1 / 60));
+  }
+  return 0;
+}
+function couvre(creneau, moment) {
+  if (creneau === 'journee') return true;
+  if (creneau === 'perso') return true;
+  return creneau === moment;
+}
+
+/* ===== Demarrage ===== */
+async function init() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
+  currentUser = session.user;
+
+  const { data: profile } = await db.from('employee_profiles')
+    .select('*').eq('id', currentUser.id).single();
+  if (profile) {
+    currentProfile = profile;
+    $('sidebarName').textContent = profile.prenom + ' ' + profile.nom;
+    $('sidebarRole').textContent = profile.poste;
+    $('sidebarAvatar').textContent = (profile.prenom[0] || '') + (profile.nom[0] || '');
+    responsable = ['Dirigeant de la société', 'Responsable magasin'].includes(profile.poste);
+    if (responsable) $('lienPresenceEquipe').style.display = '';
+  }
+
+  const { data: profils } = await db.from('employee_profiles')
+    .select('id, prenom, nom, poste').order('nom');
+  equipe = profils || [];
+
+  const essai = await db.from('horaires').select('id').limit(1);
+  if (essai.error) { $('installation').classList.add('visible'); return; }
+
+  $('zone').style.display = '';
+  $('outilsResponsable').style.display = responsable ? '' : 'none';
+  $('lectureSeule').style.display = responsable ? 'none' : '';
+
+  await charger();
+}
+
+$('btnCopierSql').addEventListener('click', async () => {
+  try {
+    const sql = await fetch('../sql/horaires_setup.sql').then(r => r.text());
+    await navigator.clipboard.writeText(sql);
+    toast('Script copié. Collez-le dans Supabase, SQL Editor.');
+  } catch (e) {
+    window.open('../sql/horaires_setup.sql', '_blank');
+    toast('Copie impossible, le script s\'ouvre dans un onglet.', true);
+  }
+});
+
+/* ===== Chargement d'une semaine ===== */
+async function charger() {
+  const debut = dateISO(lundi), fin = dateISO(jourDe(6));
+
+  const [h, c, m] = await Promise.all([
+    db.from('horaires').select('*').gte('date', debut).lte('date', fin),
+    db.from('conges').select('*').eq('status', 'approuve')
+      .lte('date_debut', fin).gte('date_fin', debut),
+    db.from('horaires_modele').select('*')
+  ]);
+  horaires = h.data || [];
+  conges = c.data || [];
+  modele = m.data || [];
+
+  dessiner();
+  $('lastRefresh').textContent = 'Mis à jour à ' +
+    new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+}
+
+function congeDe(employeeName, iso) {
+  return conges.find(c => c.employee_name === employeeName
+    && c.date_debut <= iso && c.date_fin >= iso);
+}
+function horaireDe(employeeId, iso) {
+  return horaires.find(x => x.employee_id === employeeId && x.date === iso);
+}
+
+/* ===== Dessin ===== */
+function dessiner() {
+  const aujourdhui = dateISO(new Date());
+  const semaineCourante = dateISO(lundiDe(new Date())) === dateISO(lundi);
+  const fmt = d => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+  $('titreSemaine').innerHTML = (semaineCourante ? '<span class="encours">Semaine en cours</span>' : '')
+    + 'Du ' + fmt(lundi) + ' au ' + fmt(jourDe(5));
+
+  let html = '<thead><tr><th class="nom">Collaborateur</th>';
+  for (let i = 0; i < 6; i++) {
+    const d = jourDe(i), iso = dateISO(d);
+    html += `<th class="${iso === aujourdhui ? 'aujourdhui' : ''}">
+      ${d.toLocaleDateString('fr-FR', { weekday: 'long' })}
+      <span class="num">${d.getDate()}/${String(d.getMonth() + 1).padStart(2, '0')}</span></th>`;
+  }
+  html += '<th>Total</th></tr></thead><tbody>';
+
+  equipe.forEach(p => {
+    const nom = p.prenom + ' ' + p.nom;
+    let total = 0;
+    html += `<tr><td class="nom">${echappe(p.prenom)} ${echappe(p.nom[0])}.
+      <small>${echappe(p.poste || '')}</small></td>`;
+
+    for (let i = 0; i < 6; i++) {
+      const d = jourDe(i), iso = dateISO(d), js = i + 1;
+      const cg = congeDe(nom, iso);
+      const hr = horaireDe(p.id, iso);
+
+      if (cg) {
+        html += `<td><div class="case conge"><b>Congé</b><small>${echappe(cg.type || '')}</small></div></td>`;
+        continue;
+      }
+      if (!hr) {
+        html += `<td><button class="case vide" data-cell="${p.id}|${iso}|${js}"></button></td>`;
+        continue;
+      }
+      const c = CRENEAUX[hr.creneau] || CRENEAUX.repos;
+      total += dureeCreneau(hr.creneau, js, hr);
+      const detail = hr.creneau === 'perso' && hr.debut && hr.fin
+        ? hr.debut.slice(0, 5) + ' - ' + hr.fin.slice(0, 5)
+        : (hr.note || c.detail);
+      html += `<td><button class="case ${hr.creneau}" data-cell="${p.id}|${iso}|${js}">
+        <b>${echappe(c.label)}</b><small>${echappe(detail)}</small></button></td>`;
+    }
+    html += `<td class="total">${heuresTexte(total)}<small>semaine</small></td></tr>`;
+  });
+
+  html += '</tbody><tfoot><tr><td class="nom">Couverture magasin</td>';
+  for (let i = 0; i < 6; i++) {
+    const iso = dateISO(jourDe(i)), js = i + 1, o = OUVERTURE[js];
+    const presents = moment => equipe.filter(p => {
+      if (congeDe(p.prenom + ' ' + p.nom, iso)) return false;
+      const hr = horaireDe(p.id, iso);
+      return hr && couvre(hr.creneau, moment);
+    }).length;
+
+    const ligne = [];
+    [['matin', 'Matin'], ['apres_midi', 'Après-midi']].forEach(([cle, lib]) => {
+      if (!o[cle]) { ligne.push(`<span style="color:var(--text-muted);">${lib} fermé</span>`); return; }
+      const n = presents(cle);
+      const cls = n === 0 ? 'trou' : (n === 1 ? 'seul' : 'ok');
+      ligne.push(`<span class="${cls}">${lib} : ${n === 0 ? 'personne' : n}</span>`);
+    });
+    html += `<td><div class="couverture">${ligne.join('')}</div></td>`;
+  }
+  html += '<td></td></tr></tfoot>';
+
+  $('tableau').innerHTML = html;
+
+  if (responsable) {
+    $('tableau').querySelectorAll('[data-cell]').forEach(b =>
+      b.addEventListener('click', () => ouvrir(b.dataset.cell)));
+  } else {
+    $('tableau').querySelectorAll('.case').forEach(b => { b.style.cursor = 'default'; });
+  }
+}
+
+/* ===== Fenêtre ===== */
+function ouvrir(cle) {
+  const [employeeId, iso, js] = cle.split('|');
+  const p = equipe.find(x => x.id === employeeId);
+  if (!p) return;
+  const d = new Date(iso + 'T12:00:00');
+  celluleCourante = { employeeId, iso, js: Number(js), nom: p.prenom + ' ' + p.nom };
+
+  $('titreFenetre').textContent = p.prenom + ' ' + p.nom;
+  $('sousFenetre').textContent = d.toLocaleDateString('fr-FR',
+    { weekday: 'long', day: 'numeric', month: 'long' });
+  $('erreur').classList.remove('visible');
+
+  const existant = horaireDe(employeeId, iso);
+  choixCourant = existant ? existant.creneau : null;
+  $('fNote').value = existant ? (existant.note || '') : '';
+  $('fDebut').value = existant && existant.debut ? existant.debut.slice(0, 5) : '09:00';
+  $('fFin').value   = existant && existant.fin   ? existant.fin.slice(0, 5)   : '17:00';
+
+  const o = OUVERTURE[Number(js)];
+  $('choix').innerHTML = Object.entries(CRENEAUX).map(([k, c]) => {
+    /* Le lundi matin le magasin est ferme : proposer « Matin » n'aurait pas de sens. */
+    if (k === 'matin' && !o.matin) return '';
+    return `<button data-creneau="${k}" class="${k === choixCourant ? 'actif' : ''}">
+      ${echappe(c.label)}<small>${echappe(c.detail)}</small></button>`;
+  }).join('');
+
+  $('choix').querySelectorAll('[data-creneau]').forEach(b =>
+    b.addEventListener('click', () => {
+      choixCourant = b.dataset.creneau;
+      $('choix').querySelectorAll('button').forEach(x => x.classList.remove('actif'));
+      b.classList.add('actif');
+      $('blocPerso').style.display = choixCourant === 'perso' ? '' : 'none';
+    }));
+  $('blocPerso').style.display = choixCourant === 'perso' ? '' : 'none';
+  $('btnEffacer').style.display = existant ? '' : 'none';
+  $('fenetre').classList.add('ouverte');
+}
+
+$('btnValider').addEventListener('click', async () => {
+  if (!celluleCourante) return;
+  if (!choixCourant) {
+    $('erreur').textContent = 'Choisissez un créneau.';
+    $('erreur').classList.add('visible'); return;
+  }
+  const ligne = {
+    employee_id: celluleCourante.employeeId,
+    employee_name: celluleCourante.nom,
+    date: celluleCourante.iso,
+    creneau: choixCourant,
+    debut: choixCourant === 'perso' ? $('fDebut').value : null,
+    fin:   choixCourant === 'perso' ? $('fFin').value   : null,
+    note: $('fNote').value.trim() || null,
+    maj_par: currentProfile ? currentProfile.prenom + ' ' + currentProfile.nom : null
+  };
+  if (choixCourant === 'perso' && !(ligne.fin > ligne.debut)) {
+    $('erreur').textContent = 'L\'heure de fin doit être après celle de début.';
+    $('erreur').classList.add('visible'); return;
+  }
+
+  const { error } = await db.from('horaires')
+    .upsert(ligne, { onConflict: 'employee_id,date' });
+  if (error) {
+    $('erreur').textContent = 'Enregistrement impossible : ' + error.message;
+    $('erreur').classList.add('visible'); return;
+  }
+  $('fenetre').classList.remove('ouverte');
+  toast('Horaire enregistré');
+  charger();
+});
+
+$('btnEffacer').addEventListener('click', async () => {
+  if (!celluleCourante) return;
+  const { error } = await db.from('horaires').delete()
+    .eq('employee_id', celluleCourante.employeeId).eq('date', celluleCourante.iso);
+  if (error) { toast('Impossible : ' + error.message, true); return; }
+  $('fenetre').classList.remove('ouverte');
+  toast('Case vidée');
+  charger();
+});
+
+$('btnFermer').addEventListener('click', () => $('fenetre').classList.remove('ouverte'));
+
+/* ===== Outils du responsable ===== */
+$('btnCopier').addEventListener('click', async () => {
+  const precedent = new Date(lundi); precedent.setDate(precedent.getDate() - 7);
+  const finPrec = new Date(precedent); finPrec.setDate(finPrec.getDate() + 5);
+
+  const { data } = await db.from('horaires').select('*')
+    .gte('date', dateISO(precedent)).lte('date', dateISO(finPrec));
+  if (!data || !data.length) { toast('La semaine précédente est vide', true); return; }
+  if (!confirm(`Reprendre les ${data.length} horaires de la semaine précédente ? `
+             + `Les cases déjà remplies de cette semaine seront remplacées.`)) return;
+
+  const lignes = data.map(h => {
+    const d = new Date(h.date + 'T12:00:00'); d.setDate(d.getDate() + 7);
+    return {
+      employee_id: h.employee_id, employee_name: h.employee_name, date: dateISO(d),
+      creneau: h.creneau, debut: h.debut, fin: h.fin, note: h.note,
+      maj_par: currentProfile ? currentProfile.prenom + ' ' + currentProfile.nom : null
+    };
+  });
+  const { error } = await db.from('horaires').upsert(lignes, { onConflict: 'employee_id,date' });
+  if (error) { toast('Impossible : ' + error.message, true); return; }
+  toast(lignes.length + ' horaires repris');
+  charger();
+});
+
+$('btnEnregistrerModele').addEventListener('click', async () => {
+  if (!horaires.length) { toast('Remplissez d\'abord la semaine', true); return; }
+  if (!confirm('Enregistrer cette semaine comme semaine type ? Elle remplacera la précédente.')) return;
+
+  await db.from('horaires_modele').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  const lignes = horaires.map(h => ({
+    employee_id: h.employee_id, employee_name: h.employee_name,
+    jour_semaine: ((new Date(h.date + 'T12:00:00').getDay() + 6) % 7) + 1,
+    creneau: h.creneau, debut: h.debut, fin: h.fin
+  })).filter(l => l.jour_semaine <= 6);
+
+  const { error } = await db.from('horaires_modele').upsert(lignes, { onConflict: 'employee_id,jour_semaine' });
+  if (error) { toast('Impossible : ' + error.message, true); return; }
+  toast('Semaine type enregistrée');
+  charger();
+});
+
+$('btnAppliquerModele').addEventListener('click', async () => {
+  if (!modele.length) { toast('Aucune semaine type enregistrée', true); return; }
+  if (!confirm(`Appliquer la semaine type à cette semaine ? `
+             + `Les cases déjà remplies seront remplacées.`)) return;
+
+  const lignes = modele.map(m => ({
+    employee_id: m.employee_id, employee_name: m.employee_name,
+    date: dateISO(jourDe(m.jour_semaine - 1)),
+    creneau: m.creneau, debut: m.debut, fin: m.fin,
+    maj_par: currentProfile ? currentProfile.prenom + ' ' + currentProfile.nom : null
+  }));
+  const { error } = await db.from('horaires').upsert(lignes, { onConflict: 'employee_id,date' });
+  if (error) { toast('Impossible : ' + error.message, true); return; }
+  toast('Semaine type appliquée');
+  charger();
+});
+
+$('btnVider').addEventListener('click', async () => {
+  if (!horaires.length) { toast('La semaine est déjà vide', true); return; }
+  if (!confirm(`Effacer les ${horaires.length} horaires de cette semaine ?`)) return;
+  const { error } = await db.from('horaires').delete()
+    .gte('date', dateISO(lundi)).lte('date', dateISO(jourDe(6)));
+  if (error) { toast('Impossible : ' + error.message, true); return; }
+  toast('Semaine vidée');
+  charger();
+});
+
+/* ===== Navigation ===== */
+function decaler(n) { lundi.setDate(lundi.getDate() + n * 7); charger(); }
+$('btnPrec').addEventListener('click', () => decaler(-1));
+$('btnSuiv').addEventListener('click', () => decaler(1));
+$('btnCourante').addEventListener('click', () => { lundi = lundiDe(new Date()); charger(); });
+
+$('fenetre').addEventListener('click', e => {
+  if (e.target === $('fenetre')) $('fenetre').classList.remove('ouverte');
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') $('fenetre').classList.remove('ouverte');
+});
+
+$('logoutBtn').addEventListener('click', async () => {
+  await db.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+init();
+</script>
+<script src="sidebar.js"></script>
+</body>
+</html>
