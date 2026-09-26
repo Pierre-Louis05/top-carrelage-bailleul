@@ -211,6 +211,7 @@
     <div class="page-content">
 
       <div class="jour-barre">
+        <button class="btn-primary" id="btnNouvelle" style="width:auto; padding:0.55rem 1.1rem; font-size:0.85rem; white-space:nowrap;">+ Réserver un camion</button>
         <div class="jour-nav">
           <button class="jour-btn" id="btnPrec" aria-label="Jour précédent">◀</button>
           <button class="jour-btn" id="btnAujourdhui">Aujourd'hui</button>
@@ -236,8 +237,10 @@
       </div>
 
       <p style="margin-top:0.9rem; font-size:0.78rem; color:var(--text-muted);">
-        Cliquez dans une colonne de camion pour créer une réservation. Les rendez-vous
-        proviennent des demandes confirmées, ils se modifient depuis leur fiche.
+        Pour réserver, utilisez le bouton en haut ou cliquez directement à l'heure voulue
+        dans la colonne d'un camion. Cliquez sur une réservation pour la modifier ou la
+        marquer rendue. Les rendez-vous, eux, proviennent des demandes confirmées et se
+        modifient depuis leur fiche.
       </p>
 
     </div>
@@ -454,12 +457,18 @@ async function afficherJour() {
 function dessiner({ rdv, pointages, conges, resas }) {
   const agenda = $('agenda');
   const colonnes = equipe.length + vehicules.length;
-  agenda.style.gridTemplateColumns = `56px repeat(${colonnes}, minmax(150px, 1fr))`;
+  agenda.style.gridTemplateColumns = `48px repeat(${colonnes}, minmax(122px, 1fr))`;
 
   let html = '';
 
   /* --- Entetes --- */
   html += `<div class="agenda-entete gouttiere"></div>`;
+
+  vehicules.forEach(v => {
+    html += `<div class="agenda-entete col-vehicule">
+      <div class="col-nom">${v.nom}</div>
+      <span class="col-sous">${v.modele || ''}</span></div>`;
+  });
 
   equipe.forEach(p => {
     const nom = p.prenom + ' ' + p.nom;
@@ -475,12 +484,6 @@ function dessiner({ rdv, pointages, conges, resas }) {
     }
     html += `<div class="agenda-entete">
       <div class="col-nom">${p.prenom}</div>${sous}</div>`;
-  });
-
-  vehicules.forEach(v => {
-    html += `<div class="agenda-entete col-vehicule">
-      <div class="col-nom">${v.nom}</div>
-      <span class="col-sous">${v.modele || ''}</span></div>`;
   });
 
   /* --- Gouttiere des heures --- */
@@ -503,25 +506,25 @@ function dessiner({ rdv, pointages, conges, resas }) {
     return f;
   };
 
+  /* --- Colonnes des camions, placees en premier --- */
+  vehicules.forEach(v => {
+    const siennes = resas.filter(r => r.vehicule_id === v.id);
+    html += `<div class="colonne vehicule" data-vehicule="${v.id}" style="height:${HAUTEUR}px;">
+      ${fondHeures()}
+      <div class="creer-ici">+ réserver</div>
+      ${blocsResa(siennes)}${traitMaintenant()}</div>`;
+  });
+
   /* --- Colonnes des collaborateurs --- */
-  equipe.forEach(p => {
+  equipe.forEach((p, i) => {
     const nom = p.prenom + ' ' + p.nom;
     const cg = conges.find(x => x.employee_name === nom);
     const mes = rdv.filter(r =>
       Array.isArray(r.assigned_to) && r.assigned_to.includes(nom) && r.confirmed_time);
 
-    html += `<div class="colonne${cg ? ' congelee' : ''}" style="height:${HAUTEUR}px;">
+    html += `<div class="colonne${cg ? ' congelee' : ''}${i === 0 ? ' separee' : ''}"
+                  style="height:${HAUTEUR}px;">
       ${fondHeures()}${blocsRdv(mes)}${traitMaintenant()}</div>`;
-  });
-
-  /* --- Colonnes des camions --- */
-  vehicules.forEach((v, i) => {
-    const siennes = resas.filter(r => r.vehicule_id === v.id);
-    html += `<div class="colonne vehicule${i === 0 ? ' separee' : ''}"
-                  data-vehicule="${v.id}" style="height:${HAUTEUR}px;">
-      ${fondHeures()}
-      <div class="creer-ici">+ réserver</div>
-      ${blocsResa(siennes)}${traitMaintenant()}</div>`;
   });
 
   agenda.innerHTML = html;
@@ -602,6 +605,8 @@ function ouvrirCreation(vehiculeId, minutes) {
   $('formResa').reset();
   $('fVehicule').value = vehiculeId;
 
+  /* Avant 7h ou apres 19h, on ramene le creneau dans la journee affichee. */
+  minutes = Math.max(0, Math.min(minutes, (H_FIN - H_DEBUT) * 60 - 60));
   const d = new Date(jour);
   d.setHours(H_DEBUT + Math.floor(minutes / 60), minutes % 60, 0, 0);
   const f = new Date(d.getTime() + 2 * 3600000);
@@ -683,6 +688,17 @@ $('formResa').addEventListener('submit', async e => {
 });
 
 $('btnFermerResa').addEventListener('click', () => $('fenetreResa').classList.remove('ouverte'));
+
+/* Ouvre la reservation sans passer par un clic dans la grille : sur un petit
+   ecran les colonnes des camions peuvent demander de faire defiler. */
+$('btnNouvelle').addEventListener('click', () => {
+  if (!vehicules.length) { toast('Aucun camion enregistré', true); return; }
+  const dep = memeJour(jour, new Date()) ? new Date() : (() => {
+    const d = new Date(jour); d.setHours(9, 0, 0, 0); return d;
+  })();
+  dep.setMinutes(Math.ceil(dep.getMinutes() / 30) * 30, 0, 0);
+  ouvrirCreation(vehicules[0].id, minutesDepuisDebut(dep));
+});
 
 /* ===== Detail ===== */
 async function ouvrirDetail(id) {
