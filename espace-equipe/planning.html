@@ -556,8 +556,9 @@ async function init() {
   }
 
   const { data: profils } = await db.from('employee_profiles')
-    .select('id, prenom, nom, poste').order('nom');
-  equipe = profils || [];
+    .select('*').order('nom');
+  /* actif absent = ancienne base sans la colonne : on garde la personne. */
+  equipe = (profils || []).filter(p => p.actif !== false);
 
   /* Les tables existent-elles ? Sans cela la page reste muette. */
   const essaiV = await db.from('vehicules').select('*').order('ordre');

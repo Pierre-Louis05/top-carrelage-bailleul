@@ -36,6 +36,29 @@
     .semaine-titre .encours { color:var(--or); font-size:0.66rem; letter-spacing:0.12em;
       text-transform:uppercase; display:block; font-family:var(--font); }
 
+    /* ===== Pinceau ===== */
+    .pinceau-barre { display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+      padding:0.6rem 0.8rem; margin-bottom:1rem; }
+    .pinceau-titre { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em;
+      color:var(--text-muted); margin-right:0.2rem; }
+    .pinceau { background:var(--surface2); border:1px solid var(--border); color:var(--text);
+      border-radius:20px; padding:0.38rem 0.85rem; font-size:0.78rem;
+      display:inline-flex; align-items:center; gap:0.4rem; transition:var(--transition); }
+    .pinceau:hover { border-color:var(--or); }
+    .pinceau.actif { border-color:var(--or); background:rgba(201,168,76,0.18);
+      color:var(--or); font-weight:700; }
+    .pinceau i { width:10px; height:10px; border-radius:3px; display:inline-block; }
+    .pinceau-aide { font-size:0.74rem; color:var(--text-muted); flex-basis:100%; margin-top:0.2rem; }
+    .pinceau-aide b { color:var(--or); }
+
+    /* Les entetes deviennent des boutons de remplissage quand un pinceau est arme */
+    body.pinceau-arme .edt thead th.jour,
+    body.pinceau-arme .edt td.nom { cursor:pointer; }
+    body.pinceau-arme .edt thead th.jour:hover,
+    body.pinceau-arme .edt td.nom:hover { background:rgba(201,168,76,0.16); color:var(--or); }
+    body.pinceau-arme .case { cursor:crosshair; }
+
     .lecture-seule { background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.35);
       color:#93c5fd; border-radius:var(--radius); padding:0.6rem 0.9rem;
       font-size:0.82rem; margin-bottom:1rem; }
@@ -80,6 +103,8 @@
     .edt td.ferme .case.vide::after { content:''; }
 
     .total { font-family:var(--font-titre); font-size:0.92rem; text-align:center; }
+    .total.charge { color:#fcd34d; }
+    .total.charge small { color:#fcd34d; opacity:0.8; }
     .total small { display:block; font-family:var(--font); font-size:0.66rem;
       color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; }
 
@@ -227,6 +252,16 @@
           <button class="jour-btn" id="btnVider">Vider la semaine</button>
         </div>
 
+        <div class="pinceau-barre" id="pinceauBarre" style="display:none;">
+          <span class="pinceau-titre">Remplissage rapide</span>
+          <div id="pinceaux" style="display:flex; gap:0.45rem; flex-wrap:wrap;"></div>
+          <div class="pinceau-aide" id="pinceauAide">
+            Choisissez un créneau ci-dessus, puis cliquez dans les cases pour l'appliquer.
+            Cliquez sur <b>un nom</b> pour remplir toute sa semaine, ou sur <b>un jour</b>
+            pour remplir toute la colonne.
+          </div>
+        </div>
+
         <div class="cadre">
           <table class="edt" id="tableau">
             <tbody><tr><td style="padding:3rem; text-align:center;">
@@ -323,6 +358,7 @@ let currentUser = null, currentProfile = null, responsable = false;
 let lundi = lundiDe(new Date());
 let equipe = [], horaires = [], conges = [], modele = [];
 let celluleCourante = null, choixCourant = null;
+let pinceau = null;   /* creneau arme pour le remplissage rapide */
 
 const $ = id => document.getElementById(id);
 
@@ -395,14 +431,17 @@ async function init() {
   }
 
   const { data: profils } = await db.from('employee_profiles')
-    .select('id, prenom, nom, poste').order('nom');
-  equipe = profils || [];
+    .select('*').order('nom');
+  /* actif absent = ancienne base sans la colonne : on garde la personne. */
+  equipe = (profils || []).filter(p => p.actif !== false);
 
   const essai = await db.from('horaires').select('id').limit(1);
   if (essai.error) { $('installation').classList.add('visible'); return; }
 
   $('zone').style.display = '';
   $('outilsResponsable').style.display = responsable ? '' : 'none';
+  $('pinceauBarre').style.display = responsable ? '' : 'none';
+  if (responsable) dessinerPinceaux();
   $('lectureSeule').style.display = responsable ? 'none' : '';
 
   await charger();
@@ -457,7 +496,7 @@ function dessiner() {
   let html = '<thead><tr><th class="nom">Collaborateur</th>';
   for (let i = 0; i < 6; i++) {
     const d = jourDe(i), iso = dateISO(d);
-    html += `<th class="${iso === aujourdhui ? 'aujourdhui' : ''}">
+    html += `<th class="jour ${iso === aujourdhui ? 'aujourdhui' : ''}" data-jour="${i}">
       ${d.toLocaleDateString('fr-FR', { weekday: 'long' })}
       <span class="num">${d.getDate()}/${String(d.getMonth() + 1).padStart(2, '0')}</span></th>`;
   }
@@ -466,7 +505,7 @@ function dessiner() {
   equipe.forEach(p => {
     const nom = p.prenom + ' ' + p.nom;
     let total = 0;
-    html += `<tr><td class="nom">${echappe(p.prenom)} ${echappe(p.nom[0])}.
+    html += `<tr><td class="nom" data-ligne="${p.id}">${echappe(p.prenom)} ${echappe(p.nom[0])}.
       <small>${echappe(p.poste || '')}</small></td>`;
 
     for (let i = 0; i < 6; i++) {
@@ -490,7 +529,11 @@ function dessiner() {
       html += `<td><button class="case ${hr.creneau}" data-cell="${p.id}|${iso}|${js}">
         <b>${echappe(c.label)}</b><small>${echappe(detail)}</small></button></td>`;
     }
-    html += `<td class="total">${heuresTexte(total)}<small>semaine</small></td></tr>`;
+    /* Au-dela de 35 h le total passe en orange : c'est un repere pour le
+       responsable, pas un blocage. Les contrats ne sont pas tous identiques. */
+    const charge = total > 35;
+    html += `<td class="total${charge ? ' charge' : ''}">${heuresTexte(total)}
+      <small>${charge ? '+' + heuresTexte(total - 35) : 'semaine'}</small></td></tr>`;
   });
 
   html += '</tbody><tfoot><tr><td class="nom">Couverture magasin</td>';
@@ -514,13 +557,110 @@ function dessiner() {
   html += '<td></td></tr></tfoot>';
 
   $('tableau').innerHTML = html;
+  document.body.classList.toggle('pinceau-arme', !!pinceau);
 
   if (responsable) {
     $('tableau').querySelectorAll('[data-cell]').forEach(b =>
-      b.addEventListener('click', () => ouvrir(b.dataset.cell)));
+      b.addEventListener('click', () => {
+        /* Un pinceau arme applique directement, sans ouvrir la fenetre. */
+        if (pinceau) { appliquer([b.dataset.cell]); return; }
+        ouvrir(b.dataset.cell);
+      }));
+    $('tableau').querySelectorAll('[data-ligne]').forEach(td =>
+      td.addEventListener('click', () => {
+        if (!pinceau) { toast('Choisissez d\'abord un créneau dans la barre du haut', true); return; }
+        remplirLigne(td.dataset.ligne);
+      }));
+    $('tableau').querySelectorAll('[data-jour]').forEach(th =>
+      th.addEventListener('click', () => {
+        if (!pinceau) { toast('Choisissez d\'abord un créneau dans la barre du haut', true); return; }
+        remplirColonne(Number(th.dataset.jour));
+      }));
   } else {
     $('tableau').querySelectorAll('.case').forEach(b => { b.style.cursor = 'default'; });
   }
+}
+
+/* ===== Remplissage rapide =====
+   Le responsable arme un creneau, puis peint les cases. Une semaine
+   complete se remplit en une dizaine de clics au lieu d'une quarantaine. */
+function dessinerPinceaux() {
+  $('pinceaux').innerHTML = Object.entries(CRENEAUX).map(([k, c]) =>
+    `<button class="pinceau" data-pinceau="${k}">
+       <i style="background:${c.couleur}"></i>${echappe(c.label)}</button>`).join('')
+    + `<button class="pinceau" data-pinceau="effacer">
+         <i style="background:#ef4444"></i>Effacer</button>`;
+
+  $('pinceaux').querySelectorAll('[data-pinceau]').forEach(b =>
+    b.addEventListener('click', () => {
+      const k = b.dataset.pinceau;
+      pinceau = (pinceau === k) ? null : k;   /* un second clic desarme */
+      $('pinceaux').querySelectorAll('.pinceau').forEach(x =>
+        x.classList.toggle('actif', x.dataset.pinceau === pinceau));
+      document.body.classList.toggle('pinceau-arme', !!pinceau);
+      $('pinceauAide').innerHTML = pinceau
+        ? `Créneau <b>${echappe(pinceau === 'effacer' ? 'Effacer' : CRENEAUX[pinceau].label)}</b> armé. `
+          + `Cliquez dans les cases, sur <b>un nom</b> pour toute la semaine, `
+          + `ou sur <b>un jour</b> pour toute la colonne. Recliquez le bouton pour désarmer.`
+        : `Choisissez un créneau ci-dessus, puis cliquez dans les cases pour l'appliquer. `
+          + `Cliquez sur <b>un nom</b> pour remplir toute sa semaine, ou sur <b>un jour</b> `
+          + `pour remplir toute la colonne.`;
+    }));
+}
+
+/* Les congés validés ne sont jamais ecrases, et le lundi matin n'existe pas. */
+function celluleModifiable(employeeId, iso, js, creneau) {
+  const p = equipe.find(x => x.id === employeeId);
+  if (!p) return false;
+  if (congeDe(p.prenom + ' ' + p.nom, iso)) return false;
+  if (creneau === 'matin' && !OUVERTURE[js].matin) return false;
+  return true;
+}
+
+async function appliquer(cles) {
+  if (!pinceau) return;
+  const moi = currentProfile ? currentProfile.prenom + ' ' + currentProfile.nom : null;
+  const lignes = [], aSupprimer = [];
+  let ignorees = 0;
+
+  cles.forEach(cle => {
+    const [employeeId, iso, js] = cle.split('|');
+    if (!celluleModifiable(employeeId, iso, Number(js), pinceau)) { ignorees++; return; }
+    if (pinceau === 'effacer') { aSupprimer.push({ employeeId, iso }); return; }
+    const p = equipe.find(x => x.id === employeeId);
+    lignes.push({
+      employee_id: employeeId, employee_name: p.prenom + ' ' + p.nom, date: iso,
+      creneau: pinceau, debut: null, fin: null, note: null, maj_par: moi
+    });
+  });
+
+  if (!lignes.length && !aSupprimer.length) {
+    toast(ignorees ? 'Rien à modifier : congés ou magasin fermé' : 'Rien à modifier', true);
+    return;
+  }
+
+  if (lignes.length) {
+    const { error } = await db.from('horaires').upsert(lignes, { onConflict: 'employee_id,date' });
+    if (error) { toast('Impossible : ' + error.message, true); return; }
+  }
+  for (const x of aSupprimer) {
+    await db.from('horaires').delete().eq('employee_id', x.employeeId).eq('date', x.iso);
+  }
+
+  const n = lignes.length + aSupprimer.length;
+  toast(n === 1 ? 'Case mise à jour'
+       : n + ' cases mises à jour' + (ignorees ? ', ' + ignorees + ' ignorées' : ''));
+  await charger();
+}
+
+function clesDe(employeeId, indices) {
+  return indices.map(i => employeeId + '|' + dateISO(jourDe(i)) + '|' + (i + 1));
+}
+function remplirLigne(employeeId) {
+  appliquer(clesDe(employeeId, [0, 1, 2, 3, 4, 5]));
+}
+function remplirColonne(i) {
+  appliquer(equipe.map(p => p.id + '|' + dateISO(jourDe(i)) + '|' + (i + 1)));
 }
 
 /* ===== Fenêtre ===== */
