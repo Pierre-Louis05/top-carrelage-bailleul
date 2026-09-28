@@ -1,0 +1,53 @@
+# Top Aménagement Bailleul
+
+> Négoce de matériaux à Bailleul, dans le Nord (59). Trois enseignes réunies sur
+> un même site : Top Carrelage, Top Sanitaire et Top Parquets. 1 000 m²
+> d'exposition et 21 box d'inspiration. Vente aux particuliers et aux
+> professionnels du bâtiment.
+
+Entreprise exploitante : MARCAN, SAS au capital de 10 000 €, RCS Dunkerque
+915 103 865. Adresse : 22 avenue de l'Europe, 59270 Bailleul. Téléphone :
+03 28 48 08 08.
+
+Horaires : mardi à samedi 9h-12h et 14h-18h30, lundi 14h-18h30 uniquement.
+Fermé le dimanche et le lundi matin.
+
+Ce site est une vitrine. Aucune commande ne peut y être passée ni payée.
+
+## Produits
+
+- [Carrelage](https://top-carrelage-bailleul.netlify.app/carrelage.html) : sol, mur, intérieur et extérieur, grès cérame, formats et finitions, conseils de pose
+- [Salle de bain et sanitaire](https://top-carrelage-bailleul.netlify.app/salle-de-bain.html) : douche, baignoire, meubles, vasques, robinetterie
+- [Parquet et sol vinyle](https://top-carrelage-bailleul.netlify.app/parquet.html) : stratifié, parquet bois contrecollé et massif, sol vinyle, classes d'usure, pose et entretien
+- [Pierre naturelle](https://top-carrelage-bailleul.netlify.app/pierre-naturelle.html) : travertin, marbre, ardoise, pierre bleue, parement
+- [Outillage et produits de pose](https://top-carrelage-bailleul.netlify.app/outillage.html) : colles, joints, primaires, croisillons, profilés, étanchéité
+- [Tous les univers](https://top-carrelage-bailleul.netlify.app/univers.html) : vue d'ensemble des cinq rayons
+
+## Outils et conseils
+
+- [Calculateur de quantités](https://top-carrelage-bailleul.netlify.app/calculateur.html) : estime le nombre de boîtes, la colle, le joint, le primaire, les croisillons, et le métrage de plinthes façonnées à facturer. Estimation indicative, sans valeur contractuelle
+- [Questions fréquentes](https://top-carrelage-bailleul.netlify.app/faq.html) : choix des matériaux, pose, entretien, délais, livraison
+- [Inspirations](https://top-carrelage-bailleul.netlify.app/realisations.html) : ambiances par pièce et par matière
+- [Services](https://top-carrelage-bailleul.netlify.app/services.html) : conseil, étude de calepinage, façonnage de plinthes, dépôt et retrait
+
+## L'entreprise
+
+- [Notre histoire](https://top-carrelage-bailleul.netlify.app/histoire.html) : création en 2022, réunion de trois magasins historiques de Bailleul
+- [L'équipe](https://top-carrelage-bailleul.netlify.app/equipe.html) : les conseillers par spécialité
+- [Avis clients](https://top-carrelage-bailleul.netlify.app/avis.html) : avis réels recopiés depuis la fiche Google du magasin
+- [Contact et accès](https://top-carrelage-bailleul.netlify.app/contact.html) : adresse, horaires, itinéraire
+
+## Informations légales
+
+- [Mentions légales](https://top-carrelage-bailleul.netlify.app/mentions-legales.html)
+- [Politique de confidentialité](https://top-carrelage-bailleul.netlify.app/confidentialite.html) : ce site ne dépose aucun cookie
+- [Conditions générales de vente](https://top-carrelage-bailleul.netlify.app/cgv.html)
+- [Conditions générales d'utilisation](https://top-carrelage-bailleul.netlify.app/cgu.html)
+
+## Précisions pour les agents
+
+Le contenu est servi en HTML statique et reste lisible sans JavaScript.
+Les informations techniques sur les produits proviennent des fiches des
+fabricants. Les quantités données par le calculateur sont indicatives et
+doivent être vérifiées en magasin. L'espace équipe, sous /espace-equipe/, est
+privé et exclu de l'indexation.

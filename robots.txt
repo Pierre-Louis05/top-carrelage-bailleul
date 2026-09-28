@@ -1,6 +1,11 @@
+# Top Amenagement Bailleul
+# Les robots des moteurs de recherche et des assistants IA sont les bienvenus :
+# etre cite dans leurs reponses fait partie de nos objectifs de visibilite.
+
 User-agent: *
 Allow: /
 Disallow: /espace-equipe/
 Disallow: /rendez-vous.html
+Disallow: /sql/
 
 Sitemap: https://top-carrelage-bailleul.netlify.app/sitemap.xml
