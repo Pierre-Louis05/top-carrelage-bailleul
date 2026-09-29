@@ -420,6 +420,7 @@ input, select, textarea { font-family: var(--font); }
 .main-content {
   margin-left: 60px;
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -443,7 +444,7 @@ input, select, textarea { font-family: var(--font); }
   font-weight: 400;
 }
 .topbar-actions { display: flex; gap: 0.8rem; align-items: center; }
-.page-content { padding: 2rem; flex: 1; }
+.page-content { padding: 2rem; flex: 1; min-width: 0; max-width: 100%; }
 
 /* ===== STATS ===== */
 .stats-grid {
@@ -793,11 +794,64 @@ input, select, textarea { font-family: var(--font); }
 .toast.error { border-left-color: #ef4444; }
 
 /* Responsive */
+/* Bouton menu, cree par sidebar.js. Invisible au-dessus de 900 px. */
+.btn-menu {
+  display: none; background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); border-radius: var(--radius); width: 38px; height: 38px;
+  flex-shrink: 0; align-items: center; justify-content: center; margin-right: 0.8rem;
+}
+.btn-menu span { display: block; width: 17px; height: 2px; background: currentColor;
+  border-radius: 2px; position: relative; }
+.btn-menu span::before, .btn-menu span::after {
+  content: ''; position: absolute; left: 0; width: 17px; height: 2px;
+  background: currentColor; border-radius: 2px;
+}
+.btn-menu span::before { top: -5px; }
+.btn-menu span::after  { top: 5px; }
+
+.voile-menu {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99;
+}
+.voile-menu.visible { display: block; }
+
 @media (max-width: 900px) {
-  .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
-  .sidebar.mobile-open { transform: translateX(0); width: 230px; }
+  /* La barre laterale sort de l ecran et revient au clic sur le bouton menu.
+     Sans ce bouton elle etait inatteignable sur telephone. */
+  .sidebar {
+    transform: translateX(-100%); transition: transform 0.3s;
+    width: 250px;
+  }
+  .sidebar.mobile-open { transform: translateX(0); width: 250px; }
+  .sidebar.mobile-open .sidebar-link-label,
+  .sidebar.mobile-open .sidebar-logo-texts { opacity: 1; }
+  .sidebar-logo-icon { display: none; }
+  /* L'icone « MM » servait de marge a gauche : une fois masquee, le titre
+     se collait au bord de l'ecran. */
+  .sidebar-logo-texts { padding-left: 1.1rem; }
+  .sidebar-user { padding-left: 1.1rem; }
+
   .main-content { margin-left: 0 !important; }
-  .stats-grid { grid-template-columns: repeat(2,1fr); }
+  .main-content.sidebar-pinned { margin-left: 0 !important; }
+  .btn-menu { display: flex; }
+
+  .topbar { padding: 0.8rem 1rem; }
+  .topbar-title { font-size: 1rem; }
+  .page-content { padding: 1rem; }
+
+  .stats-grid { grid-template-columns: repeat(2,1fr); gap: 0.7rem; }
+  .stat-number { font-size: 1.4rem; }
+  .stat-label { font-size: 0.68rem; }
   .detail-grid { grid-template-columns: 1fr; }
   .action-panel { position: static; }
+
+  /* Tout tableau large defile dans son cadre au lieu d elargir la page */
+  table { display: block; overflow-x: auto; max-width: 100%; }
+  .tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+  .tabs::-webkit-scrollbar { height: 0; }
+  .tab-btn { white-space: nowrap; flex-shrink: 0; }
+}
+
+@media (max-width: 560px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .page-content { padding: 0.8rem; }
 }

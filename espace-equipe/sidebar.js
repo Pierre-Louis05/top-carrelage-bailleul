@@ -80,8 +80,56 @@
 
     applyPin(savedPinned);
 
+    // ── Menu téléphone ────────────────────────────────
+    // Sous 900 px la barre sort de l'écran. Sans ce bouton, créé ici pour
+    // toutes les pages d'un coup, elle était tout simplement inatteignable.
+    const topbar = main.querySelector('.topbar');
+    if (topbar) {
+      const btn = document.createElement('button');
+      btn.className = 'btn-menu';
+      btn.id = 'btnMenuMobile';
+      btn.type = 'button';
+      btn.setAttribute('aria-label', 'Ouvrir le menu');
+      btn.setAttribute('aria-expanded', 'false');
+      btn.innerHTML = '<span></span>';
+      topbar.prepend(btn);
+
+      const voile = document.createElement('div');
+      voile.className = 'voile-menu';
+      document.body.appendChild(voile);
+
+      function basculer(ouvrir) {
+        sidebar.classList.toggle('mobile-open', ouvrir);
+        voile.classList.toggle('visible', ouvrir);
+        btn.setAttribute('aria-expanded', String(ouvrir));
+        document.body.style.overflow = ouvrir ? 'hidden' : '';
+      }
+
+      btn.addEventListener('click', function () {
+        basculer(!sidebar.classList.contains('mobile-open'));
+      });
+      voile.addEventListener('click', function () { basculer(false); });
+      // On referme après un clic sur un lien, sinon le menu reste ouvert
+      // par-dessus la page qu'on vient d'ouvrir.
+      sidebar.querySelectorAll('.sidebar-link').forEach(function (a) {
+        a.addEventListener('click', function () { basculer(false); });
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') basculer(false);
+      });
+      // Retour au grand écran : on nettoie l'état téléphone.
+      window.addEventListener('resize', function () {
+        if (window.innerWidth > 900 && sidebar.classList.contains('mobile-open')) {
+          basculer(false);
+        }
+      });
+    }
+
     // ── Hover behaviour ───────────────────────────────
+    // Ne s'applique qu'au grand écran : sur un téléphone, un « survol »
+    // déclenché par un doigt ouvrirait la barre par accident.
     sidebar.addEventListener('mouseenter', function () {
+      if (window.innerWidth <= 900) return;
       if (!sidebar.classList.contains('pinned')) {
         sidebar.classList.add('expanded');
         main.classList.add('sidebar-pinned');
@@ -89,6 +137,7 @@
     });
 
     sidebar.addEventListener('mouseleave', function () {
+      if (window.innerWidth <= 900) return;
       if (!sidebar.classList.contains('pinned')) {
         sidebar.classList.remove('expanded');
         main.classList.remove('sidebar-pinned');
