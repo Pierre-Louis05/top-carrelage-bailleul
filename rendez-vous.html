@@ -8,19 +8,20 @@
   <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <meta name="theme-color" content="#14263C" />
+  <link rel="canonical" href="https://top-carrelage-bailleul.netlify.app/rendez-vous" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Top Aménagement Bailleul" />
   <meta property="og:locale" content="fr_FR" />
   <meta property="og:title" content="Prendre Rendez-vous | Top Aménagement Bailleul" />
   <meta property="og:description" content="Carrelage, salle de bain et parquet à Bailleul : 1 000 m² d&#x27;exposition et des conseillers pour vous guider." />
-  <meta property="og:url" content="https://top-carrelage-bailleul.netlify.app/rendez-vous.html" />
+  <meta property="og:url" content="https://top-carrelage-bailleul.netlify.app/rendez-vous" />
   <meta property="og:image" content="https://top-carrelage-bailleul.netlify.app/partage.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Logo Top Aménagement : carrelage, salle de bain et parquet à Bailleul" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="stylesheet" href="fonts/polices-site.css" />
-  <link rel="stylesheet" href="styles.css?v=12" />
+  <link rel="stylesheet" href="styles.css?v=16" />
   <style>
     .step-indicator {
       display: flex;
@@ -109,6 +110,18 @@
     .form-notice {
       font-size: 0.78rem;
       color: var(--gris-texte);
+    }
+
+    @media (max-width: 760px) {
+      /* Cinq univers en ligne ne tiennent pas sur un telephone */
+      .univers-select-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+      /* L indicateur d etapes passe en colonne plutot que de sortir de l ecran */
+      .step-indicator { flex-direction: column; align-items: flex-start; gap: 0.5rem; margin-bottom: 1.6rem; }
+      .step-line { display: none; }
+      .step { font-size: 0.68rem; }
+    }
+    @media (max-width: 420px) {
+      .univers-select-grid { grid-template-columns: 1fr; }
     }
   </style>
   <!-- Mesure d'audience sans cookie, uniquement sur le site en ligne -->
@@ -261,7 +274,7 @@
 
       <!-- FORMULAIRE -->
       <div class="rdv-form reveal">
-        <h3>Votre demande de rendez-vous</h3>
+        <h2>Votre demande de rendez-vous</h2>
 
         <div class="step-indicator">
           <div class="step active"><div class="step-num">1</div> Votre projet</div>
@@ -389,10 +402,10 @@
 
       <!-- INFOS -->
       <div class="rdv-info reveal">
-        <h3>Informations pratiques</h3>
+        <h2>Informations pratiques</h2>
 
         <div class="info-block">
-          <h4>Horaires d'ouverture</h4>
+          <h3>Horaires d'ouverture</h3>
           <div class="horaire-row"><span>Lundi</span><span>14h00 – 18h30</span></div>
           <div class="horaire-row"><span>Mardi</span><span>9h – 12h &nbsp;|&nbsp; 14h – 18h30</span></div>
           <div class="horaire-row"><span>Mercredi</span><span>9h – 12h &nbsp;|&nbsp; 14h – 18h30</span></div>
@@ -403,13 +416,13 @@
         </div>
 
         <div class="info-block">
-          <h4>Nous trouver</h4>
+          <h3>Nous trouver</h3>
           <p>22 Avenue de l'Europe<br>59270 Bailleul</p>
           <p style="margin-top:0.8rem;"><a href="tel:+33328480808" style="color:var(--or);">03 28 48 08 08</a></p>
         </div>
 
         <div class="info-block">
-          <h4>Ce qui vous attend</h4>
+          <h3>Ce qui vous attend</h3>
           <ul>
             <li>✓ &nbsp;Accueil personnalisé par un spécialiste</li>
             <li>✓ &nbsp;Visite de nos 1 000 m² d'exposition</li>
@@ -439,7 +452,7 @@
         <p>Top Aménagement réunit à Bailleul les enseignes Top Carrelage, Top Sanitaire et Top Parquets : 1 000 m² d'exposition pour vos sols, murs et salles de bains.</p>
       </div>
       <div class="footer-col">
-        <h4>Nos produits</h4>
+        <h2>Nos produits</h2>
         <ul>
           <li><a href="carrelage.html">Carrelage intérieur & extérieur</a></li>
           <li><a href="salle-de-bain.html">Salle de bain & Sanitaire</a></li>
@@ -449,7 +462,7 @@
         </ul>
       </div>
       <div class="footer-col">
-        <h4>L'entreprise</h4>
+        <h2>L'entreprise</h2>
         <ul>
           <li><a href="services.html">Nos services</a></li>
           <li><a href="realisations.html">Inspirations</a></li>
@@ -462,7 +475,7 @@
         </ul>
       </div>
       <div class="footer-col footer-contact">
-        <h4>Nous contacter</h4>
+        <h2>Nous contacter</h2>
         <p>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF6B75" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           22 Av. de l'Europe<br>59270 Bailleul

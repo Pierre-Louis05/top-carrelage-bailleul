@@ -10,6 +10,8 @@
   --rouge: #ED2442;          /* Carrelage */
   --rouge-clair: #ED4661;
   --rouge-fonce: #C9162F;
+  /* rouge de marque eclairci, lisible sur les fonds marine */
+  --rouge-doux: #FF6B75;
   --orange: #F5A62A;         /* Parquets */
   --bleu: #4BC1F0;           /* Sanitaire */
   --marine: #14263C;
@@ -23,7 +25,6 @@
 
   /* Alias de compatibilité (anciennes pages) */
   --or: var(--rouge);
-  --or-clair: #EE4450;
   --noir: var(--marine-fonce);
   --gris-clair: var(--bg);
   --gris-texte: var(--muted);
@@ -420,7 +421,7 @@ section { padding: 5rem 0; }
   border: 1.5px solid rgba(255,255,255,0.25); border-radius: var(--radius);
   display: flex; align-items: center; justify-content: center;
 }
-.hero-side-item h4 { color: #fff; font-size: 0.76rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.2rem; }
+.hero-side-item h4, .hero-side-item h2 { color: #fff; font-size: 0.76rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.2rem; }
 .hero-side-item p { color: rgba(255,255,255,0.6); font-size: 0.75rem; line-height: 1.5; }
 
 @media (max-width: 1000px) {
@@ -466,7 +467,7 @@ section { padding: 5rem 0; }
   padding: 1.6rem 1.3rem; display: flex; flex-direction: column; gap: 0.6rem;
 }
 .usp-icon { color: var(--rouge); font-size: 1.5rem; }
-.usp-item h4 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.usp-item h4, .usp-item h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
 .usp-item p { font-size: 0.77rem; color: var(--muted); line-height: 1.55; }
 .usp-cta {
   background: var(--marine); border-radius: var(--radius); padding: 1.8rem 1.5rem;
@@ -635,7 +636,7 @@ section { padding: 5rem 0; }
   background: var(--marine); color: #fff;
   display: flex; align-items: center; justify-content: center;
 }
-.contact-bloc-text h4 { font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.25rem; }
+.contact-bloc-text h4, .contact-bloc-text h3 { font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.25rem; }
 .contact-bloc-text p, .contact-bloc-text a { font-size: 0.9rem; color: var(--muted); }
 .contact-bloc-text a:hover { color: var(--rouge); }
 .contact-map { position: relative; border-radius: var(--radius); overflow: hidden; margin-top: 2rem; }
@@ -804,16 +805,22 @@ section { padding: 5rem 0; }
 .service-card h3 { font-size: 0.98rem; text-transform: uppercase; margin-bottom: 0.5rem; }
 .service-card p { font-size: 0.87rem; color: var(--muted); }
 @media (max-width: 800px) { .services-grid { grid-template-columns: 1fr; } }
+/* Sous 420 px, les 2 rem de marge interieure plus l'icone fixe rendaient la
+   carte plus large que l'ecran. min-width:0 autorise le texte a se replier. */
+@media (max-width: 420px) {
+  .service-card { padding: 1.4rem; gap: 1rem; }
+  .service-card > * { min-width: 0; }
+}
 
 /* ============ FOOTER ============ */
 footer { background: var(--marine-fonce); color: rgba(255,255,255,0.7); padding: 4rem 0 0; }
 .footer-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1.3fr; gap: 2.5rem; padding-bottom: 3rem; }
 .footer-brand p { font-size: 0.85rem; line-height: 1.7; margin-top: 1rem; }
-.footer-col h4 {
+.footer-col h2 {
   color: #fff; font-size: 0.73rem; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 1.2rem;
   position: relative; padding-bottom: 0.6rem;
 }
-.footer-col h4::after { content: ''; position: absolute; left: 0; bottom: 0; width: 26px; height: 2px; background: var(--rouge); }
+.footer-col h2::after { content: ''; position: absolute; left: 0; bottom: 0; width: 26px; height: 2px; background: var(--rouge); }
 .footer-col ul { display: flex; flex-direction: column; gap: 0.55rem; }
 .footer-col a { color: rgba(255,255,255,0.65); font-size: 0.85rem; transition: var(--transition); }
 .footer-col a:hover { color: #fff; padding-left: 4px; }
@@ -992,3 +999,17 @@ details.faq-item .faq-body p + p { margin-top: 0.6rem; }
 /* ============ DIVERS ============ */
 .hero-scroll { display: none; }
 ::selection { background: var(--rouge); color: #fff; }
+
+/* ============ GRILLES A TROIS COLONNES ============
+   Regroupees ici plutot qu'en style inline : un style inline ne peut pas
+   etre repris par une media query, la grille restait a trois colonnes sur
+   telephone et poussait la page hors de l'ecran. */
+.trio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+.steps-grid-3 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 900px) {
+  .trio-grid { grid-template-columns: 1fr 1fr; gap: 1.4rem; }
+  .steps-grid-3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 620px) {
+  .trio-grid, .steps-grid-3 { grid-template-columns: 1fr; gap: 1.2rem; }
+}
