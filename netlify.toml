@@ -22,20 +22,27 @@
 # desormais de vraies pages, une par enseigne. Une page qui repond vaut mieux
 # qu une redirection, et c est la seule facon d exister sur la recherche du
 # nom d enseigne lui-meme. Seuls les sous-chemins restent rediriges.
+#
+# force = true est indispensable ici : sans lui Netlify cherche d abord un
+# fichier statique pour /top-carrelage/quelque-chose, n en trouve pas, et
+# sert la page 404 sans jamais atteindre la regle. Verifie en ligne.
 [[redirects]]
   from = "/top-carrelage/*"
   to = "/top-carrelage"
   status = 301
+  force = true
 
 [[redirects]]
   from = "/top-sanitaire/*"
   to = "/top-sanitaire"
   status = 301
+  force = true
 
 [[redirects]]
   from = "/top-parquets/*"
   to = "/top-parquets"
   status = 301
+  force = true
 
 # Redirects sans extension .html
 [[redirects]]
