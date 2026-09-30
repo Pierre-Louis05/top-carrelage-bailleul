@@ -18,40 +18,41 @@
   force = true
 
 # Anciennes adresses du site Regicom, encore indexees par Google.
-# Sans ces regles elles renvoient une erreur 404 et l anciennete accumulee
-# par ces pages est perdue. Une redirection permanente la transfere vers la
-# page equivalente du nouveau site.
-[[redirects]]
-  from = "/top-carrelage"
-  to = "/carrelage"
-  status = 301
-
+# /top-carrelage, /top-sanitaire et /top-parquets ne redirigent plus : ce sont
+# desormais de vraies pages, une par enseigne. Une page qui repond vaut mieux
+# qu une redirection, et c est la seule facon d exister sur la recherche du
+# nom d enseigne lui-meme. Seuls les sous-chemins restent rediriges.
 [[redirects]]
   from = "/top-carrelage/*"
-  to = "/carrelage"
-  status = 301
-
-[[redirects]]
-  from = "/top-sanitaire"
-  to = "/salle-de-bain"
+  to = "/top-carrelage"
   status = 301
 
 [[redirects]]
   from = "/top-sanitaire/*"
-  to = "/salle-de-bain"
-  status = 301
-
-[[redirects]]
-  from = "/top-parquets"
-  to = "/parquet"
+  to = "/top-sanitaire"
   status = 301
 
 [[redirects]]
   from = "/top-parquets/*"
-  to = "/parquet"
+  to = "/top-parquets"
   status = 301
 
 # Redirects sans extension .html
+[[redirects]]
+  from = "/top-carrelage"
+  to = "/top-carrelage.html"
+  status = 200
+
+[[redirects]]
+  from = "/top-sanitaire"
+  to = "/top-sanitaire.html"
+  status = 200
+
+[[redirects]]
+  from = "/top-parquets"
+  to = "/top-parquets.html"
+  status = 200
+
 [[redirects]]
   from = "/univers"
   to = "/univers.html"

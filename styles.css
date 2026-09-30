@@ -814,7 +814,7 @@ section { padding: 5rem 0; }
 
 /* ============ FOOTER ============ */
 footer { background: var(--marine-fonce); color: rgba(255,255,255,0.7); padding: 4rem 0 0; }
-.footer-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1.3fr; gap: 2.5rem; padding-bottom: 3rem; }
+.footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr 1.3fr; gap: 2.5rem; padding-bottom: 3rem; }
 .footer-brand p { font-size: 0.85rem; line-height: 1.7; margin-top: 1rem; }
 .footer-col h2 {
   color: #fff; font-size: 0.73rem; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 1.2rem;
@@ -834,6 +834,7 @@ footer { background: var(--marine-fonce); color: rgba(255,255,255,0.7); padding:
 }
 .footer-bottom a { color: rgba(255,255,255,0.55); }
 .footer-bottom a:hover { color: #fff; }
+@media (max-width: 1200px) { .footer-grid { grid-template-columns: 1fr 1fr 1fr; } }
 @media (max-width: 1000px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 560px) { .footer-grid { grid-template-columns: 1fr; } }
 
