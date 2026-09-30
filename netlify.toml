@@ -54,6 +54,36 @@
 
 # Redirects sans extension .html
 [[redirects]]
+  from = "/carrelage-hazebrouck"
+  to = "/carrelage-hazebrouck.html"
+  status = 200
+
+[[redirects]]
+  from = "/carrelage-armentieres"
+  to = "/carrelage-armentieres.html"
+  status = 200
+
+[[redirects]]
+  from = "/carrelage-nieppe"
+  to = "/carrelage-nieppe.html"
+  status = 200
+
+[[redirects]]
+  from = "/carrelage-merville"
+  to = "/carrelage-merville.html"
+  status = 200
+
+[[redirects]]
+  from = "/carrelage-estaires"
+  to = "/carrelage-estaires.html"
+  status = 200
+
+[[redirects]]
+  from = "/carrelage-steenvoorde"
+  to = "/carrelage-steenvoorde.html"
+  status = 200
+
+[[redirects]]
   from = "/top-carrelage"
   to = "/top-carrelage.html"
   status = 200

@@ -828,6 +828,13 @@ footer { background: var(--marine-fonce); color: rgba(255,255,255,0.7); padding:
 .footer-contact svg { margin-top: 3px; flex-shrink: 0; }
 .footer-contact a { color: rgba(255,255,255,0.75); }
 .footer-contact a:hover { color: #fff; }
+.footer-secteurs {
+  border-top: 1px solid rgba(255,255,255,0.1); padding: 1.1rem 0; font-size: 0.75rem;
+  color: rgba(255,255,255,0.45); line-height: 1.9;
+}
+.footer-secteurs a { color: rgba(255,255,255,0.55); white-space: nowrap; }
+.footer-secteurs a:hover { color: #fff; }
+.footer-secteurs span { color: rgba(255,255,255,0.35); }
 .footer-bottom {
   border-top: 1px solid rgba(255,255,255,0.1); padding: 1.4rem 0; display: flex; justify-content: space-between;
   gap: 1rem; flex-wrap: wrap; font-size: 0.75rem; color: rgba(255,255,255,0.45);
