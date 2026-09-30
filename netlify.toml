@@ -17,6 +17,40 @@
   status = 301
   force = true
 
+# Anciennes adresses du site Regicom, encore indexees par Google.
+# Sans ces regles elles renvoient une erreur 404 et l anciennete accumulee
+# par ces pages est perdue. Une redirection permanente la transfere vers la
+# page equivalente du nouveau site.
+[[redirects]]
+  from = "/top-carrelage"
+  to = "/carrelage"
+  status = 301
+
+[[redirects]]
+  from = "/top-carrelage/*"
+  to = "/carrelage"
+  status = 301
+
+[[redirects]]
+  from = "/top-sanitaire"
+  to = "/salle-de-bain"
+  status = 301
+
+[[redirects]]
+  from = "/top-sanitaire/*"
+  to = "/salle-de-bain"
+  status = 301
+
+[[redirects]]
+  from = "/top-parquets"
+  to = "/parquet"
+  status = 301
+
+[[redirects]]
+  from = "/top-parquets/*"
+  to = "/parquet"
+  status = 301
+
 # Redirects sans extension .html
 [[redirects]]
   from = "/univers"
