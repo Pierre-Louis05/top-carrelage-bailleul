@@ -7,6 +7,16 @@
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
 
+# L adresse Netlify d origine renvoie desormais vers le domaine officiel.
+# Sans cette regle, le site repondait a l identique sur deux adresses : du
+# contenu duplique, et des liens entrants qui ne profitaient pas au domaine.
+# Cette redirection doit rester AVANT les reecritures d URL ci-dessous.
+[[redirects]]
+  from = "https://top-carrelage-bailleul.netlify.app/*"
+  to = "https://topamenagement.fr/:splat"
+  status = 301
+  force = true
+
 # Redirects sans extension .html
 [[redirects]]
   from = "/univers"
