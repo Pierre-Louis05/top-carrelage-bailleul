@@ -23,9 +23,17 @@
 # qu une redirection, et c est la seule facon d exister sur la recherche du
 # nom d enseigne lui-meme. Seuls les sous-chemins restent rediriges.
 #
-# force = true est indispensable ici : sans lui Netlify cherche d abord un
-# fichier statique pour /top-carrelage/quelque-chose, n en trouve pas, et
-# sert la page 404 sans jamais atteindre la regle. Verifie en ligne.
+# ATTENTION, ces trois regles ne fonctionnent PAS en ligne : /top-carrelage/xxx
+# renvoie 404 au lieu de la redirection, avec ou sans force = true (teste le
+# 2026-09-30). L explication la plus probable est que la presence du fichier
+# top-carrelage.html fait traiter /top-carrelage/ comme un repertoire par le
+# serveur de fichiers, avant que les redirections ne soient evaluees.
+#
+# On les laisse en place car elles ne nuisent pas, et parce que rien ne prouve
+# que ces sous-chemins existent vraiment dans l index de Google. Le rapport
+# Pages de la Search Console listera les vraies 404 d ici quelques jours : si
+# des adresses concretes apparaissent, on ajoutera une regle exacte par
+# adresse, ce qui fonctionne de facon certaine.
 [[redirects]]
   from = "/top-carrelage/*"
   to = "/top-carrelage"
