@@ -828,6 +828,19 @@ footer { background: var(--marine-fonce); color: rgba(255,255,255,0.7); padding:
 .footer-contact svg { margin-top: 3px; flex-shrink: 0; }
 .footer-contact a { color: rgba(255,255,255,0.75); }
 .footer-contact a:hover { color: #fff; }
+.secteurs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+.secteur-carte {
+  display: flex; flex-direction: column; gap: 0.35rem; padding: 1.4rem 1.5rem;
+  background: var(--blanc); border: 1px solid rgba(20,38,60,0.09); border-radius: 4px;
+  text-decoration: none; transition: border-color .2s, transform .2s, box-shadow .2s;
+}
+.secteur-carte:hover { border-color: var(--rouge); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(20,38,60,0.08); }
+.secteur-ville { font-family: var(--titre, inherit); font-size: 1.12rem; font-weight: 700; color: var(--marine); }
+.secteur-km { font-size: 0.82rem; font-weight: 600; color: var(--rouge); font-variant-numeric: tabular-nums; }
+.secteur-route { font-size: 0.82rem; line-height: 1.6; color: var(--muted); }
+@media (max-width: 900px) { .secteurs-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .secteurs-grid { grid-template-columns: 1fr; } }
+
 .footer-secteurs {
   border-top: 1px solid rgba(255,255,255,0.1); padding: 1.1rem 0; font-size: 0.75rem;
   color: rgba(255,255,255,0.45); line-height: 1.9;

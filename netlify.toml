@@ -84,6 +84,51 @@
   status = 200
 
 [[redirects]]
+  from = "/carrelage-lille"
+  to = "/carrelage-lille.html"
+  status = 200
+
+[[redirects]]
+  from = "/carrelage-bethune"
+  to = "/carrelage-bethune.html"
+  status = 200
+
+[[redirects]]
+  from = "/carrelage-lomme"
+  to = "/carrelage-lomme.html"
+  status = 200
+
+[[redirects]]
+  from = "/carrelage-lambersart"
+  to = "/carrelage-lambersart.html"
+  status = 200
+
+[[redirects]]
+  from = "/carrelage-houplines"
+  to = "/carrelage-houplines.html"
+  status = 200
+
+[[redirects]]
+  from = "/carrelage-fleurbaix"
+  to = "/carrelage-fleurbaix.html"
+  status = 200
+
+[[redirects]]
+  from = "/carrelage-laventie"
+  to = "/carrelage-laventie.html"
+  status = 200
+
+[[redirects]]
+  from = "/carrelage-cassel"
+  to = "/carrelage-cassel.html"
+  status = 200
+
+[[redirects]]
+  from = "/nos-secteurs"
+  to = "/nos-secteurs.html"
+  status = 200
+
+[[redirects]]
   from = "/top-carrelage"
   to = "/top-carrelage.html"
   status = 200
