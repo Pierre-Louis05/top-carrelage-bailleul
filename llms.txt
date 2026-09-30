@@ -16,33 +16,33 @@ Ce site est une vitrine. Aucune commande ne peut y être passée ni payée.
 
 ## Produits
 
-- [Carrelage](https://top-carrelage-bailleul.netlify.app/carrelage) : sol, mur, intérieur et extérieur, grès cérame, formats et finitions, conseils de pose
-- [Salle de bain et sanitaire](https://top-carrelage-bailleul.netlify.app/salle-de-bain) : douche, baignoire, meubles, vasques, robinetterie
-- [Parquet et sol vinyle](https://top-carrelage-bailleul.netlify.app/parquet) : stratifié, parquet bois contrecollé et massif, sol vinyle, classes d'usure, pose et entretien
-- [Pierre naturelle](https://top-carrelage-bailleul.netlify.app/pierre-naturelle) : travertin, marbre, ardoise, pierre bleue, parement
-- [Outillage et produits de pose](https://top-carrelage-bailleul.netlify.app/outillage) : colles, joints, primaires, croisillons, profilés, étanchéité
-- [Tous les univers](https://top-carrelage-bailleul.netlify.app/univers) : vue d'ensemble des cinq rayons
+- [Carrelage](https://topamenagement.fr/carrelage) : sol, mur, intérieur et extérieur, grès cérame, formats et finitions, conseils de pose
+- [Salle de bain et sanitaire](https://topamenagement.fr/salle-de-bain) : douche, baignoire, meubles, vasques, robinetterie
+- [Parquet et sol vinyle](https://topamenagement.fr/parquet) : stratifié, parquet bois contrecollé et massif, sol vinyle, classes d'usure, pose et entretien
+- [Pierre naturelle](https://topamenagement.fr/pierre-naturelle) : travertin, marbre, ardoise, pierre bleue, parement
+- [Outillage et produits de pose](https://topamenagement.fr/outillage) : colles, joints, primaires, croisillons, profilés, étanchéité
+- [Tous les univers](https://topamenagement.fr/univers) : vue d'ensemble des cinq rayons
 
 ## Outils et conseils
 
-- [Calculateur de quantités](https://top-carrelage-bailleul.netlify.app/calculateur) : estime le nombre de boîtes, la colle, le joint, le primaire, les croisillons, et le métrage de plinthes façonnées à facturer. Estimation indicative, sans valeur contractuelle
-- [Questions fréquentes](https://top-carrelage-bailleul.netlify.app/faq) : choix des matériaux, pose, entretien, délais, livraison
-- [Inspirations](https://top-carrelage-bailleul.netlify.app/realisations) : ambiances par pièce et par matière
-- [Services](https://top-carrelage-bailleul.netlify.app/services) : conseil, étude de calepinage, façonnage de plinthes, dépôt et retrait
+- [Calculateur de quantités](https://topamenagement.fr/calculateur) : estime le nombre de boîtes, la colle, le joint, le primaire, les croisillons, et le métrage de plinthes façonnées à facturer. Estimation indicative, sans valeur contractuelle
+- [Questions fréquentes](https://topamenagement.fr/faq) : choix des matériaux, pose, entretien, délais, livraison
+- [Inspirations](https://topamenagement.fr/realisations) : ambiances par pièce et par matière
+- [Services](https://topamenagement.fr/services) : conseil, étude de calepinage, façonnage de plinthes, dépôt et retrait
 
 ## L'entreprise
 
-- [Notre histoire](https://top-carrelage-bailleul.netlify.app/histoire) : création en 2022, réunion de trois magasins historiques de Bailleul
-- [L'équipe](https://top-carrelage-bailleul.netlify.app/equipe) : les conseillers par spécialité
-- [Avis clients](https://top-carrelage-bailleul.netlify.app/avis) : avis réels recopiés depuis la fiche Google du magasin
-- [Contact et accès](https://top-carrelage-bailleul.netlify.app/contact) : adresse, horaires, itinéraire
+- [Notre histoire](https://topamenagement.fr/histoire) : création en 2022, réunion de trois magasins historiques de Bailleul
+- [L'équipe](https://topamenagement.fr/equipe) : les conseillers par spécialité
+- [Avis clients](https://topamenagement.fr/avis) : avis réels recopiés depuis la fiche Google du magasin
+- [Contact et accès](https://topamenagement.fr/contact) : adresse, horaires, itinéraire
 
 ## Informations légales
 
-- [Mentions légales](https://top-carrelage-bailleul.netlify.app/mentions-legales)
-- [Politique de confidentialité](https://top-carrelage-bailleul.netlify.app/confidentialite) : ce site ne dépose aucun cookie
-- [Conditions générales de vente](https://top-carrelage-bailleul.netlify.app/cgv)
-- [Conditions générales d'utilisation](https://top-carrelage-bailleul.netlify.app/cgu)
+- [Mentions légales](https://topamenagement.fr/mentions-legales)
+- [Politique de confidentialité](https://topamenagement.fr/confidentialite) : ce site ne dépose aucun cookie
+- [Conditions générales de vente](https://topamenagement.fr/cgv)
+- [Conditions générales d'utilisation](https://topamenagement.fr/cgu)
 
 ## Précisions pour les agents
 

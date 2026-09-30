@@ -8,4 +8,4 @@ Disallow: /espace-equipe/
 Disallow: /rendez-vous.html
 Disallow: /sql/
 
-Sitemap: https://top-carrelage-bailleul.netlify.app/sitemap.xml
+Sitemap: https://topamenagement.fr/sitemap.xml
