@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
   <meta name="theme-color" content="#14263C" />
   <link rel="stylesheet" href="../fonts/polices-equipe.css" />
-  <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="app.css?v=3" />
   <style>
     .clock-card {
       background: var(--surface);
@@ -120,31 +120,31 @@
     <nav class="sidebar-nav" id="sidebarNav">
       <div class="sidebar-section">Navigation</div>
       <a href="dashboard.html" class="sidebar-link">
-        <span>📅</span> Demandes RDV
+        <span class="ico" data-ico="demandes"></span> Demandes RDV
       </a>
       <a href="messages.html" class="sidebar-link">
-        <span>💬</span> Messages de contact
+        <span class="ico" data-ico="messages"></span> Messages de contact
       </a>
       <a href="temoignages.html" class="sidebar-link">
-        <span>⭐</span> Témoignages
+        <span class="ico" data-ico="avis"></span> Témoignages
       </a>
       <div class="sidebar-section">Dépôt</div>
-      <a href="consommables.html" class="sidebar-link"><span>🧱</span> Stock consommables</a>
+      <a href="consommables.html" class="sidebar-link"><span class="ico" data-ico="stock"></span> Stock consommables</a>
       <div class="sidebar-section">Clients</div>
-      <a href="suivi.html" class="sidebar-link"><span>🗂️</span> Suivi client</a>
-      <a href="passage.html" class="sidebar-link"><span>✍️</span> Fiche de passage</a>
-      <a href="depot.html" class="sidebar-link"><span>📥</span> Déposer un document</a>
+      <a href="suivi.html" class="sidebar-link"><span class="ico" data-ico="suivi"></span> Suivi client</a>
+      <a href="passage.html" class="sidebar-link"><span class="ico" data-ico="passage"></span> Fiche de passage</a>
+      <a href="depot.html" class="sidebar-link"><span class="ico" data-ico="depot"></span> Déposer un document</a>
       <div class="sidebar-section">Équipe</div>
-      <a href="planning.html" class="sidebar-link"><span>🗓️</span> Planning</a>
-      <a href="horaires.html" class="sidebar-link"><span>⏰</span> Emploi du temps</a>
+      <a href="planning.html" class="sidebar-link"><span class="ico" data-ico="planning"></span> Planning</a>
+      <a href="horaires.html" class="sidebar-link"><span class="ico" data-ico="horaires"></span> Emploi du temps</a>
       <a href="pointage.html" class="sidebar-link active">
-        <span>🕐</span> Mon pointage
+        <span class="ico" data-ico="pointage"></span> Mon pointage
       </a>
       <a href="conges.html" class="sidebar-link">
-        <span>🏖️</span> Mes congés
+        <span class="ico" data-ico="conges"></span> Mes congés
       </a>
-      <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>
-      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span>👥</span> Présence équipe</a>
+      <a href="commandes.html" class="sidebar-link"><span class="ico" data-ico="commandes"></span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span class="ico" data-ico="presence"></span> Présence équipe</a>
     </nav>
     <div class="sidebar-footer">
       <button class="btn-logout" id="logoutBtn">Déconnexion</button>
@@ -203,10 +203,10 @@ let currentProfile = null;
 let todayRecord = null;
 
 const STEPS = [
-  { champ: 'arrivee',     icon: '🟢', label: 'Arrivée',              actionLabel: 'Pointer mon arrivée' },
-  { champ: 'pause_debut', icon: '🍽️', label: 'Début pause déjeuner', actionLabel: 'Pointer le début de pause' },
-  { champ: 'pause_fin',   icon: '▶️', label: 'Fin de pause',         actionLabel: 'Pointer la fin de pause' },
-  { champ: 'depart',      icon: '🔴', label: 'Départ',               actionLabel: 'Pointer mon départ' }
+  { champ: 'arrivee',     icon: '<span class="pastille" style="background:#34D399"></span>', label: 'Arrivée',              actionLabel: 'Pointer mon arrivée' },
+  { champ: 'pause_debut', icon: '<span class="ico" data-ico="repas"></span>', label: 'Début pause déjeuner', actionLabel: 'Pointer le début de pause' },
+  { champ: 'pause_fin',   icon: '▶', label: 'Fin de pause',         actionLabel: 'Pointer la fin de pause' },
+  { champ: 'depart',      icon: '<span class="pastille" style="background:#ED2442"></span>', label: 'Départ',               actionLabel: 'Pointer mon départ' }
 ];
 
 function todayStr() {
@@ -386,7 +386,7 @@ async function loadHistorique() {
   if (!data || data.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
-        <div class="empty-state-icon">🕐</div>
+        <div class="empty-state-icon"><span class="ico" data-ico="horloge"></span></div>
         <p>Aucun pointage enregistré pour le moment.</p>
       </div>`;
     return;
@@ -436,6 +436,6 @@ function showToast(msg, type = '') {
 
 init();
 </script>
-<script src="sidebar.js"></script>
+<script src="sidebar.js?v=3"></script>
 </body>
 </html>

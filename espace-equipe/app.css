@@ -2,25 +2,49 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --noir: #0a0a0a;
-  --or: #C9A84C;
-  --or-clair: #e8c97a;
-  --bg: #0f0f0f;
-  --surface: #1a1a1a;
-  --surface2: #242424;
-  --border: rgba(255,255,255,0.08);
-  --text: #f0f0ee;
-  --text-muted: rgba(240,240,238,0.5);
-  --font-titre: 'Playfair Display', Georgia, serif;
-  --font: 'Lato', system-ui, sans-serif;
-  --transition: 0.25s cubic-bezier(0.4,0,0.2,1);
-  --radius: 6px;
+  /* ---------------------------------------------------------------------
+     Couleurs de l'espace equipe, alignees sur le logo et sur le site public.
+     Avant : noir et dore, qui n'avaient aucun rapport avec la marque.
+     Les anciens noms de jetons sont conserves plus bas pour que les quinze
+     pages existantes continuent de fonctionner sans etre toutes reecrites.
+     --------------------------------------------------------------------- */
+  --marine:        #14263C;
+  --marine-clair:  #223D56;
+  --marine-fonce:  #0E1B2B;
+  --marine-profond:#0A1420;
+  --rouge:         #ED2442;
+  --rouge-clair:   #FF6B75;
+  --orange:        #F5A62A;   /* Top Parquets */
+  --bleu:          #4BC1F0;   /* Top Sanitaire */
 
-  --nouveau: #3b82f6;
-  --pris: #8b5cf6;
-  --attente: #f59e0b;
-  --confirme: #10b981;
-  --archive: #6b7280;
+  --bg:        var(--marine-profond);
+  --surface:   var(--marine-fonce);
+  --surface2:  var(--marine);
+  --surface3:  var(--marine-clair);
+  --border:    rgba(255,255,255,0.09);
+  --border-fort: rgba(255,255,255,0.16);
+  --text:      #E8EDF4;
+  --text-muted: rgba(232,237,244,0.55);
+  --text-faible: rgba(232,237,244,0.35);
+
+  --font-titre: 'Montserrat', system-ui, sans-serif;
+  --font:       'Inter', system-ui, sans-serif;
+  --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
+  --radius:     8px;
+  --radius-sm:  5px;
+  --ombre:      0 10px 30px rgba(0,0,0,0.35);
+
+  /* Etats, lisibles sur fond marine */
+  --nouveau:  #4BC1F0;
+  --pris:     #A78BFA;
+  --attente:  #F5A62A;
+  --confirme: #34D399;
+  --archive:  #7C8AA0;
+
+  /* Anciens noms, conserves pour ne rien casser */
+  --or:       var(--rouge);
+  --or-clair: var(--rouge-clair);
+  --noir:     var(--marine-profond);
 }
 
 html, body { height: 100%; }
@@ -855,3 +879,148 @@ input, select, textarea { font-family: var(--font); }
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .page-content { padding: 0.8rem; }
 }
+
+/* ===========================================================================
+   REFONTE — menu, typographie et surfaces
+   ---------------------------------------------------------------------------
+   Le menu s'ouvrait a 60 px par defaut : on ne voyait que des icones, et il
+   fallait survoler pour lire. D'ou l'impression de ne pas savoir ou cliquer.
+   Il est desormais ouvert par defaut, et se replie si on le souhaite.
+   =========================================================================== */
+
+/* ----- Icones du menu ----- */
+.sidebar-link .ico,
+.sidebar-link > span:first-child {
+  min-width: 26px; width: 26px; height: 22px;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.sidebar-link .ico svg { width: 19px; height: 19px; display: block; }
+
+/* ----- Largeur et respiration ----- */
+.sidebar { width: 64px; background: var(--marine-fonce); }
+.sidebar.expanded { width: 246px; }
+
+.sidebar-logo { min-height: 68px; border-bottom-color: var(--border); }
+.sidebar-logo-icon {
+  min-width: 64px; font-size: 0; position: relative;
+}
+.sidebar-logo-icon::before {
+  content: ''; display: block; width: 26px; height: 26px; margin: 0 auto;
+  background: url('../favicon.svg') center / contain no-repeat;
+}
+.sidebar-logo-main { font-family: var(--font-titre); font-weight: 800; font-size: 0.98rem; letter-spacing: -0.01em; }
+.sidebar-logo-sub { color: var(--rouge-clair); font-weight: 600; font-size: 0.56rem; }
+
+/* ----- Sections ----- */
+.sidebar-section {
+  font-family: var(--font-titre); font-weight: 700;
+  font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-faible); padding: 20px 20px 7px;
+  white-space: nowrap; overflow: hidden;
+}
+.sidebar:not(.expanded) .sidebar-section {
+  color: transparent; padding: 14px 20px 6px; position: relative;
+}
+/* Replie, un simple trait remplace le titre de section : on garde le
+   decoupage visuel sans afficher un texte tronque. */
+.sidebar:not(.expanded) .sidebar-section::after {
+  content: ''; position: absolute; left: 20px; right: 20px; top: 50%;
+  height: 1px; background: var(--border);
+}
+
+/* ----- Liens ----- */
+.sidebar-link {
+  display: flex; align-items: center; gap: 13px;
+  padding: 10px 19px; margin: 1px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted); font-size: 0.875rem; font-weight: 500;
+  text-decoration: none; white-space: nowrap;
+  transition: background var(--transition), color var(--transition);
+  position: relative;
+}
+.sidebar-link:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+.sidebar-link.active { background: var(--rouge); color: #fff; font-weight: 600; }
+.sidebar-link.active .ico svg { stroke-width: 2; }
+
+/* ----- Pied du menu ----- */
+.sidebar-footer { border-top: 1px solid var(--border); padding: 12px 10px; }
+.btn-logout {
+  width: 100%; background: transparent; border: 1px solid var(--border);
+  color: var(--text-muted); border-radius: var(--radius-sm); padding: 9px;
+  font-family: var(--font); font-size: 0.82rem; cursor: pointer;
+  transition: var(--transition); white-space: nowrap; overflow: hidden;
+}
+.btn-logout:hover { border-color: var(--rouge); color: var(--rouge-clair); }
+
+/* ----- Zone principale ----- */
+.main-content { margin-left: 64px; background: var(--bg); }
+.main-content.sidebar-pinned { margin-left: 246px; }
+.topbar {
+  background: var(--marine-fonce); border-bottom: 1px solid var(--border);
+  min-height: 68px; padding: 0 30px;
+}
+.topbar-title {
+  font-family: var(--font-titre); font-weight: 800; font-size: 1.3rem;
+  color: var(--text); letter-spacing: -0.01em;
+}
+.page-content { padding: 30px; max-width: 1400px; }
+
+/* ----- Typographie generale ----- */
+body { font-family: var(--font); background: var(--bg); color: var(--text); }
+h1, h2, h3, h4 { font-family: var(--font-titre); font-weight: 700; letter-spacing: -0.01em; }
+
+/* ----- Boutons ----- */
+.btn-primary {
+  background: var(--rouge); border: 1px solid var(--rouge); color: #fff;
+  font-family: var(--font-titre); font-weight: 700; font-size: 0.74rem;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  padding: 11px 20px; border-radius: var(--radius-sm); cursor: pointer;
+  transition: var(--transition);
+}
+.btn-primary:hover { background: #C9162F; border-color: #C9162F; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-action, .btn-sm {
+  background: transparent; border: 1px solid var(--border-fort); color: var(--text-muted);
+  font-family: var(--font); font-size: 0.84rem; padding: 10px 16px;
+  border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition);
+}
+.btn-action:hover, .btn-sm:hover { border-color: var(--rouge); color: var(--text); }
+
+/* ----- Cartes de statistiques ----- */
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px 22px;
+}
+.stat-number { font-family: var(--font-titre); font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+.stat-label { color: var(--text-muted); font-size: 0.8rem; }
+
+/* ----- Etat vide ----- */
+.empty-state { padding: 60px 24px; color: var(--text-muted); }
+.empty-state h3 { color: var(--text); margin-bottom: 8px; }
+.empty-state-icon { opacity: 0.35; }
+
+/* ----- Message passager ----- */
+.toast {
+  background: var(--marine-clair); border: 1px solid var(--border-fort);
+  color: var(--text); border-radius: var(--radius); box-shadow: var(--ombre);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .main-content, .main-content.sidebar-pinned { margin-left: 0; }
+  .topbar { padding: 0 18px; }
+  .page-content { padding: 18px; }
+}
+
+/* ----- Pastilles de statut et icones de contenu ----- */
+.pastille {
+  display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+  margin-right: 7px; vertical-align: 1px; flex-shrink: 0;
+}
+.ico { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ico svg { width: 1.05em; height: 1.05em; display: block; }
+/* Dans un texte, l'icone s'aligne sur la ligne de base plutot que de la decaler. */
+p .ico, span .ico, td .ico, li .ico, button .ico, label .ico { vertical-align: -0.16em; margin-right: 5px; }
+.empty-state-icon .ico svg { width: 44px; height: 44px; stroke-width: 1.2; }
+.zone-depot .icone .ico svg { width: 46px; height: 46px; stroke-width: 1.3; }

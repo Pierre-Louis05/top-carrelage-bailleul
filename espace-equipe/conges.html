@@ -8,8 +8,8 @@
   <link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
   <meta name="theme-color" content="#14263C" />
-      <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>  <link rel="stylesheet" href="../fonts/polices-equipe.css" />
-  <link rel="stylesheet" href="app.css" />
+      <a href="commandes.html" class="sidebar-link"><span class="ico" data-ico="commandes"></span> Commandes</a>  <link rel="stylesheet" href="../fonts/polices-equipe.css" />
+  <link rel="stylesheet" href="app.css?v=3" />
   <style>
     .conges-layout {
       display: grid;
@@ -113,23 +113,23 @@
     </div>
         <nav class="sidebar-nav">
       <div class="sidebar-section">Demandes RDV</div>
-      <a href="dashboard.html" class="sidebar-link"><span>📅</span> Tableau de bord</a>
+      <a href="dashboard.html" class="sidebar-link"><span class="ico" data-ico="demandes"></span> Tableau de bord</a>
       <div class="sidebar-section">Site web</div>
-      <a href="messages.html" class="sidebar-link"><span>💬</span> Messages de contact</a>
-      <a href="temoignages.html" class="sidebar-link"><span>⭐</span> Témoignages</a>
+      <a href="messages.html" class="sidebar-link"><span class="ico" data-ico="messages"></span> Messages de contact</a>
+      <a href="temoignages.html" class="sidebar-link"><span class="ico" data-ico="avis"></span> Témoignages</a>
       <div class="sidebar-section">Dépôt</div>
-      <a href="consommables.html" class="sidebar-link"><span>🧱</span> Stock consommables</a>
+      <a href="consommables.html" class="sidebar-link"><span class="ico" data-ico="stock"></span> Stock consommables</a>
       <div class="sidebar-section">Clients</div>
-      <a href="suivi.html" class="sidebar-link"><span>🗂️</span> Suivi client</a>
-      <a href="passage.html" class="sidebar-link"><span>✍️</span> Fiche de passage</a>
-      <a href="depot.html" class="sidebar-link"><span>📥</span> Déposer un document</a>
+      <a href="suivi.html" class="sidebar-link"><span class="ico" data-ico="suivi"></span> Suivi client</a>
+      <a href="passage.html" class="sidebar-link"><span class="ico" data-ico="passage"></span> Fiche de passage</a>
+      <a href="depot.html" class="sidebar-link"><span class="ico" data-ico="depot"></span> Déposer un document</a>
       <div class="sidebar-section">Équipe</div>
-      <a href="planning.html" class="sidebar-link"><span>🗓️</span> Planning</a>
-      <a href="horaires.html" class="sidebar-link"><span>⏰</span> Emploi du temps</a>
-      <a href="pointage.html" class="sidebar-link"><span>🕐</span> Mon pointage</a>
-      <a href="conges.html" class="sidebar-link active"><span>🏖️</span> Mes congés</a>
-      <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>
-      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span>👥</span> Présence équipe</a>
+      <a href="planning.html" class="sidebar-link"><span class="ico" data-ico="planning"></span> Planning</a>
+      <a href="horaires.html" class="sidebar-link"><span class="ico" data-ico="horaires"></span> Emploi du temps</a>
+      <a href="pointage.html" class="sidebar-link"><span class="ico" data-ico="pointage"></span> Mon pointage</a>
+      <a href="conges.html" class="sidebar-link active"><span class="ico" data-ico="conges"></span> Mes congés</a>
+      <a href="commandes.html" class="sidebar-link"><span class="ico" data-ico="commandes"></span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span class="ico" data-ico="presence"></span> Présence équipe</a>
     </nav>
     <div class="sidebar-footer">
       <button class="btn-logout" id="logoutBtn">Déconnexion</button>
@@ -187,7 +187,7 @@
         </div>
       </div>
 
-      <h3 style="margin-bottom:1rem;">📅 Planning de l'équipe, congés à venir</h3>
+      <h3 style="margin-bottom:1rem;"><span class="ico" data-ico="date"></span> Planning de l'équipe, congés à venir</h3>
       <div id="planningEquipe">
         <div class="loading"><div class="spinner"></div> Chargement du planning…</div>
       </div>
@@ -330,7 +330,7 @@ async function loadMesConges() {
   if (!data || data.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
-        <div class="empty-state-icon">🏖️</div>
+        <div class="empty-state-icon"><span class="ico" data-ico="soleil"></span></div>
         <p>Tu n'as encore fait aucune demande de congé.</p>
       </div>`;
     return;
@@ -342,7 +342,7 @@ async function loadMesConges() {
         <div class="conges-card-dates">${fmtDate(c.date_debut)} → ${fmtDate(c.date_fin)} <span style="color:var(--text-muted); font-weight:400; font-size:0.78rem;">(${nbJours(c.date_debut, c.date_fin)} j.)</span></div>
         <div class="conges-card-type">${c.type}</div>
         ${c.message ? `<div class="conges-card-message">"${c.message}"</div>` : ''}
-        ${c.reponse_message ? `<div class="conges-card-reponse">💬 Réponse${c.traite_par ? ' de ' + c.traite_par : ''} : ${c.reponse_message}</div>` : ''}
+        ${c.reponse_message ? `<div class="conges-card-reponse"><span class="ico" data-ico="bulle"></span> Réponse${c.traite_par ? ' de ' + c.traite_par : ''} : ${c.reponse_message}</div>` : ''}
       </div>
       <div class="conges-card-right">
         <span class="status-badge status-${STATUS_BADGE_CLASS[c.status]}">${STATUS_LABELS[c.status]}</span>
@@ -375,7 +375,7 @@ async function loadPlanningEquipe() {
   if (!data || data.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
-        <div class="empty-state-icon">📅</div>
+        <div class="empty-state-icon"><span class="ico" data-ico="date"></span></div>
         <p>Aucun congé à venir pour le moment dans l'équipe.</p>
       </div>`;
     return;
@@ -411,6 +411,6 @@ function showToast(msg, type = '') {
 
 init();
 </script>
-<script src="sidebar.js"></script>
+<script src="sidebar.js?v=3"></script>
 </body>
 </html>
