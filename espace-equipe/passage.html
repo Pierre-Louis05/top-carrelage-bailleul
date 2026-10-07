@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fiche de passage · Espace Équipe Top Carrelage</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="../favicon-96.png" sizes="96x96" type="image/png" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <meta name="theme-color" content="#14263C" />
+  <link rel="stylesheet" href="../fonts/polices-equipe.css" />
+  <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="suivi.css?v=1" />
+</head>
+<body>
+<div class="app-layout">
+
+<aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Top Carrelage</div>
+      <span class="sidebar-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">Chargement…</div>
+        <div class="sidebar-user-role" id="sidebarRole"></div>
+      </div>
+    </div>
+        <nav class="sidebar-nav">
+      <div class="sidebar-section">Demandes RDV</div>
+      <a href="dashboard.html" class="sidebar-link"><span>📅</span> Tableau de bord<span class="sidebar-badge" id="badge-nouveau" style="display:none;">0</span></a>
+      <div class="sidebar-section">Site web</div>
+      <a href="messages.html" class="sidebar-link"><span>💬</span> Messages de contact</a>
+      <a href="temoignages.html" class="sidebar-link"><span>⭐</span> Témoignages</a>
+      <div class="sidebar-section">Dépôt</div>
+      <a href="consommables.html" class="sidebar-link"><span>🧱</span> Stock consommables</a>
+      <div class="sidebar-section">Clients</div>
+      <a href="suivi.html" class="sidebar-link"><span>🗂️</span> Suivi client</a>
+      <a href="passage.html" class="sidebar-link active"><span>✍️</span> Fiche de passage</a>
+      <a href="depot.html" class="sidebar-link"><span>📥</span> Déposer un document</a>
+      <div class="sidebar-section">Équipe</div>
+      <a href="planning.html" class="sidebar-link"><span>🗓️</span> Planning</a>
+      <a href="horaires.html" class="sidebar-link"><span>⏰</span> Emploi du temps</a>
+      <a href="pointage.html" class="sidebar-link"><span>🕐</span> Mon pointage</a>
+      <a href="conges.html" class="sidebar-link"><span>🏖️</span> Mes congés</a>
+      <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span>👥</span> Présence équipe</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Fiche de passage</div>
+      <div class="topbar-actions" id="topbarActions"></div>
+    </div>
+
+    <div class="page-content">
+
+      <div class="passage-form" id="zonePassage">
+
+        <div class="bloc">
+          <h3>Le client</h3>
+          <p class="aide">Trois champs suffisent. Le reste se remplit en cliquant.</p>
+          <div class="champ">
+            <label class="obligatoire" for="pNom">Nom</label>
+            <input type="text" id="pNom" placeholder="M. et Mme Martin" autocomplete="off" required />
+          </div>
+          <div class="champ">
+            <label class="obligatoire" for="pTel">Téléphone</label>
+            <input type="tel" id="pTel" placeholder="06 12 34 56 78" autocomplete="off" required />
+            <span id="pDejaVu" style="font-size:0.82rem;"></span>
+          </div>
+          <div class="champ">
+            <label for="pMail">Adresse mail</label>
+            <input type="email" id="pMail" placeholder="facultatif" autocomplete="off" />
+          </div>
+          <div class="champ">
+            <label>Particulier ou professionnel</label>
+            <div class="boutons-choix" data-groupe="type_client">
+              <button type="button" data-val="particulier" class="choisi">Particulier</button>
+              <button type="button" data-val="professionnel">Professionnel</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="bloc">
+          <h3>Le projet</h3>
+          <p class="aide">Le type de projet est obligatoire, il détermine l'univers et les relances.</p>
+          <div class="champ">
+            <label class="obligatoire">Type de projet</label>
+            <div class="boutons-choix" data-groupe="type_projet">
+              <button type="button" data-val="Salle de bain">Salle de bain</button>
+              <button type="button" data-val="Sol intérieur">Sol intérieur</button>
+              <button type="button" data-val="Terrasse">Terrasse</button>
+              <button type="button" data-val="Parquet">Parquet</button>
+              <button type="button" data-val="Mur">Mur</button>
+              <button type="button" data-val="Autre">Autre</button>
+            </div>
+          </div>
+          <div class="champ">
+            <label>Budget évoqué</label>
+            <div class="boutons-choix" data-groupe="budget">
+              <button type="button" data-val="moins_2k">moins de 2 k€</button>
+              <button type="button" data-val="2_5k">2 à 5 k€</button>
+              <button type="button" data-val="5_10k">5 à 10 k€</button>
+              <button type="button" data-val="plus_10k">plus de 10 k€</button>
+            </div>
+          </div>
+          <div class="champ">
+            <label>Échéance</label>
+            <div class="boutons-choix" data-groupe="echeance">
+              <button type="button" data-val="urgent">Urgent</button>
+              <button type="button" data-val="moins_3_mois">Moins de 3 mois</button>
+              <button type="button" data-val="plus_tard">Plus tard</button>
+            </div>
+          </div>
+          <div class="champ">
+            <label for="pSurface">Surface approximative, en m²</label>
+            <input type="number" id="pSurface" step="0.1" min="0" placeholder="facultatif" />
+          </div>
+        </div>
+
+        <div class="bloc">
+          <h3>Le suivi</h3>
+          <p class="aide">Le canal choisi décide si la relance sera un appel ou un mail.</p>
+          <div class="champ">
+            <label>Préfère être contacté par</label>
+            <div class="boutons-choix" data-groupe="canal_prefere">
+              <button type="button" data-val="telephone">Téléphone</button>
+              <button type="button" data-val="mail">Mail</button>
+            </div>
+          </div>
+          <div class="champ">
+            <label>Comment il nous a connus</label>
+            <div class="boutons-choix" data-groupe="provenance">
+              <button type="button" data-val="passage">En passant</button>
+              <button type="button" data-val="site">Le site</button>
+              <button type="button" data-val="google">Google</button>
+              <button type="button" data-val="bouche_a_oreille">Bouche-à-oreille</button>
+              <button type="button" data-val="autre">Autre</button>
+            </div>
+          </div>
+          <div class="champ">
+            <label for="pEchantillon">Échantillon emporté</label>
+            <input type="text" id="pEchantillon" placeholder="désignation, laisser vide si aucun" />
+          </div>
+          <div class="champ">
+            <label for="pCaution">Caution laissée, en euros</label>
+            <input type="number" id="pCaution" step="1" min="0" placeholder="0" />
+          </div>
+          <div class="champ">
+            <label for="pNote">Note</label>
+            <textarea id="pNote" placeholder="Ce qui s'est dit, ce qu'il a aimé, ses contraintes."></textarea>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <button class="btn-primary" id="pEnregistrer">Enregistrer la fiche</button>
+          <button class="btn-action" id="pVider" type="button">Tout effacer</button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="sidebar.js"></script>
+<script src="suivi-commun.js?v=1"></script>
+<script>
+
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let moi = null, monProfil = null;
+
+function toast(msg, duree = 3200) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), duree);
+}
+
+/** Les tables ne sont pas encore creees : on le dit au lieu d'afficher une page vide. */
+function tablesAbsentes(err) {
+  return err && (err.code === '42P01' || /does not exist|schema cache/i.test(err.message || ''));
+}
+function montrerInstallation(ou) {
+  document.getElementById(ou).innerHTML = `
+    <div class="empty-state">
+      <div class="empty-state-icon">&#9881;</div>
+      <h3>Le suivi client n'est pas encore installe</h3>
+      <p>Les tables doivent etre creees une premiere fois dans Supabase.</p>
+      <p style="margin-top:14px; font-size:0.86rem;">
+        Ouvrez <b>Supabase &rsaquo; SQL Editor</b>, collez le contenu du fichier
+        <b>sql/suivi_client_setup.sql</b> du depot, puis cliquez sur Run.
+        Rechargez ensuite cette page.
+      </p>
+    </div>`;
+}
+
+async function connexion() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return false; }
+  moi = session.user;
+  const { data: p } = await db.from('employee_profiles').select('*').eq('id', moi.id).single();
+  if (p) {
+    monProfil = p;
+    document.getElementById('sidebarName').textContent = p.prenom + ' ' + p.nom;
+    document.getElementById('sidebarRole').textContent = p.poste;
+    document.getElementById('sidebarAvatar').textContent = (p.prenom[0] || '') + (p.nom[0] || '');
+  }
+  const btn = document.getElementById('logoutBtn');
+  if (btn) btn.addEventListener('click', async () => {
+    await db.auth.signOut(); window.location.href = 'index.html';
+  });
+  return true;
+}
+
+const choix = { type_client: 'particulier' };
+
+document.querySelectorAll('.boutons-choix').forEach((groupe) => {
+  groupe.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    const g = groupe.dataset.groupe;
+    // Recliquer sur le meme bouton annule le choix : plus rapide que chercher
+    // un bouton « aucun », et evite les fiches remplies par erreur.
+    if (choix[g] === b.dataset.val) { delete choix[g]; b.classList.remove('choisi'); return; }
+    groupe.querySelectorAll('button').forEach((x) => x.classList.remove('choisi'));
+    b.classList.add('choisi');
+    choix[g] = b.dataset.val;
+  });
+});
+
+const UNIVERS_PAR_PROJET = {
+  'Salle de bain': 'sanitaire', 'Sol intérieur': 'carrelage', 'Terrasse': 'carrelage',
+  'Parquet': 'parquet', 'Mur': 'carrelage', 'Autre': 'autre',
+};
+
+/* Prevenir si le telephone correspond deja a un dossier : cela evite les
+   doublons, qui sont ensuite penibles a demeler. */
+let clientExistant = null;
+document.getElementById('pTel').addEventListener('blur', async () => {
+  const info = document.getElementById('pDejaVu');
+  clientExistant = null; info.textContent = '';
+  const norme = normaliserTel(document.getElementById('pTel').value);
+  if (!norme) return;
+  const { data, error } = await db.from('suivi_clients').select('id, nom, ville')
+    .eq('telephone_norme', norme).limit(1);
+  if (error || !data || !data.length) return;
+  clientExistant = data[0];
+  info.innerHTML = `<span style="color:var(--confirme);">Dossier existant : <b>${esc(data[0].nom)}</b>${
+    data[0].ville ? ' · ' + esc(data[0].ville) : ''}. Le projet y sera ajouté.</span>`;
+});
+
+document.getElementById('pVider').addEventListener('click', () => {
+  if (!confirm('Effacer tout ce qui est saisi ?')) return;
+  location.reload();
+});
+
+document.getElementById('pEnregistrer').addEventListener('click', async () => {
+  const nom = document.getElementById('pNom').value.trim();
+  const tel = document.getElementById('pTel').value.trim();
+  if (!nom)                 return toast('Le nom est obligatoire.');
+  if (!normaliserTel(tel))  return toast('Un téléphone valide est obligatoire.');
+  if (!choix.type_projet)   return toast('Choisissez un type de projet.');
+
+  const bouton = document.getElementById('pEnregistrer');
+  bouton.disabled = true; bouton.textContent = 'Enregistrement…';
+
+  try {
+    let clientId = clientExistant?.id ?? null;
+
+    if (!clientId) {
+      const { data, error } = await db.from('suivi_clients').insert({
+        nom,
+        telephone: tel,
+        telephone_norme: normaliserTel(tel),
+        email: document.getElementById('pMail').value.trim() || null,
+        type_client: choix.type_client ?? 'particulier',
+        cree_par: moi.id,
+      }).select('id').single();
+      if (error) throw error;
+      clientId = data.id;
+    }
+
+    const { data: projet, error: e2 } = await db.from('suivi_projets').insert({
+      client_id: clientId,
+      titre: choix.type_projet,
+      type_projet: choix.type_projet,
+      univers: UNIVERS_PAR_PROJET[choix.type_projet] ?? 'autre',
+      etape: 'premier_passage',
+      vendeur_id: moi.id,
+      canal_prefere: choix.canal_prefere ?? null,
+      budget: choix.budget ?? null,
+      echeance: choix.echeance ?? null,
+      provenance: choix.provenance ?? null,
+      surface: parseFloat(document.getElementById('pSurface').value) || null,
+      note: document.getElementById('pNote').value.trim() || null,
+      cree_par: moi.id,
+    }).select('id').single();
+    if (e2) throw e2;
+
+    const ech = document.getElementById('pEchantillon').value.trim();
+    if (ech) {
+      await db.from('suivi_echantillons').insert({
+        projet_id: projet.id, designation: ech,
+        caution: parseFloat(document.getElementById('pCaution').value) || 0,
+        cree_par: moi.id,
+      });
+    }
+
+    await tracer(db, projet.id, 'passage',
+      `Fiche de passage créée par ${monProfil?.prenom ?? 'un vendeur'}` + (ech ? ` · échantillon prêté : ${ech}` : ''),
+      moi.id);
+
+    toast('Fiche enregistrée.');
+    setTimeout(() => { window.location.href = 'client.html?id=' + clientId; }, 700);
+  } catch (err) {
+    console.error(err);
+    if (tablesAbsentes(err)) { montrerInstallation('zonePassage'); return; }
+    toast('Enregistrement impossible : ' + (err.message || 'erreur inconnue'), 6000);
+    bouton.disabled = false; bouton.textContent = 'Enregistrer la fiche';
+  }
+});
+
+connexion();
+
+</script>
+</body>
+</html>

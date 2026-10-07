@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suivi client · Espace Équipe Top Carrelage</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="../favicon-96.png" sizes="96x96" type="image/png" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <meta name="theme-color" content="#14263C" />
+  <link rel="stylesheet" href="../fonts/polices-equipe.css" />
+  <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="suivi.css?v=1" />
+</head>
+<body>
+<div class="app-layout">
+
+<aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Top Carrelage</div>
+      <span class="sidebar-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">Chargement…</div>
+        <div class="sidebar-user-role" id="sidebarRole"></div>
+      </div>
+    </div>
+        <nav class="sidebar-nav">
+      <div class="sidebar-section">Demandes RDV</div>
+      <a href="dashboard.html" class="sidebar-link"><span>📅</span> Tableau de bord<span class="sidebar-badge" id="badge-nouveau" style="display:none;">0</span></a>
+      <div class="sidebar-section">Site web</div>
+      <a href="messages.html" class="sidebar-link"><span>💬</span> Messages de contact</a>
+      <a href="temoignages.html" class="sidebar-link"><span>⭐</span> Témoignages</a>
+      <div class="sidebar-section">Dépôt</div>
+      <a href="consommables.html" class="sidebar-link"><span>🧱</span> Stock consommables</a>
+      <div class="sidebar-section">Clients</div>
+      <a href="suivi.html" class="sidebar-link active"><span>🗂️</span> Suivi client</a>
+      <a href="passage.html" class="sidebar-link"><span>✍️</span> Fiche de passage</a>
+      <a href="depot.html" class="sidebar-link"><span>📥</span> Déposer un document</a>
+      <div class="sidebar-section">Équipe</div>
+      <a href="planning.html" class="sidebar-link"><span>🗓️</span> Planning</a>
+      <a href="horaires.html" class="sidebar-link"><span>⏰</span> Emploi du temps</a>
+      <a href="pointage.html" class="sidebar-link"><span>🕐</span> Mon pointage</a>
+      <a href="conges.html" class="sidebar-link"><span>🏖️</span> Mes congés</a>
+      <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span>👥</span> Présence équipe</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Suivi client</div>
+      <div class="topbar-actions" id="topbarActions"></div>
+    </div>
+
+    <div class="page-content">
+
+      <div id="zoneSuivi">
+        <div class="etapes-barre" id="barreEtapes"></div>
+        <div class="recherche-ligne">
+          <input type="search" id="recherche" placeholder="Nom, téléphone, ville, numéro de devis…" autocomplete="off" />
+          <select id="filtreVendeur"><option value="">Tous les vendeurs</option></select>
+          <select id="filtreUnivers"><option value="">Tous les univers</option></select>
+        </div>
+        <div class="projet-liste" id="liste"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="sidebar.js"></script>
+<script src="suivi-commun.js?v=1"></script>
+<script>
+
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let moi = null, monProfil = null;
+
+function toast(msg, duree = 3200) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), duree);
+}
+
+/** Les tables ne sont pas encore creees : on le dit au lieu d'afficher une page vide. */
+function tablesAbsentes(err) {
+  return err && (err.code === '42P01' || /does not exist|schema cache/i.test(err.message || ''));
+}
+function montrerInstallation(ou) {
+  document.getElementById(ou).innerHTML = `
+    <div class="empty-state">
+      <div class="empty-state-icon">&#9881;</div>
+      <h3>Le suivi client n'est pas encore installe</h3>
+      <p>Les tables doivent etre creees une premiere fois dans Supabase.</p>
+      <p style="margin-top:14px; font-size:0.86rem;">
+        Ouvrez <b>Supabase &rsaquo; SQL Editor</b>, collez le contenu du fichier
+        <b>sql/suivi_client_setup.sql</b> du depot, puis cliquez sur Run.
+        Rechargez ensuite cette page.
+      </p>
+    </div>`;
+}
+
+async function connexion() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return false; }
+  moi = session.user;
+  const { data: p } = await db.from('employee_profiles').select('*').eq('id', moi.id).single();
+  if (p) {
+    monProfil = p;
+    document.getElementById('sidebarName').textContent = p.prenom + ' ' + p.nom;
+    document.getElementById('sidebarRole').textContent = p.poste;
+    document.getElementById('sidebarAvatar').textContent = (p.prenom[0] || '') + (p.nom[0] || '');
+  }
+  const btn = document.getElementById('logoutBtn');
+  if (btn) btn.addEventListener('click', async () => {
+    await db.auth.signOut(); window.location.href = 'index.html';
+  });
+  return true;
+}
+
+let projets = [], vendeurs = {}, etapeActive = '', terme = '';
+
+async function charger() {
+  const { data: profils } = await db.from('employee_profiles').select('id, prenom, nom');
+  (profils || []).forEach((p) => { vendeurs[p.id] = p.prenom + ' ' + p.nom; });
+  const sel = document.getElementById('filtreVendeur');
+  Object.entries(vendeurs).forEach(([id, nom]) =>
+    sel.insertAdjacentHTML('beforeend', `<option value="${id}">${esc(nom)}</option>`));
+  const selU = document.getElementById('filtreUnivers');
+  Object.entries(UNIVERS).forEach(([k, v]) =>
+    selU.insertAdjacentHTML('beforeend', `<option value="${k}">${esc(v.libelle)}</option>`));
+
+  const { data, error } = await db.from('suivi_projets')
+    .select('*, suivi_clients(id, nom, telephone, ville), suivi_documents(numero, type_doc)')
+    .order('maj_le', { ascending: false }).limit(500);
+
+  if (error) {
+    if (tablesAbsentes(error)) { montrerInstallation('zoneSuivi'); return; }
+    document.getElementById('liste').innerHTML =
+      `<div class="empty-state"><h3>Chargement impossible</h3><p>${esc(error.message)}</p></div>`;
+    return;
+  }
+  projets = data || [];
+  dessinerEtapes();
+  dessinerListe();
+}
+
+function dessinerEtapes() {
+  const compte = {};
+  projets.forEach((p) => { compte[p.etape] = (compte[p.etape] || 0) + 1; });
+  const barre = document.getElementById('barreEtapes');
+  barre.innerHTML = `<button class="etape-pion${etapeActive===''?' actif':''}" data-e="">
+      Tous <span class="n">${projets.length}</span></button>` +
+    Object.entries(ETAPES).sort((a,b) => a[1].ordre - b[1].ordre).map(([k, v]) =>
+      `<button class="etape-pion${etapeActive===k?' actif':''}" data-e="${k}">
+         <span class="etape-puce" style="background:${v.couleur}"></span>
+         ${v.libelle} <span class="n">${compte[k] || 0}</span></button>`).join('');
+  barre.querySelectorAll('.etape-pion').forEach((b) =>
+    b.addEventListener('click', () => { etapeActive = b.dataset.e; dessinerEtapes(); dessinerListe(); }));
+}
+
+function dessinerListe() {
+  const vend = document.getElementById('filtreVendeur').value;
+  const univ = document.getElementById('filtreUnivers').value;
+  const t = cleNom(terme), tChiffres = normaliserTel(terme);
+
+  const vus = projets.filter((p) => {
+    if (etapeActive && p.etape !== etapeActive) return false;
+    if (vend && p.vendeur_id !== vend) return false;
+    if (univ && p.univers !== univ) return false;
+    if (!terme) return true;
+    const c = p.suivi_clients || {};
+    if (tChiffres && normaliserTel(c.telephone) === tChiffres) return true;
+    const sac = cleNom([c.nom, c.ville, p.titre, p.type_projet,
+      (p.suivi_documents || []).map((d) => d.numero).join(' ')].join(' '));
+    return t && sac.includes(t);
+  });
+
+  const liste = document.getElementById('liste');
+  if (!vus.length) {
+    liste.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon">&#128269;</div>
+      <h3>${projets.length ? 'Aucun projet ne correspond' : 'Aucun projet pour le moment'}</h3>
+      <p>${projets.length ? 'Modifiez la recherche ou les filtres.'
+        : 'Commencez par une <a href="passage.html" style="color:var(--or);">fiche de passage</a> ou le <a href="depot.html" style="color:var(--or);">dépôt d\'un devis</a>.'}</p>
+    </div>`;
+    return;
+  }
+
+  liste.innerHTML = vus.map((p) => {
+    const c = p.suivi_clients || {}; const e = ETAPES[p.etape]; const u = UNIVERS[p.univers];
+    const docs = (p.suivi_documents || []).length;
+    return `<a class="projet-carte" href="client.html?id=${c.id}#projet-${p.id}">
+      <span class="projet-bande" style="background:${e.couleur}"></span>
+      <div class="projet-corps">
+        <div class="projet-client">${esc(c.nom ?? 'Client inconnu')}</div>
+        <div class="projet-titre">${esc(p.titre)}${u ? ' · ' + esc(u.libelle) : ''}</div>
+        <div class="projet-meta">
+          ${c.telephone ? `<span>${esc(c.telephone)}</span>` : ''}
+          ${c.ville ? `<span>${esc(c.ville)}</span>` : ''}
+          <span>${vendeurs[p.vendeur_id] ? esc(vendeurs[p.vendeur_id]) : 'sans vendeur'}</span>
+          ${docs ? `<span>${docs} document${docs > 1 ? 's' : ''}</span>` : ''}
+          <span>maj ${dateCourte(p.maj_le)}</span>
+        </div>
+      </div>
+      <div class="projet-droite">
+        <span class="puce-etape" style="color:${e.couleur}">
+          <span class="etape-puce" style="background:${e.couleur}"></span>${e.libelle}</span>
+        ${p.montant_ttc ? `<span class="projet-montant">${euros(p.montant_ttc)}</span>` : ''}
+      </div>
+    </a>`;
+  }).join('');
+}
+
+let minuteur;
+document.getElementById('recherche').addEventListener('input', (e) => {
+  clearTimeout(minuteur);
+  minuteur = setTimeout(() => { terme = e.target.value.trim(); dessinerListe(); }, 180);
+});
+['filtreVendeur','filtreUnivers'].forEach((x) =>
+  document.getElementById(x).addEventListener('change', dessinerListe));
+
+document.getElementById('topbarActions').innerHTML =
+  `<a href="passage.html" class="btn-primary" style="text-decoration:none;">Nouvelle fiche</a>`;
+
+connexion().then((ok) => { if (ok) charger(); });
+
+</script>
+</body>
+</html>

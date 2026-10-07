@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dossier client · Espace Équipe Top Carrelage</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="../favicon-96.png" sizes="96x96" type="image/png" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <meta name="theme-color" content="#14263C" />
+  <link rel="stylesheet" href="../fonts/polices-equipe.css" />
+  <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="suivi.css?v=1" />
+</head>
+<body>
+<div class="app-layout">
+
+<aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Top Carrelage</div>
+      <span class="sidebar-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">Chargement…</div>
+        <div class="sidebar-user-role" id="sidebarRole"></div>
+      </div>
+    </div>
+        <nav class="sidebar-nav">
+      <div class="sidebar-section">Demandes RDV</div>
+      <a href="dashboard.html" class="sidebar-link"><span>📅</span> Tableau de bord<span class="sidebar-badge" id="badge-nouveau" style="display:none;">0</span></a>
+      <div class="sidebar-section">Site web</div>
+      <a href="messages.html" class="sidebar-link"><span>💬</span> Messages de contact</a>
+      <a href="temoignages.html" class="sidebar-link"><span>⭐</span> Témoignages</a>
+      <div class="sidebar-section">Dépôt</div>
+      <a href="consommables.html" class="sidebar-link"><span>🧱</span> Stock consommables</a>
+      <div class="sidebar-section">Clients</div>
+      <a href="suivi.html" class="sidebar-link active"><span>🗂️</span> Suivi client</a>
+      <a href="passage.html" class="sidebar-link"><span>✍️</span> Fiche de passage</a>
+      <a href="depot.html" class="sidebar-link"><span>📥</span> Déposer un document</a>
+      <div class="sidebar-section">Équipe</div>
+      <a href="planning.html" class="sidebar-link"><span>🗓️</span> Planning</a>
+      <a href="horaires.html" class="sidebar-link"><span>⏰</span> Emploi du temps</a>
+      <a href="pointage.html" class="sidebar-link"><span>🕐</span> Mon pointage</a>
+      <a href="conges.html" class="sidebar-link"><span>🏖️</span> Mes congés</a>
+      <a href="commandes.html" class="sidebar-link"><span>📦</span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span>👥</span> Présence équipe</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Dossier client</div>
+      <div class="topbar-actions" id="topbarActions"></div>
+    </div>
+
+    <div class="page-content">
+
+      <div id="zoneClient">
+        <div class="loading"><div class="spinner"></div> Chargement du dossier…</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="sidebar.js"></script>
+<script src="suivi-commun.js?v=1"></script>
+<script>
+
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let moi = null, monProfil = null;
+
+function toast(msg, duree = 3200) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), duree);
+}
+
+/** Les tables ne sont pas encore creees : on le dit au lieu d'afficher une page vide. */
+function tablesAbsentes(err) {
+  return err && (err.code === '42P01' || /does not exist|schema cache/i.test(err.message || ''));
+}
+function montrerInstallation(ou) {
+  document.getElementById(ou).innerHTML = `
+    <div class="empty-state">
+      <div class="empty-state-icon">&#9881;</div>
+      <h3>Le suivi client n'est pas encore installe</h3>
+      <p>Les tables doivent etre creees une premiere fois dans Supabase.</p>
+      <p style="margin-top:14px; font-size:0.86rem;">
+        Ouvrez <b>Supabase &rsaquo; SQL Editor</b>, collez le contenu du fichier
+        <b>sql/suivi_client_setup.sql</b> du depot, puis cliquez sur Run.
+        Rechargez ensuite cette page.
+      </p>
+    </div>`;
+}
+
+async function connexion() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return false; }
+  moi = session.user;
+  const { data: p } = await db.from('employee_profiles').select('*').eq('id', moi.id).single();
+  if (p) {
+    monProfil = p;
+    document.getElementById('sidebarName').textContent = p.prenom + ' ' + p.nom;
+    document.getElementById('sidebarRole').textContent = p.poste;
+    document.getElementById('sidebarAvatar').textContent = (p.prenom[0] || '') + (p.nom[0] || '');
+  }
+  const btn = document.getElementById('logoutBtn');
+  if (btn) btn.addEventListener('click', async () => {
+    await db.auth.signOut(); window.location.href = 'index.html';
+  });
+  return true;
+}
+
+const clientId = new URLSearchParams(location.search).get('id');
+let vendeurs = {};
+
+async function charger() {
+  if (!clientId) { window.location.href = 'suivi.html'; return; }
+
+  const { data: profils } = await db.from('employee_profiles').select('id, prenom, nom');
+  (profils || []).forEach((p) => { vendeurs[p.id] = p.prenom + ' ' + p.nom; });
+
+  const { data: client, error } = await db.from('suivi_clients').select('*').eq('id', clientId).single();
+  if (error) {
+    if (tablesAbsentes(error)) { montrerInstallation('zoneClient'); return; }
+    document.getElementById('zoneClient').innerHTML =
+      `<div class="empty-state"><h3>Dossier introuvable</h3>
+       <p><a href="suivi.html" style="color:var(--or);">Retour au suivi</a></p></div>`;
+    return;
+  }
+
+  const { data: projets } = await db.from('suivi_projets')
+    .select('*, suivi_documents(*), suivi_historique(*), suivi_echantillons(*)')
+    .eq('client_id', clientId).order('maj_le', { ascending: false });
+
+  dessiner(client, projets || []);
+}
+
+function dessiner(c, projets) {
+  document.getElementById('topbarTitle').textContent = c.nom;
+
+  const coord = [
+    c.telephone ? `<a href="tel:${esc(c.telephone.replace(/\s/g,''))}">${esc(c.telephone)}</a>` : null,
+    c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : null,
+    [c.adresse, c.code_postal, c.ville].filter(Boolean).join(' ') || null,
+    c.type_client === 'professionnel' ? 'Professionnel' : 'Particulier',
+  ].filter(Boolean);
+
+  document.getElementById('zoneClient').innerHTML = `
+    <div class="entete-client">
+      <div>
+        <h2>${esc(c.nom)}</h2>
+        <div class="coordonnees">${coord.map((x) => `<span>${x}</span>`).join('')}</div>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="suivi.html" class="btn-action" style="text-decoration:none;">Retour au suivi</a>
+        <button class="btn-primary" id="nouveauProjet">Nouveau projet</button>
+      </div>
+    </div>
+    ${projets.length ? projets.map(blocProjet).join('')
+      : `<div class="empty-state"><h3>Aucun projet</h3>
+         <p>Ce dossier n'a pas encore de projet. Créez-en un, ou déposez un devis.</p></div>`}`;
+
+  document.getElementById('nouveauProjet').addEventListener('click', creerProjet);
+  projets.forEach(brancher);
+  if (location.hash) document.querySelector(location.hash)?.scrollIntoView({ behavior: 'smooth' });
+}
+
+function blocProjet(p) {
+  const e = ETAPES[p.etape], u = UNIVERS[p.univers];
+  const docs = (p.suivi_documents || []).sort((a, b) => (a.date_doc || '').localeCompare(b.date_doc || ''));
+  const histo = (p.suivi_historique || []).sort((a, b) => b.cree_le.localeCompare(a.cree_le));
+  const ech = (p.suivi_echantillons || []).filter((x) => !x.rendu_le);
+
+  const details = [
+    p.type_projet, u?.libelle,
+    p.surface ? p.surface + ' m²' : null,
+    BUDGETS[p.budget],
+    p.canal_prefere ? 'contact par ' + (p.canal_prefere === 'mail' ? 'mail' : 'téléphone') : null,
+    vendeurs[p.vendeur_id],
+  ].filter(Boolean);
+
+  return `<div class="projet-bloc" id="projet-${p.id}" data-projet="${p.id}">
+    <header>
+      <div>
+        <b style="font-size:1.05rem;">${esc(p.titre)}</b>
+        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:3px;">${esc(details.join(' · '))}</div>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        ${p.montant_ttc ? `<span class="projet-montant">${euros(p.montant_ttc)}</span>` : ''}
+        <select data-act="etape" style="background:var(--surface2); border:1px solid ${e.couleur};
+                border-radius:999px; color:${e.couleur}; padding:6px 12px; font-family:var(--font); font-size:0.78rem;">
+          ${Object.entries(ETAPES).sort((a,b)=>a[1].ordre-b[1].ordre)
+            .map(([k,v]) => `<option value="${k}"${p.etape===k?' selected':''}>${v.libelle}</option>`).join('')}
+        </select>
+      </div>
+    </header>
+    <div class="corps">
+      ${p.note ? `<div style="font-size:0.88rem; white-space:pre-wrap;">${esc(p.note)}</div>` : ''}
+      ${p.raison_perdu ? `<div class="rattachement doute">Perdu : ${esc(RAISONS_PERDU[p.raison_perdu])}${
+        p.detail_perdu ? ' · ' + esc(p.detail_perdu) : ''}</div>` : ''}
+
+      ${ech.length ? `<div class="rattachement doute">
+        ${ech.length} échantillon${ech.length>1?'s':''} non rendu${ech.length>1?'s':''} :
+        ${ech.map((x) => esc(x.designation) + (x.caution ? ` (caution ${euros(x.caution)})` : '')).join(', ')}
+      </div>` : ''}
+
+      ${docs.length ? `<div class="docs-liste">${docs.map((d) => `
+        <div class="doc-ligne">
+          <span><span class="doc-num">${esc(d.numero)}</span> · ${({devis:'Devis',commande:'Commande',facture:'Facture'})[d.type_doc]}
+            · ${dateCourte(d.date_doc)}${d.numero_lie ? ` · suite de ${esc(d.numero_lie)}` : ''}</span>
+          <span>${d.total_ttc ? euros(d.total_ttc) : (d.total_ht ? euros(d.total_ht) + ' HT' : '')}</span>
+        </div>`).join('')}</div>`
+        : `<p style="font-size:0.85rem; color:var(--text-muted);">Aucun document.
+           <a href="depot.html" style="color:var(--or);">En déposer un</a>.</p>`}
+
+      <div class="champ" style="margin:0;">
+        <label>Ajouter une note</label>
+        <textarea data-act="note" placeholder="Ce qui s'est dit, la suite prévue…" style="min-height:62px;"></textarea>
+        <div><button class="btn-action btn-sm" data-act="ajouter-note">Ajouter</button></div>
+      </div>
+
+      ${histo.length ? `<details class="brut"><summary>Historique, ${histo.length} entrée${histo.length>1?'s':''}</summary>
+        <div class="histo" style="margin-top:12px;">${histo.map((h) => `
+          <div class="histo-item">${esc(h.texte)}
+            <div class="histo-quand">${dateLongue(h.cree_le)} · ${esc(vendeurs[h.auteur_id] ?? 'système')}</div>
+          </div>`).join('')}</div></details>` : ''}
+    </div>
+  </div>`;
+}
+
+function brancher(p) {
+  const bloc = document.querySelector(`[data-projet="${p.id}"]`);
+  if (!bloc) return;
+
+  bloc.querySelector('[data-act="etape"]').addEventListener('change', async (e) => {
+    const nouvelle = e.target.value;
+    const maj = { etape: nouvelle };
+
+    // Une vente perdue sans raison ne sert a rien : c'est justement ce chiffre
+    // que le patron veut lire en fin de mois.
+    if (nouvelle === 'perdu') {
+      const choix = prompt(
+        'Pourquoi ce projet est-il perdu ?\n\n' +
+        '1 Trop cher\n2 Délai trop long\n3 Parti chez un concurrent\n4 Projet abandonné\n5 Autre\n\n' +
+        'Tapez le chiffre :');
+      const cles = { '1':'prix', '2':'delai', '3':'concurrent', '4':'abandonne', '5':'autre' };
+      if (!cles[choix]) { e.target.value = p.etape; return toast('Étape inchangée : la raison est obligatoire.'); }
+      maj.raison_perdu = cles[choix];
+      maj.detail_perdu = prompt('Un détail à retenir ? (facultatif)') || null;
+    }
+
+    const { error } = await db.from('suivi_projets').update(maj).eq('id', p.id);
+    if (error) { e.target.value = p.etape; return toast('Modification impossible.'); }
+    await tracer(db, p.id, 'etape',
+      `Étape passée à « ${ETAPES[nouvelle].libelle} »` +
+      (maj.raison_perdu ? ` · ${RAISONS_PERDU[maj.raison_perdu]}` : ''), moi.id);
+    toast('Étape mise à jour.');
+    charger();
+  });
+
+  bloc.querySelector('[data-act="ajouter-note"]').addEventListener('click', async () => {
+    const zone = bloc.querySelector('[data-act="note"]');
+    const texte = zone.value.trim();
+    if (!texte) return;
+    await tracer(db, p.id, 'note', texte, moi.id);
+    zone.value = '';
+    toast('Note ajoutée.');
+    charger();
+  });
+}
+
+async function creerProjet() {
+  const titre = prompt('Nom du projet ? (par exemple : Salle de bain, Terrasse)');
+  if (!titre) return;
+  const { data, error } = await db.from('suivi_projets').insert({
+    client_id: clientId, titre: titre.trim(), etape: 'premier_passage',
+    vendeur_id: moi.id, cree_par: moi.id,
+  }).select('id').single();
+  if (error) return toast('Création impossible.');
+  await tracer(db, data.id, 'passage', `Projet « ${titre.trim()} » créé`, moi.id);
+  charger();
+}
+
+connexion().then((ok) => { if (ok) charger(); });
+
+</script>
+</body>
+</html>
