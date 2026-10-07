@@ -244,6 +244,12 @@
         <div class="sep" style="margin-bottom:2rem;"></div>
 
         <form action="#" method="post" onsubmit="handleContactSubmit(event)">
+          <!-- Champ-piege anti-robot. Invisible et hors du parcours au clavier,
+               un visiteur ne le remplira jamais. Les robots remplissent tout. -->
+          <div aria-hidden="true" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
+            <label for="c-site">Ne pas remplir ce champ</label>
+            <input type="text" id="c-site" name="site" tabindex="-1" autocomplete="off" />
+          </div>
           <div class="form-row">
             <div class="form-group">
               <label for="c-prenom">Prénom *</label>
@@ -397,8 +403,28 @@
 const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
 
+/* Horodatage de l'ouverture : un robot envoie en moins d'une seconde, un
+   humain met au moins quelques secondes a ecrire son message. */
+const ouvertureFormulaire = Date.now();
+
+function afficherConfirmationContact() {
+  document.querySelector('.contact-form form').style.display = 'none';
+  document.querySelector('.contact-form h3').style.display = 'none';
+  document.querySelector('.contact-form .sep').style.display = 'none';
+  document.getElementById('contact-confirmation').style.display = 'block';
+}
+
 async function handleContactSubmit(e) {
   e.preventDefault();
+
+  // Deux filtres silencieux. On affiche la confirmation habituelle plutot
+  // qu'un refus : un robot a qui l'on dit non reessaie en changeant de methode.
+  const piege = document.getElementById('c-site');
+  const tropRapide = Date.now() - ouvertureFormulaire < 3000;
+  if ((piege && piege.value) || tropRapide) {
+    afficherConfirmationContact();
+    return;
+  }
 
   const btn = e.target.querySelector('button[type=submit]');
   const btnLabel = btn.textContent;
@@ -429,10 +455,7 @@ async function handleContactSubmit(e) {
 
     if (!res.ok) throw new Error('Erreur serveur');
 
-    document.querySelector('.contact-form form').style.display = 'none';
-    document.querySelector('.contact-form h3').style.display = 'none';
-    document.querySelector('.contact-form .sep').style.display = 'none';
-    document.getElementById('contact-confirmation').style.display = 'block';
+    afficherConfirmationContact();
     window.suivre?.('Formulaire envoyé', { page: 'contact' });
 
   } catch (err) {

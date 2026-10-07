@@ -53,11 +53,79 @@ Object.assign(ICONES, {
   liste:     '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
   casier:    '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18"/><path d="M10 7h4M10 12.5h4M10 17.5h4"/>',
   douche:    '<path d="M8 20v-7a4 4 0 0 1 8 0v7"/><path d="M12 9V5a2 2 0 0 1 2-2h5"/><path d="M7 20h10"/><path d="M10 13h.01M14 13h.01M12 16h.01"/>',
+  crayon:    '<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z"/><path d="M14 6l4 4"/>',
   sapin:     '<path d="M12 3 7 11h3l-4 6h12l-4-6h3z"/><path d="M12 17v4"/>',
 });
 
 /* Les pages fabriquent leur contenu en JavaScript : les marqueurs n'existent
    pas encore au premier passage. On redessine donc a chaque ajout au document. */
+
+/* ===========================================================================
+   Pastilles de nouveautes.
+   Elles comptent ce qui attend quelqu'un, sur chaque entree du menu et sur
+   toutes les pages. Sans elles, il fallait ouvrir chaque page pour savoir
+   s'il y avait du nouveau.
+   =========================================================================== */
+const A_COMPTER = [
+  { lien: 'dashboard.html',  table: 'rdv_requests',     colonne: 'status', valeur: 'nouveau' },
+  { lien: 'messages.html',   table: 'contact_requests', colonne: 'status', valeur: 'nouveau' },
+  { lien: 'temoignages.html',table: 'testimonials',     colonne: 'status', valeur: 'en_attente' },
+  { lien: 'suivi.html',      table: 'suivi_projets',    colonne: 'etape',  valeur: 'premier_passage' },
+];
+
+async function compterNouveautes() {
+  // Les pages declarent leur client avec « const db » : une declaration
+  // lexicale, qui n'est pas une propriete de window et qu'on ne peut donc pas
+  // lire d'ici de facon fiable. On ouvre notre propre connexion, avec la meme
+  // cle publique que les dix-sept pages.
+  if (typeof supabase === 'undefined') return;
+  if (!compterNouveautes._base) {
+    compterNouveautes._base = supabase.createClient(
+      'https://hzploaweyewjyxdhpmvo.supabase.co',
+      'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ');
+  }
+  const base = compterNouveautes._base;
+
+  const { data: { session } } = await base.auth.getSession();
+  if (!session) return;
+
+  let total = 0;
+  for (const c of A_COMPTER) {
+    const lien = document.querySelector(`.sidebar-link[href="${c.lien}"]`);
+    if (!lien) continue;
+    try {
+      const { count, error } = await base.from(c.table)
+        .select('id', { count: 'exact', head: true })
+        .eq(c.colonne, c.valeur);
+      if (error || !count) { retirerPastille(lien); continue; }
+      poserPastille(lien, count);
+      total += count;
+    } catch (e) {
+      retirerPastille(lien);   // table absente : on n'affiche rien plutot qu'un zero
+    }
+  }
+  // Le titre de l'onglet porte le total : on le voit sans revenir sur le site.
+  const titre = document.title.replace(/^\(\d+\)\s*/, '');
+  document.title = total ? `(${total}) ${titre}` : titre;
+}
+
+function poserPastille(lien, n) {
+  let p = lien.querySelector('.sidebar-badge');
+  if (!p) {
+    p = document.createElement('span');
+    p.className = 'sidebar-badge';
+    lien.appendChild(p);
+  }
+  p.textContent = n > 99 ? '99+' : n;
+  p.style.display = '';
+  lien.classList.add('a-du-nouveau');
+}
+
+function retirerPastille(lien) {
+  lien.querySelector('.sidebar-badge')?.remove();
+  lien.classList.remove('a-du-nouveau');
+}
+
 function surveillerIcones() {
   dessinerIcones(document);
   new MutationObserver((changements) => {
@@ -80,6 +148,9 @@ function dessinerIcones(racine) {
   function init() {
     const sidebar = document.querySelector('.sidebar');
     surveillerIcones();
+    compterNouveautes();
+    // Les collegues traitent les demandes pendant la journee : on rafraichit.
+    setInterval(compterNouveautes, 60000);
     const main    = document.querySelector('.main-content');
     if (!sidebar || !main) return;
 

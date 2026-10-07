@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
   <meta name="theme-color" content="#14263C" />
   <link rel="stylesheet" href="../fonts/polices-equipe.css" />
-  <link rel="stylesheet" href="app.css?v=3" />
+  <link rel="stylesheet" href="app.css?v=4" />
 </head>
 <body>
 <div class="app-layout">
@@ -217,7 +217,7 @@ function renderPage() {
           <h3>Commerciaux assignés</h3>
           <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
             ${rdv.assigned_to.map(name => `
-              <div style="display:flex; align-items:center; gap:0.5rem; padding:0.4rem 0.8rem; background:var(--surface2); border:1px solid rgba(201,168,76,0.2);">
+              <div style="display:flex; align-items:center; gap:0.5rem; padding:0.4rem 0.8rem; background:var(--surface2); border:1px solid rgba(237, 36, 66,0.2);">
                 <div class="assigned-avatar">${name.split(' ').map(n=>n[0]).join('').substring(0,2)}</div>
                 <span style="font-size:0.85rem;">${name}</span>
               </div>`).join('')}
@@ -560,6 +560,6 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
 
 init();
 </script>
-<script src="sidebar.js?v=3"></script>
+<script src="sidebar.js?v=4"></script>
 </body>
 </html>

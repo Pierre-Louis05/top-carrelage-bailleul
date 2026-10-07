@@ -261,6 +261,11 @@
         <div class="sep" style="margin-bottom:2rem;"></div>
 
         <form action="#" method="post" onsubmit="handleAvisSubmit(event)">
+          <!-- Champ-piege anti-robot : invisible et hors du parcours au clavier. -->
+          <div aria-hidden="true" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
+            <label for="a-site">Ne pas remplir ce champ</label>
+            <input type="text" id="a-site" name="site" tabindex="-1" autocomplete="off" />
+          </div>
           <div class="form-row">
             <div class="form-group">
               <label for="a-prenom">Prénom *</label>
@@ -431,7 +436,18 @@ stars.forEach(s => {
 });
 
 // ===== Soumission du formulaire =====
+const ouverture_handleAvisSubmit = Date.now();
+
 async function handleAvisSubmit(e) {
+  // Deux filtres silencieux : le champ-piege, et un envoi trop rapide pour
+  // etre humain. On ne dit rien au robot, sinon il change de methode.
+  {
+    const piege = document.getElementById('a-site');
+    if ((piege && piege.value) || Date.now() - ouverture_handleAvisSubmit < 3000) {
+      e.preventDefault();
+      return;
+    }
+  }
   e.preventDefault();
 
   if (!starInput.value) {

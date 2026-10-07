@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
   <meta name="theme-color" content="#14263C" />
   <link rel="stylesheet" href="../fonts/polices-equipe.css" />
-  <link rel="stylesheet" href="app.css?v=3" />
+  <link rel="stylesheet" href="app.css?v=4" />
   <style>
     /* ── Contrôles ─────────────────────────────────── */
     .cmd-topbar {
@@ -56,7 +56,7 @@
       font-size: 0.68rem; font-weight: 700; padding: 0.08rem 0.42rem;
       color: var(--text-muted); min-width: 18px; text-align: center;
     }
-    .cmd-tab.active .tab-n { background: rgba(212,175,55,0.18); color: var(--or); }
+    .cmd-tab.active .tab-n { background: rgba(237, 36, 66,0.18); color: var(--or); }
 
     /* ── Chips statut ──────────────────────────────── */
     .status-chips {
@@ -95,7 +95,7 @@
       font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.06em; color: var(--or);
       padding: 0.35rem 0.8rem;
-      background: rgba(212,175,55,0.07);
+      background: rgba(237, 36, 66,0.07);
       border-radius: 6px; margin-bottom: 0.3rem;
       border-left: 3px solid var(--or);
     }
@@ -103,14 +103,18 @@
     /* ── Lignes commande ───────────────────────────── */
     .cmd-row {
       display: grid;
-      grid-template-columns: 1fr 130px 170px 80px;
-      gap: 0; align-items: center;
+      /* minmax(0, Xfr) partout : sans le 0, une designation longue refuse de
+         se tronquer et pousse les colonnes de droite hors de l'ecran.
+         La colonne chantier grandit elle aussi, sinon tout l'espace gagne
+         sur un grand ecran se transforme en vide au milieu de la ligne. */
+      grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr) 92px 150px 72px;
+      gap: 0 14px; align-items: center;
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 8px; margin-bottom: 0.3rem;
       padding: 0.55rem 0.9rem; transition: var(--transition);
       min-height: 52px;
     }
-    .cmd-row:hover { border-color: rgba(212,175,55,0.4); background: var(--surface2); }
+    .cmd-row:hover { border-color: rgba(237, 36, 66,0.4); background: var(--surface2); }
 
     .cmd-cell-main { min-width: 0; padding-right: 0.8rem; }
     .cmd-client { font-weight: 700; font-size: 0.86rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -120,15 +124,23 @@
     .cmd-cell-date { font-size: 0.78rem; color: var(--text); padding-right: 0.6rem; }
     .cmd-date-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
 
-    .cmd-cell-status { padding-right: 0.5rem; }
+    .cmd-cell-poids {
+      font-size: 0.76rem; color: var(--text-muted); text-align: right;
+      font-variant-numeric: tabular-nums; white-space: nowrap;
+    }
+    .cmd-cell-status { padding-right: 0; }
     .cmd-cell-actions { display: flex; gap: 0.3rem; justify-content: flex-end; align-items: center; }
 
-    @media (max-width: 700px) {
-      .cmd-row { grid-template-columns: 1fr 150px 60px; }
+    @media (max-width: 1100px) {
+      .cmd-row { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) 150px 64px; }
+      .cmd-cell-poids { display: none; }
+    }
+    @media (max-width: 760px) {
+      .cmd-row { grid-template-columns: minmax(0, 1fr) 140px 56px; }
       .cmd-cell-date { display: none; }
     }
     @media (max-width: 480px) {
-      .cmd-row { grid-template-columns: 1fr 130px 50px; }
+      .cmd-row { grid-template-columns: minmax(0, 1fr) 118px 44px; padding: 0.6rem; }
     }
 
     /* ── Badge statut ──────────────────────────────── */
@@ -280,7 +292,7 @@
     }
     .tr-table td { padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
     .tr-table tr:last-child td { border-bottom: none; }
-    .tr-table tr.sel td { background: rgba(212,175,55,0.07); }
+    .tr-table tr.sel td { background: rgba(237, 36, 66,0.07); }
     .tr-cb { width: 16px; height: 16px; cursor: pointer; accent-color: var(--or); }
     .tr-totals { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
     .tr-card { background: var(--surface2); border-radius: 10px; padding: 0.85rem 1.2rem; flex: 1; min-width: 130px; }
@@ -719,12 +731,12 @@ function renderList(){
               c.reception_prev ? `<div class="cmd-date-label">Réception</div><div>${esc(c.reception_prev)}</div>` :
               '<span style="color:var(--text-muted);font-size:0.78rem;">·</span>'}
           </div>
+          <div class="cmd-cell-poids">${poidsStr}</div>
           <div class="cmd-cell-status">
             <button class="sbadge ${cls}" onclick="openPopup('${c.id}','${c.statut}',this)">${shortLbl}</button>
-            ${poidsStr ? `<div style="font-size:0.68rem;color:var(--text-muted);margin-top:0.2rem;text-align:center;">${poidsStr}</div>`:''}
           </div>
           <div class="cmd-cell-actions">
-            <button class="btn-act" onclick="openEdit('${c.id}')" title="Modifier">✏</button>
+            <button class="btn-act" onclick="openEdit('${c.id}')" title="Modifier"><span class="ico" data-ico="crayon"></span></button>
             ${delBtn}
           </div>
         </div>`;
@@ -921,6 +933,6 @@ function updateTotals(){
 
 init();
 </script>
-<script src="sidebar.js?v=3"></script>
+<script src="sidebar.js?v=4"></script>
 </body>
 </html>

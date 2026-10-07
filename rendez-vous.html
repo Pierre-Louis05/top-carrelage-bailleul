@@ -286,6 +286,11 @@
         </div>
 
         <form action="#" method="post" onsubmit="handleSubmit(event)">
+          <!-- Champ-piege anti-robot : invisible et hors du parcours au clavier. -->
+          <div aria-hidden="true" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
+            <label for="r-site">Ne pas remplir ce champ</label>
+            <input type="text" id="r-site" name="site" tabindex="-1" autocomplete="off" />
+          </div>
 
           <!-- Univers -->
           <div class="form-group">
@@ -517,7 +522,18 @@
 const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
 
+const ouverture_handleSubmit = Date.now();
+
 async function handleSubmit(e) {
+  // Deux filtres silencieux : le champ-piege, et un envoi trop rapide pour
+  // etre humain. On ne dit rien au robot, sinon il change de methode.
+  {
+    const piege = document.getElementById('r-site');
+    if ((piege && piege.value) || Date.now() - ouverture_handleSubmit < 3000) {
+      e.preventDefault();
+      return;
+    }
+  }
   e.preventDefault();
 
   const btn = e.target.querySelector('button[type=submit]');

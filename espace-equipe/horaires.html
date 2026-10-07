@@ -8,7 +8,7 @@
   <link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
   <link rel="stylesheet" href="../fonts/polices-equipe.css" />
-  <link rel="stylesheet" href="app.css?v=3" />
+  <link rel="stylesheet" href="app.css?v=4" />
   <style>
     /* Sans min-width:0 la colonne flex refuse de retrecir : le tableau
        poussait la page au lieu de defiler dans son cadre sur telephone. */
@@ -46,7 +46,7 @@
       border-radius:20px; padding:0.38rem 0.85rem; font-size:0.78rem;
       display:inline-flex; align-items:center; gap:0.4rem; transition:var(--transition); }
     .pinceau:hover { border-color:var(--or); }
-    .pinceau.actif { border-color:var(--or); background:rgba(201,168,76,0.18);
+    .pinceau.actif { border-color:var(--or); background:rgba(237, 36, 66,0.18);
       color:var(--or); font-weight:700; }
     .pinceau i { width:10px; height:10px; border-radius:3px; display:inline-block; }
     .pinceau-aide { font-size:0.74rem; color:var(--text-muted); flex-basis:100%; margin-top:0.2rem; }
@@ -56,7 +56,7 @@
     body.pinceau-arme .edt thead th.jour,
     body.pinceau-arme .edt td.nom { cursor:pointer; }
     body.pinceau-arme .edt thead th.jour:hover,
-    body.pinceau-arme .edt td.nom:hover { background:rgba(201,168,76,0.16); color:var(--or); }
+    body.pinceau-arme .edt td.nom:hover { background:rgba(237, 36, 66,0.16); color:var(--or); }
     body.pinceau-arme .case { cursor:crosshair; }
 
     .lecture-seule { background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.35);
@@ -83,7 +83,7 @@
     .case { width:100%; min-height:52px; border:none; background:none; color:var(--text);
       padding:0.45rem 0.35rem; font-size:0.75rem; line-height:1.3; text-align:center;
       cursor:pointer; transition:var(--transition); display:block; }
-    .case:hover { background:rgba(201,168,76,0.12); }
+    .case:hover { background:rgba(237, 36, 66,0.12); }
     .case.vide { color:var(--text-muted); }
     .case.vide::after { content:'+'; font-size:1rem; opacity:0.4; }
     .case b { display:block; font-size:0.78rem; }
@@ -137,7 +137,7 @@
       color:var(--text); border-radius:var(--radius); padding:0.7rem 0.5rem;
       font-size:0.82rem; text-align:left; transition:var(--transition); }
     .choix button:hover { border-color:var(--or); }
-    .choix button.actif { border-color:var(--or); background:rgba(201,168,76,0.12); }
+    .choix button.actif { border-color:var(--or); background:rgba(237, 36, 66,0.12); }
     .choix button small { display:block; color:var(--text-muted); font-size:0.68rem; margin-top:0.1rem; }
     .champ { margin-bottom:0.85rem; }
     .champ label { display:block; font-size:0.72rem; text-transform:uppercase;
@@ -839,6 +839,6 @@ $('logoutBtn').addEventListener('click', async () => {
 
 init();
 </script>
-<script src="sidebar.js?v=3"></script>
+<script src="sidebar.js?v=4"></script>
 </body>
 </html>
