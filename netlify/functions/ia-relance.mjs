@@ -17,6 +17,11 @@
 // ============================================================================
 
 const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+// La cle publique du projet, la meme que celle des pages. L'endpoint
+// /auth/v1/user exige qu'elle soit dans l'en-tete apikey : y mettre le jeton de
+// l'utilisateur fait repondre « Invalid API key », et tout appel etait refuse
+// alors que le vendeur etait bien connecte.
+const CLE_PUBLIQUE = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
 const MODELE = 'claude-sonnet-5-5';
 
 const ENTETE = { 'Content-Type': 'application/json; charset=utf-8' };
@@ -67,9 +72,18 @@ export default async (requete) => {
   if (!jeton) return erreur(401, 'Connexion requise');
 
   const qui = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-    headers: { Authorization: `Bearer ${jeton}`, apikey: jeton },
+    headers: { Authorization: `Bearer ${jeton}`, apikey: CLE_PUBLIQUE },
   });
-  if (!qui.ok) return erreur(401, 'Session expiree, reconnectez-vous');
+  if (!qui.ok) {
+    // On distingue les deux cas : un jeton perime se reconnecte, une panne de
+    // Supabase ne se corrige pas en se reconnectant. Dire l'un pour l'autre
+    // envoie le vendeur chercher au mauvais endroit.
+    const detail = await qui.text();
+    console.error('Verification de session', qui.status, detail.slice(0, 200));
+    return qui.status === 401 || qui.status === 403
+      ? erreur(401, 'Session expiree, reconnectez-vous')
+      : erreur(502, `Verification de session impossible (${qui.status}).`);
+  }
 
   // 2. Le contexte, tel que la page l'a rassemble
   let d;
