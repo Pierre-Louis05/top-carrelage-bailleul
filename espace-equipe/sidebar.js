@@ -81,6 +81,23 @@ const A_COMPTER = [
                     .eq('relance_arretee', false) },
 ];
 
+/**
+ * Retrouve un lien du menu a partir de son nom de fichier.
+ *
+ * Netlify sert les pages sans « .html » et reecrit les liens en chemins
+ * absolus : href="suivi.html" devient href="/espace-equipe/suivi". Chercher la
+ * chaine exacte ne trouvait donc rien en production, et aucune pastille ne
+ * s'affichait en ligne alors que tout marchait en local. On compare le dernier
+ * segment du chemin, sans extension.
+ */
+function lienVers(page) {
+  const cible = page.replace(/\.html$/, '');
+  return [...document.querySelectorAll('.sidebar-link')].find((a) => {
+    const h = (a.getAttribute('href') || '').replace(/[?#].*$/, '');
+    return h.replace(/\.html$/, '').split('/').filter(Boolean).pop() === cible;
+  }) ?? null;
+}
+
 async function compterNouveautes() {
   // Les pages declarent leur client avec « const db » : une declaration
   // lexicale, qui n'est pas une propriete de window et qu'on ne peut donc pas
@@ -99,7 +116,7 @@ async function compterNouveautes() {
 
   let total = 0;
   for (const c of A_COMPTER) {
-    const lien = document.querySelector(`.sidebar-link[href="${c.lien}"]`);
+    const lien = lienVers(c.lien);
     if (!lien) continue;
     try {
       let requete = base.from(c.table).select('id', { count: 'exact', head: true });
