@@ -981,7 +981,22 @@ input, select, textarea { font-family: var(--font); }
 }
 .sidebar:not(.expanded) .sidebar-user { justify-content: center; }
 .sidebar:not(.expanded) .sidebar-avatar { margin-left: 0; }
-.sidebar:not(.expanded) .btn-logout { font-size: 0; padding: 9px 0; }
+/* Meme piege que pour les libelles des liens : le bloc du nom n'etait que
+   transparent, il gardait 16 px de large plus l'espacement, et decalait
+   l'avatar de 15 px vers la gauche. */
+.sidebar:not(.expanded) .sidebar-user-info { display: none; }
+
+/* Replie, tout le menu est une colonne d'icones sans cadre. Un bouton
+   encadre a cet endroit jure avec le reste et attire l'oeil sur ce qu'on fait
+   le moins souvent. Il prend donc la meme forme qu'un lien du menu. */
+.sidebar:not(.expanded) .sidebar-footer { padding: 10px 8px 12px; }
+.sidebar:not(.expanded) .btn-logout {
+  font-size: 0; padding: 10px 0; margin: 0; width: 100%;
+  border-color: transparent; background: none; border-radius: var(--radius-sm);
+}
+.sidebar:not(.expanded) .btn-logout:hover {
+  border-color: transparent; background: rgba(239,68,68,0.14); color: #ef4444;
+}
 
 /* ----- Zone principale ----- */
 .main-content { margin-left: 64px; background: var(--bg); }
