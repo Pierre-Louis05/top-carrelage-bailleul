@@ -59,11 +59,23 @@ La forme :
 export default async (requete) => {
   if (requete.method !== 'POST') return erreur(405, 'Methode non autorisee');
 
-  const cle = process.env.ANTHROPIC_API_KEY;
+  // Le .trim() n'est pas decoratif : une cle collee depuis la console arrive
+  // souvent avec un espace ou un retour a la ligne, et l'API la refuse alors
+  // que la valeur a l'air juste a l'ecran.
+  const cle = (process.env.ANTHROPIC_API_KEY || '').trim();
   if (!cle) {
     return erreur(503,
       "La cle API Claude n'est pas encore installee. Dans Netlify, ouvrez "
       + "Site configuration puis Environment variables, et ajoutez ANTHROPIC_API_KEY.");
+  }
+  // On ne revele jamais la valeur, seulement sa forme : une cle Anthropic
+  // commence par sk-ant-. Dire « refusee » quand ce n'est meme pas une cle
+  // Anthropic envoie chercher au mauvais endroit.
+  if (!cle.startsWith('sk-ant-')) {
+    return erreur(503,
+      "La valeur enregistree dans ANTHROPIC_API_KEY ne ressemble pas a une cle "
+      + "Anthropic : elle devrait commencer par sk-ant-. Corrigez-la dans Netlify, "
+      + "puis relancez un deploiement.");
   }
 
   // 1. Qui appelle ? Sans cette verification, n'importe qui pourrait consommer
@@ -139,12 +151,20 @@ export default async (requete) => {
     if (!rep.ok) {
       const detail = await rep.text();
       console.error('Anthropic', rep.status, detail.slice(0, 400));
-      if (rep.status === 401) return erreur(502, 'La cle API est refusee. Verifiez-la dans Netlify.');
+      let motif = '';
+      try { motif = JSON.parse(detail)?.error?.message || ''; } catch { /* ignore */ }
+      if (rep.status === 401) {
+        return erreur(502,
+          "La cle API Claude est refusee par Anthropic"
+          + (motif ? ` (${motif})` : '')
+          + ". Creez-en une sur console.anthropic.com, remplacez ANTHROPIC_API_KEY "
+          + "dans Netlify, puis relancez un deploiement.");
+      }
       if (rep.status === 429) return erreur(502, 'Trop de demandes a la suite. Reessayez dans une minute.');
-      if (rep.status === 400 && /credit/i.test(detail)) {
+      if (/credit|billing|quota/i.test(detail)) {
         return erreur(502, 'Le credit Claude est epuise. Rechargez-le sur console.anthropic.com.');
       }
-      return erreur(502, `Claude a repondu ${rep.status}.`);
+      return erreur(502, `Claude a repondu ${rep.status}${motif ? ' : ' + motif : '.'}`);
     }
 
     const data = await rep.json();
