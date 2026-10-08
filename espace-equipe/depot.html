@@ -101,7 +101,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="sidebar.js?v=5"></script>
-<script src="suivi-commun.js?v=2"></script>
+<script src="suivi-commun.js?v=3"></script>
 <script>
 
 const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
@@ -204,14 +204,32 @@ function afficherValidation(id, fichier, lu, corr) {
     nouveau: `Aucun dossier ne correspond, un nouveau sera créé.`,
   };
 
+  // Le contrôle de lecture dit si la somme des lignes retombe sur le total HT.
+  // C'est la seule façon de savoir, sans rouvrir le PDF, que le tableau a été
+  // lu correctement : un prix de référence pris pour un produit, ou une remise
+  // oubliée, se voient immédiatement ici.
+  const ctrl = lu.controle_lignes;
+  // Au centime près ici : arrondi, le contrôle ne contrôlerait plus rien.
+  const exact = (n) => Number(n).toLocaleString('fr-FR',
+    { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 });
+  const ctrlHtml = !ctrl ? '' : ctrl.concorde
+    ? `<p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 8px;">
+         Lecture vérifiée : les lignes totalisent ${exact(ctrl.somme)}, comme le total HT du document.</p>`
+    : `<div class="rattachement doute" style="margin-bottom:10px;">
+         Les lignes totalisent ${exact(ctrl.somme)} alors que le document annonce ${exact(ctrl.total_ht)}.
+         Le tableau a sans doute été mal lu : vérifiez les totaux avant d'enregistrer.</div>`;
+
   const lignesHtml = lu.lignes.length ? `
+    ${ctrlHtml}
     <details class="brut"><summary>${lu.lignes.length} lignes lues</summary>
       <div class="lignes-doc"><table>
-        <thead><tr><th>Désignation</th><th class="num">Qté</th><th class="num">PU HT</th><th>Nature</th></tr></thead>
+        <thead><tr><th>Désignation</th><th>Format</th><th class="num">Qté</th><th class="num">PU HT</th><th class="num">Montant</th><th>Nature</th></tr></thead>
         <tbody>${lu.lignes.map((l) => `<tr class="${l.nature}">
           <td>${esc(l.designation)}</td>
+          <td>${esc(l.format ?? '')}</td>
           <td class="num">${l.qte ?? ''}</td>
           <td class="num">${l.pu !== null && l.pu !== undefined ? euros(l.pu) : ''}</td>
+          <td class="num">${l.montant !== null && l.montant !== undefined ? euros(l.montant) : ''}</td>
           <td>${({produit:'Produit',reference:'Prix de référence',commentaire:'Commentaire',remise:'Remise'})[l.nature]}</td>
         </tr>`).join('')}</tbody>
       </table></div>
@@ -237,6 +255,11 @@ function afficherValidation(id, fichier, lu, corr) {
         <div class="paire"><label>Date</label><input type="date" data-c="date_doc" class="${cls(lu.date_doc)}" value="${lu.date_doc ?? ''}" /></div>
         <div class="paire"><label>Client</label><input data-c="nom" class="${cls(lu.client.nom)}" value="${esc(corr.client?.nom ?? lu.client.nom ?? '')}" /></div>
         <div class="paire"><label>Téléphone</label><input data-c="telephone" class="${cls(lu.client.telephone)}" value="${esc(corr.client?.telephone ?? lu.client.telephone ?? '')}" /></div>
+        <div class="paire"><label>Ville</label><input data-c="ville" class="${cls(lu.client.ville)}" value="${esc(corr.client?.ville ?? lu.client.ville ?? '')}" /></div>
+        <div class="paire"><label>Type de client</label><select data-c="type_client">
+          <option value="particulier"${lu.client.type_client==='particulier'?' selected':''}>Particulier</option>
+          <option value="professionnel"${lu.client.type_client==='professionnel'?' selected':''}>Professionnel</option>
+        </select></div>
         <div class="paire"><label>Total HT</label><input type="number" step="0.01" data-c="total_ht" class="${cls(lu.total_ht)}" value="${lu.total_ht ?? ''}" /></div>
         <div class="paire"><label>Total TTC</label><input type="number" step="0.01" data-c="total_ttc" class="${cls(lu.total_ttc)}" value="${lu.total_ttc ?? ''}" /></div>
         <div class="paire"><label>Vendeur sur le document</label><input data-c="commercial" class="${cls(lu.commercial)}" value="${esc(lu.commercial ?? '')}" /></div>
@@ -328,8 +351,12 @@ async function enregistrer(carte, id, lu, corr) {
         nom: val('nom'),
         telephone: val('telephone') || null,
         telephone_norme: normaliserTel(val('telephone')),
-        email: lu.client.email, code_postal: lu.client.code_postal, ville: lu.client.ville,
-        type_client: lu.client.type_client, cree_par: moi.id,
+        email: lu.client.email,
+        adresse: lu.client.adresse,
+        code_postal: lu.client.code_postal,
+        ville: val('ville') || lu.client.ville,
+        type_client: val('type_client') || lu.client.type_client,
+        cree_par: moi.id,
       }).select('id').single();
       if (error) throw error;
       clientId = data.id;

@@ -106,27 +106,35 @@ async function lirePdf(fichier) {
 
   for (let p = 1; p <= doc.numPages; p++) {
     const page = await doc.getPage(p);
+    const largeurPage = page.getViewport({ scale: 1 }).width;
     const contenu = await page.getTextContent();
-    const paquets = new Map();
 
-    for (const item of contenu.items) {
-      if (!item.str || !item.str.trim()) continue;
-      const x = item.transform[4];
-      const y = Math.round(item.transform[5] / 3) * 3;  // tolérance de 3 points
-      if (!paquets.has(y)) paquets.set(y, []);
-      paquets.get(y).push({ x, texte: item.str });
+    const bouts = contenu.items
+      .filter((it) => it.str && it.str.trim())
+      // La largeur du fragment sert à replacer chaque mot quand pdf.js en
+      // regroupe plusieurs dans un même morceau.
+      .map((it) => ({ x: it.transform[4], y: it.transform[5], large: it.width, texte: it.str }))
+      .sort((a, b) => b.y - a.y || a.x - b.x);           // de haut en bas
+
+    // Regroupement par proximité plutôt que par arrondi sur une grille.
+    // Sur DM08044, « Reste à payer : » est à 175,00 et son montant à 176,05 :
+    // l'arrondi au multiple de 3 les jetait dans deux lignes différentes et le
+    // champ ressortait vide. L'écart entre deux vraies lignes de ce modèle ne
+    // descend jamais sous 6 points, la tolérance peut donc rester large.
+    for (const bout of bouts) {
+      const courante = lignes[lignes.length - 1];
+      if (courante && courante.page === p && Math.abs(courante.y - bout.y) <= 2.6) {
+        courante.morceaux.push(bout);
+      } else {
+        lignes.push({ page: p, y: bout.y, largeurPage, texte: '', morceaux: [bout] });
+      }
     }
 
-    [...paquets.entries()]
-      .sort((a, b) => b[0] - a[0])                      // de haut en bas
-      .forEach(([y, morceaux]) => {
-        morceaux.sort((a, b) => a.x - b.x);
-        lignes.push({
-          page: p, y,
-          texte: morceaux.map((m) => m.texte).join(' ').replace(/\s+/g, ' ').trim(),
-          morceaux,
-        });
-      });
+    for (const l of lignes) {
+      if (l.page !== p || l.texte) continue;
+      l.morceaux.sort((a, b) => a.x - b.x);
+      l.texte = l.morceaux.map((m) => m.texte).join(' ').replace(/\s+/g, ' ').trim();
+    }
   }
   return lignes;
 }
@@ -137,25 +145,114 @@ const RE_NUMERO = /\b(DM|CM|FM)\s?(\d{4,10})\b/i;
 const RE_DATE   = /\b(\d{2})[/.-](\d{2})[/.-](\d{4})\b/;
 const RE_TEL    = /(?:\+33\s?|0)[1-9](?:[\s.-]?\d{2}){4}/;
 const RE_MAIL   = /[\w.+-]+@[\w-]+\.[\w.-]+/;
-const RE_CP     = /\b(\d{5})\s+([A-ZÀ-Ÿ][A-ZÀ-Ÿ'\- ]{2,})\b/;
-const CP_MAGASIN = '59270';   // Bailleul : c'est nous, jamais le client
 
 const TYPE_PAR_PREFIXE = { DM: 'devis', CM: 'commande', FM: 'facture' };
+
+// Le modèle Sequoia place le magasin à gauche et le client à droite, comme sur
+// une enveloppe à fenêtre. Cette fraction de la largeur sépare les deux cadres :
+// sur un A4 de 595 points, le bloc de gauche s'arrête vers 125 et celui de
+// droite commence à 314, la marge est donc confortable.
+const PART_COLONNE_DROITE = 0.45;
 
 /** Convertit « 1 234,56 » en nombre. Rend null si rien d'exploitable. */
 function nombre(txt) {
   if (!txt) return null;
-  const m = String(txt).replace(/\s| |€/g, '').match(/-?\d+(?:[.,]\d+)?/);
+  const m = String(txt).replace(/\s| |€/g, '').match(/-?\d+(?:[.,]\d+)?/);
   return m ? parseFloat(m[0].replace(',', '.')) : null;
 }
 
+/** Le texte d'une ligne, restreint à une moitié de la page. */
+function moitie(ligne, cote) {
+  const seuil = (ligne.largeurPage || 595) * PART_COLONNE_DROITE;
+  return ligne.morceaux
+    .filter((m) => (cote === 'droite' ? m.x >= seuil : m.x < seuil))
+    .map((m) => m.texte).join(' ').replace(/\s+/g, ' ').trim();
+}
+
 /** Cherche la valeur qui suit une étiquette, sur la même ligne. */
-function valeurApres(lignes, motif) {
+function valeurApres(lignes, motif, cote) {
   for (const l of lignes) {
-    const m = l.texte.match(motif);
+    const t = cote ? moitie(l, cote) : l.texte;
+    const m = t.match(motif);
     if (m) return (m[1] ?? '').trim();
   }
   return null;
+}
+
+/**
+ * Redécoupe les fragments en mots, en répartissant l'abscisse.
+ *
+ * pdf.js regroupe parfois plusieurs cellules dans un même fragment, parfois
+ * non, selon la façon dont le PDF a été écrit. En repassant par les mots, la
+ * lecture des colonnes donne le même résultat dans les deux cas.
+ */
+function jetons(morceaux) {
+  const out = [];
+  for (const m of morceaux) {
+    const t = String(m.texte);
+    const large = m.large || t.length * 3.2;
+    let i = 0;
+    for (const mot of t.split(/\s+/)) {
+      if (mot) out.push({ x: m.x + (large * i) / Math.max(t.length, 1), texte: mot });
+      i += mot.length + 1;
+    }
+  }
+  return out.sort((a, b) => a.x - b.x);
+}
+
+/**
+ * Lit le cadre client, en haut à droite du document.
+ *
+ * C'est la correction la plus importante qu'ait apportée le premier vrai PDF.
+ * « Client : PROFESSIONEL » est le TYPE de client, pas son nom, et le nom
+ * n'apparaît derrière aucune étiquette : il est seulement à sa place sur la
+ * page, dans le cadre d'adresse de droite, en face de celui du magasin.
+ * Chercher un mot en capitales dans tout le texte avait ramené ETERNO, une
+ * marque citée en suite de désignation d'un produit.
+ *
+ * Le repérage est donc positionnel, et il règle du même coup deux autres
+ * erreurs : le téléphone lu était celui du magasin, et le code postal du
+ * magasin était écarté alors qu'un client peut très bien être à Bailleul lui
+ * aussi, ce qui est le cas sur DM08044.
+ */
+function cadreClient(lignes) {
+  let fin = lignes.findIndex((l) => RE_NUMERO.test(l.texte));
+  if (fin < 0) fin = Math.min(lignes.length, 20);
+
+  const bloc = [];
+  for (const l of lignes.slice(0, fin)) {
+    const t = moitie(l, 'droite');
+    if (!t) continue;
+    if (/^(Exemplaire|Duplicata|Original|Copie)\b/i.test(t)) continue;  // mention d'impression
+    bloc.push(t);
+  }
+
+  let nom = null, cp = null, ville = null, email = null;
+  const adresse = [], tels = [];
+
+  for (const t of bloc) {
+    if (/^E-?mail\s*:/i.test(t)) { email = t.match(RE_MAIL)?.[0] ?? email; continue; }
+    if (/^(T[ée]l|Portable|Mobile|Fax)\b/i.test(t)) {
+      if (!/^Fax/i.test(t)) for (const m of t.matchAll(new RegExp(RE_TEL, 'g'))) tels.push(m[0]);
+      continue;
+    }
+    const mCp = t.match(/^(\d{5})\s+(.+)$/);
+    if (mCp) { cp = mCp[1]; ville = mCp[2].trim(); continue; }
+    if (!nom) { nom = t; continue; }
+    adresse.push(t);
+  }
+
+  // Sequoia imprime « Tel : fixe / portable ». On retient le portable quand il
+  // existe : c'est le numéro qui joint vraiment le client, et celui par lequel
+  // on reconnaît son dossier d'un document à l'autre.
+  const telephone = tels.find((t) => /^0[67]/.test(normaliserTel(t) ?? '')) ?? tels[0] ?? null;
+
+  return {
+    nom, telephone, email,
+    adresse: adresse.join(', ') || null,
+    code_postal: cp, ville,
+    tous_telephones: tels,
+  };
 }
 
 /**
@@ -178,7 +275,10 @@ function classerLigne(l) {
  *
  * Rien n'est enregistré à partir d'ici : le vendeur voit toujours un écran de
  * validation. Les champs non trouvés valent null plutôt qu'une valeur devinée,
- * pour que l'écran les montre vides au lieu de mentir.
+ * pour que l'écran les montre vides au lieu de mentir. C'est pour la même
+ * raison qu'aucun repli ne va chercher un téléphone ailleurs que dans le cadre
+ * client : un champ vide se corrige en deux secondes, un numéro de magasin
+ * glissé dans un dossier client se propage et fausse les rapprochements.
  */
 function interpreterSequoia(lignes) {
   const tout = lignes.map((l) => l.texte);
@@ -203,17 +303,12 @@ function interpreterSequoia(lignes) {
   }
   const date_doc = dates[0] ?? null;
 
-  // Cadre client
-  const telBrut = texteBrut.match(RE_TEL)?.[0] ?? null;
-  const email   = texteBrut.match(RE_MAIL)?.[0] ?? null;
-  // L'en-tete du document porte l'adresse du magasin. Prendre le premier code
-  // postal venu reviendrait a domicilier tous les clients a Bailleul.
-  const cpVille = [...texteBrut.matchAll(new RegExp(RE_CP, 'g'))]
-    .map((m) => ({ cp: m[1], ville: m[2].trim() }))
-    .find((v) => v.cp !== CP_MAGASIN) ?? null;
+  const client = cadreClient(lignes);
 
-  // « Client : PARTICULIER SANITAIRE » donne le type ET l'univers
-  const champClient = valeurApres(lignes, /Client\s*:\s*(.+)/i) ?? '';
+  // « Client : PARTICULIER SANITAIRE » donne le type ET l'univers. Cette
+  // étiquette est dans la colonne de gauche : la lire sur la ligne entière
+  // ramasserait aussi le numéro du devis, imprimé en face.
+  const champClient = valeurApres(lignes, /Client\s*:\s*(.+)/i, 'gauche') ?? '';
   const majClient = champClient.toUpperCase();
   const type_client = /PROFESSIONEL|PROFESSIONNEL|PRO\b/.test(majClient) ? 'professionnel' : 'particulier';
   let univers = null;
@@ -222,16 +317,8 @@ function interpreterSequoia(lignes) {
   else if (/PIERRE/.test(majClient))    univers = 'pierre';
   else if (/CARRELAGE/.test(majClient)) univers = 'carrelage';
 
-  const commercial = (valeurApres(lignes, /Commercial\s*:\s*([A-ZÀ-Ÿ\- ]+)/i) ?? '').trim().toUpperCase() || null;
-
-  // Nom du client : la ligne du cadre adresse, hors étiquettes connues
-  let nom = null;
-  for (const l of lignes.slice(0, 40)) {
-    const t = l.texte.trim();
-    if (t.length < 4 || t.length > 60) continue;
-    if (/Client\s*:|Commercial\s*:|DEVIS|FACTURE|COMMANDE|SARL|TVA|SIRET|Page|Top|BAILLEUL|AMENAGEMENT|CARRELAGE\b/i.test(t)) continue;
-    if (/^(M|MME|MR|MLLE|MONSIEUR|MADAME)\b/i.test(t) || /^[A-ZÀ-Ÿ][A-ZÀ-Ÿ'\- ]{3,}$/.test(t)) { nom = t; break; }
-  }
+  const commercial =
+    (valeurApres(lignes, /Commercial\s*:\s*([A-ZÀ-Ÿ\- ]+)/i, 'gauche') ?? '').trim().toUpperCase() || null;
 
   // Totaux
   const total_ht  = nombre(valeurApres(lignes, /TOTAL\s*H\.?T\.?\s*:?\s*([\d\s.,]+)/i));
@@ -252,84 +339,138 @@ function interpreterSequoia(lignes) {
     date_expiration = d.toISOString().slice(0, 10);
   }
 
+  const lignesDoc = extraireLignes(lignes);
+
+  // Contrôle de lecture : la somme des lignes doit retomber sur le total HT.
+  // Si elle n'y retombe pas, c'est le tableau qui a été mal lu, et l'écran de
+  // validation le dit au lieu de laisser croire que tout est juste.
+  const somme = lignesDoc
+    .filter((l) => l.nature === 'produit' || l.nature === 'remise')
+    .reduce((s, l) => s + (l.montant ?? 0), 0);
+  const controle_lignes =
+    total_ht === null || !lignesDoc.length ? null
+      : { somme: +somme.toFixed(2), total_ht, concorde: Math.abs(somme - total_ht) < 1 };
+
   return {
     type_doc, numero, date_doc, date_expiration,
     total_ht, total_ttc, acompte, reste_a_payer: reste, poids_kg,
     numero_lie, texte_brut: texteBrut,
     client: {
-      nom,
-      telephone: telBrut,
-      telephone_norme: normaliserTel(telBrut),
-      email,
-      code_postal: cpVille?.cp ?? null,
-      ville: cpVille?.ville ?? null,
+      nom: client.nom,
+      telephone: client.telephone,
+      telephone_norme: normaliserTel(client.telephone),
+      email: client.email,
+      adresse: client.adresse,
+      code_postal: client.code_postal,
+      ville: client.ville,
       type_client,
     },
     univers,
     commercial,
-    lignes: extraireLignes(lignes),
+    lignes: lignesDoc,
+    controle_lignes,
   };
 }
 
 /**
  * Extrait les lignes de produits.
  *
- * L'en-tete du tableau annonce DESIGNATION, FORMAT, QTE, UNITE, PU HT, MONTANT.
- * L'unite est donc l'ancre la plus fiable : le nombre qui la precede est la
- * quantite, ceux qui la suivent sont le prix unitaire puis le montant.
+ * L'en-tête du tableau annonce DÉSIGNATION, FORMAT, QTÉ, UNITÉ, PU HT, REM,
+ * plus une dernière colonne sans titre. L'unité reste l'ancre la plus fiable :
+ * le nombre qui la précède est la quantité, ceux qui la suivent sont le prix
+ * catalogue puis le prix net.
  *
  * Sans cette ancre, le format du carreau trompe la lecture : sur
- * « CARRELAGE GRES 60X60 0 M2 82,78 0,00 », compter les nombres de gauche a
- * droite donne une quantite de 60 au lieu de 0.
+ * « LINEN CLOUD 4D/100X100X2/A/R 100X100X20 0.000 M2 », compter les nombres de
+ * gauche à droite donne une quantité tirée du format.
  */
-const UNITES = ['M2', 'M²', 'ML', 'U', 'PCE', 'SAC', 'BTE', 'KG', 'L', 'P', 'LOT', 'ENS', 'H'];
+const UNITES = ['M2', 'M²', 'ML', 'U', 'PCE', 'PCS', 'SAC', 'BTE', 'KG', 'L', 'P', 'LOT', 'ENS', 'H'];
 
 function extraireLignes(lignes) {
   const sortie = [];
   let dansTableau = false;
+  let xFormat = null;
 
   for (const l of lignes) {
     const t = l.texte;
-    if (/D[ÉE]SIGNATION/i.test(t) && /(QT[ÉE]|QUANTIT[ÉE])/i.test(t)) { dansTableau = true; continue; }
-    if (/TOTAL\s*H\.?T|CONDITIONS|MODE DE R[ÈE]GLEMENT|Page\s+\d|DEVIS VALABLE/i.test(t)) { dansTableau = false; continue; }
+
+    if (/D[ÉE]SIGNATION/i.test(t) && /(QT[ÉE]|QUANTIT[ÉE])/i.test(t)) {
+      dansTableau = true;
+      xFormat = jetons(l.morceaux).find((j) => /^FORMAT$/i.test(j.texte))?.x ?? null;
+      continue;
+    }
+    if (/TOTAL\s*H\.?T|CONDITIONS|MODE DE R[ÈE]GLEMENT|Page\s+\d|DEVIS VALABLE/i.test(t)) {
+      dansTableau = false;
+      continue;
+    }
     if (!dansTableau || t.length < 2) continue;
 
-    sortie.push(lireLigne(t));
+    const lue = lireLigne(jetons(l.morceaux), xFormat, t);
+
+    // Sequoia fait déborder une désignation trop longue sur la ligne suivante.
+    // Sans unité ni prix, cette suite appartient au produit du dessus : la
+    // rattacher évite de créer une fausse ligne, comme « ETERNO » sur DM08044.
+    if (!lue && sortie.length) {
+      const prec = sortie[sortie.length - 1];
+      prec.designation = `${prec.designation} ${t}`.replace(/\s+/g, ' ').trim();
+      prec.texte = `${prec.texte} ${t}`.trim();
+      continue;
+    }
+    if (lue) sortie.push(lue);
   }
   return sortie;
 }
 
-function lireLigne(t) {
-  const mots = t.split(/\s+/);
+/** Lit une ligne du tableau à partir de ses mots placés. Rend null si ce n'en est pas une. */
+function lireLigne(jets, xFormat, texte) {
   const estNombre = (m) => /^-?\d+(?:[.,]\d+)?$/.test(m);
 
-  // On cherche l'unite la plus a droite qui soit precedee d'un nombre : c'est
-  // la colonne UNITE. Chercher la premiere attraperait le « L » d'un libelle.
-  let iUnite = -1;
-  for (let i = mots.length - 1; i > 0; i--) {
-    if (UNITES.includes(mots[i].toUpperCase()) && estNombre(mots[i - 1])) { iUnite = i; break; }
-  }
-
-  let qte = null, pu = null, designation = t;
-
-  if (iUnite > 0) {
-    qte = nombre(mots[iUnite - 1]);
-    const apres = mots.slice(iUnite + 1).filter(estNombre).map(nombre);
-    pu = apres.length ? apres[0] : null;
-    // Tout ce qui precede la quantite est la designation, format compris.
-    designation = mots.slice(0, iUnite - 1).join(' ').trim();
-  } else {
-    // Pas d'unite : soit un commentaire, soit une ligne de remise.
-    const nombres = mots.filter(estNombre).map(nombre);
-    const prix = mots.filter((m) => /^-?\d+[.,]\d{2}$/.test(m)).map(nombre);
-    if (prix.length) {
-      pu = prix[0];
-      qte = nombres.length > prix.length ? nombres[0] : null;
-      designation = mots.filter((m) => !estNombre(m)).join(' ').trim();
+  // L'unité la plus à droite qui soit précédée d'un nombre : chercher la
+  // première attraperait le « L » ou le « P » d'un libellé.
+  let iU = -1;
+  for (let i = jets.length - 1; i > 0; i--) {
+    if (UNITES.includes(jets[i].texte.toUpperCase().replace(/\./g, '')) && estNombre(jets[i - 1].texte)) {
+      iU = i; break;
     }
   }
 
-  const ligne = { designation: designation || t, qte, pu, texte: t };
+  if (iU < 0) {
+    // Pas d'unité. Une ligne de remise porte quand même un prix ; une suite de
+    // désignation n'en porte aucun, et on la rend au produit du dessus.
+    const prix = jets.filter((j) => /^-?\d+[.,]\d{2}$/.test(j.texte)).map((j) => nombre(j.texte));
+    if (!prix.length) return null;
+    const nombres = jets.filter((j) => estNombre(j.texte)).map((j) => nombre(j.texte));
+    const ligne = {
+      designation: jets.filter((j) => !estNombre(j.texte)).map((j) => j.texte).join(' ').trim() || texte,
+      format: null,
+      qte: nombres.length > prix.length ? nombres[0] : null,
+      pu: prix[0], prix_net: prix[prix.length - 1], montant: null, texte,
+    };
+    ligne.montant = ligne.qte === null ? ligne.prix_net : +(ligne.qte * ligne.prix_net).toFixed(2);
+    ligne.nature = classerLigne(ligne);
+    return ligne;
+  }
+
+  const qte = nombre(jets[iU - 1].texte);
+  const apres = jets.slice(iU + 1).filter((j) => estNombre(j.texte)).map((j) => nombre(j.texte));
+  const pu = apres.length ? apres[0] : null;
+
+  // La dernière colonne, sans en-tête sur le modèle Sequoia, porte le prix
+  // après remise. C'est elle qui fait le montant : sur DM08044, 100 × 2,17
+  // plus 25 × 29,17 retombe exactement sur le total HT de 946,25.
+  const prix_net = apres.length > 1 ? apres[apres.length - 1] : pu;
+
+  const avant = jets.slice(0, iU - 1);
+  const gauche = xFormat === null ? avant : avant.filter((j) => j.x < xFormat - 6);
+  const droite = xFormat === null ? [] : avant.filter((j) => j.x >= xFormat - 6);
+
+  const ligne = {
+    designation: gauche.map((j) => j.texte).join(' ').trim() || texte,
+    format: droite.map((j) => j.texte).join(' ').trim() || null,
+    qte, pu, prix_net,
+    montant: qte !== null && prix_net !== null ? +(qte * prix_net).toFixed(2) : null,
+    texte,
+  };
   ligne.nature = classerLigne(ligne);
   return ligne;
 }

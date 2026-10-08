@@ -72,7 +72,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="sidebar.js?v=5"></script>
-<script src="suivi-commun.js?v=2"></script>
+<script src="suivi-commun.js?v=3"></script>
 <script>
 
 const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
@@ -169,7 +169,30 @@ function dessiner(c, projets) {
       </div>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <a href="suivi.html" class="btn-action" style="text-decoration:none;">Retour au suivi</a>
+        <button class="btn-action" id="corrigerFiche">Corriger la fiche</button>
         <button class="btn-primary" id="nouveauProjet">Nouveau projet</button>
+      </div>
+    </div>
+
+    <div class="bloc" id="formFiche" hidden style="margin-bottom:18px;">
+      <h3>Corriger la fiche</h3>
+      <p class="aide">Le lecteur de PDF se trompe parfois de nom. Ce qui est corrigé ici
+         sert aussi à rattacher les prochains documents au bon dossier.</p>
+      <div class="paires">
+        <div class="paire"><label>Nom</label><input data-f="nom" value="${esc(c.nom ?? '')}" /></div>
+        <div class="paire"><label>Téléphone</label><input data-f="telephone" value="${esc(c.telephone ?? '')}" /></div>
+        <div class="paire"><label>Email</label><input data-f="email" value="${esc(c.email ?? '')}" /></div>
+        <div class="paire"><label>Adresse</label><input data-f="adresse" value="${esc(c.adresse ?? '')}" /></div>
+        <div class="paire"><label>Code postal</label><input data-f="code_postal" value="${esc(c.code_postal ?? '')}" /></div>
+        <div class="paire"><label>Ville</label><input data-f="ville" value="${esc(c.ville ?? '')}" /></div>
+        <div class="paire"><label>Type de client</label><select data-f="type_client">
+          <option value="particulier"${c.type_client !== 'professionnel' ? ' selected' : ''}>Particulier</option>
+          <option value="professionnel"${c.type_client === 'professionnel' ? ' selected' : ''}>Professionnel</option>
+        </select></div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:14px;">
+        <button class="btn-primary btn-sm" id="enregistrerFiche">Enregistrer</button>
+        <button class="btn-action btn-sm" id="annulerFiche">Annuler</button>
       </div>
     </div>
     ${projets.length ? projets.map(blocProjet).join('')
@@ -177,8 +200,61 @@ function dessiner(c, projets) {
          <p>Ce dossier n'a pas encore de projet. Créez-en un, ou déposez un devis.</p></div>`}`;
 
   document.getElementById('nouveauProjet').addEventListener('click', creerProjet);
+  brancherFiche(c, projets);
   projets.forEach(brancher);
   if (location.hash) document.querySelector(location.hash)?.scrollIntoView({ behavior: 'smooth' });
+}
+
+/**
+ * Corriger l'identite d'un dossier client.
+ *
+ * Le lecteur de PDF a deja range un document sous un mauvais nom : il avait
+ * pris ETERNO, une marque citee dans une designation, pour le client. La
+ * lecture est corrigee, mais un dossier cree avant devait pouvoir se reparer
+ * sans passer par la base.
+ */
+function brancherFiche(c, projets) {
+  const form = document.getElementById('formFiche');
+  const ouvrir = document.getElementById('corrigerFiche');
+  ouvrir.addEventListener('click', () => {
+    form.hidden = !form.hidden;
+    if (!form.hidden) form.querySelector('[data-f="nom"]').focus();
+  });
+  document.getElementById('annulerFiche').addEventListener('click', () => { form.hidden = true; });
+
+  document.getElementById('enregistrerFiche').addEventListener('click', async () => {
+    const lire = (f) => form.querySelector(`[data-f="${f}"]`).value.trim();
+    const nom = lire('nom');
+    if (!nom) return toast('Le nom ne peut pas être vide.');
+
+    const bouton = document.getElementById('enregistrerFiche');
+    bouton.disabled = true; bouton.textContent = 'Enregistrement…';
+
+    const avant = c.nom;
+    const champs = {
+      nom,
+      telephone: lire('telephone') || null,
+      telephone_norme: normaliserTel(lire('telephone')),
+      email: lire('email') || null,
+      adresse: lire('adresse') || null,
+      code_postal: lire('code_postal') || null,
+      ville: lire('ville') || null,
+      type_client: lire('type_client'),
+    };
+
+    const { error } = await db.from('suivi_clients').update(champs).eq('id', c.id);
+    if (error) {
+      bouton.disabled = false; bouton.textContent = 'Enregistrer';
+      return toast('Enregistrement impossible : ' + error.message);
+    }
+
+    // Une correction de nom se trace : un collegue qui reprend le dossier doit
+    // pouvoir comprendre pourquoi il ne s'appelle plus pareil.
+    if (avant !== nom && projets.length) {
+      await tracer(db, projets[0].id, 'note', `Fiche corrigée : « ${avant} » devient « ${nom} ».`, moi.id);
+    }
+    location.reload();
+  });
 }
 
 function blocProjet(p) {
