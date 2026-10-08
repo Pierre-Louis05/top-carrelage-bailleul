@@ -18,6 +18,7 @@ const ICONES = {
   stock:     '<path d="M3 9h18M3 15h18M9 3v18M15 3v18"/><rect x="3" y="3" width="18" height="18" rx="2"/>',
   suivi:     '<path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   passage:   '<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z"/><path d="M14 6l4 4"/>',
+  journee:   '<path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M4 9h16M9 4v3M15 4v3"/><path d="M8.5 14l2 2 4.5-4.5"/>',
   relance:   '<path d="M3.5 5.5A2 2 0 0 1 5.5 3.5h2l1.5 3.6-1.8 1.3a12 12 0 0 0 5.4 5.4l1.3-1.8 3.6 1.5v2a2 2 0 0 1-2 2A14.5 14.5 0 0 1 3.5 5.5z"/><path d="M16.5 2.5v3h3"/>',
   depot:     '<path d="M12 3v11M8 10l4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
   planning:  '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8 14h2M14 14h2M8 17h2"/>',

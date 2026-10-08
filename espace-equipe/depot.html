@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#14263C" />
   <link rel="stylesheet" href="../fonts/polices-equipe.css" />
   <link rel="stylesheet" href="app.css?v=5" />
-  <link rel="stylesheet" href="suivi.css?v=6" />
+  <link rel="stylesheet" href="suivi.css?v=8" />
 </head>
 <body>
 <div class="app-layout">
@@ -36,6 +36,7 @@
       <div class="sidebar-section">Dépôt</div>
       <a href="consommables.html" class="sidebar-link"><span class="ico" data-ico="stock"></span> Stock consommables</a>
       <div class="sidebar-section">Clients</div>
+      <a href="journee.html" class="sidebar-link"><span class="ico" data-ico="journee"></span> Ma journée</a>
       <a href="suivi.html" class="sidebar-link"><span class="ico" data-ico="suivi"></span> Suivi client</a>
       <a href="passage.html" class="sidebar-link"><span class="ico" data-ico="passage"></span> Fiche de passage</a>
       <a href="relances.html" class="sidebar-link"><span class="ico" data-ico="relance"></span> Relances</a>
@@ -101,7 +102,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="sidebar.js?v=7"></script>
+<script src="sidebar.js?v=8"></script>
 <script src="suivi-commun.js?v=5"></script>
 <script>
 
@@ -183,6 +184,7 @@ async function traiter(fichiers) {
       const lu = interpreterSequoia(lignes);
       const corr = await trouverClient(db, lu.client);
       afficherValidation(id, f, lu, corr);
+      devinerUnivers(id, lu);          // sans attendre : la carte est deja lisible
     } catch (err) {
       console.error(err);
       document.getElementById(id).innerHTML =
@@ -267,7 +269,7 @@ function afficherValidation(id, fichier, lu, corr) {
         <div class="paire"><label>Univers</label><select data-c="univers">
           <option value="">à préciser</option>
           ${Object.entries(UNIVERS).map(([k,v]) => `<option value="${k}"${lu.univers===k?' selected':''}>${v.libelle}</option>`).join('')}
-        </select></div>
+        </select><span class="note-univers"></span></div>
       </div>
 
       <div id="lien-${id}"></div>
@@ -332,6 +334,51 @@ async function proposerRattachement(id, lu, corr) {
         <option value="">Aucun, commande sans devis</option>
       </select>
     </div>`;
+}
+
+/**
+ * Fait lire les designations par Claude quand Sequoia ne dit pas l'univers.
+ *
+ * « Client : PARTICULIER SANITAIRE » le donne parfois. Souvent non : sur
+ * DM08044 le champ dit seulement PROFESSIONEL. Les produits, eux, le disent
+ * toujours, mais pas avec des mots qu'une liste attraperait : « LINEN CLOUD
+ * 4D/100X100X2/A/R ANTISLIP » ne contient pas le mot carrelage.
+ *
+ * Jamais bloquant : un echec laisse simplement « a preciser », comme avant.
+ */
+async function devinerUnivers(id, lu) {
+  if (lu.univers) return;                       // Sequoia l'a deja dit
+  const carte = document.getElementById(id);
+  const select = carte?.querySelector('[data-c="univers"]');
+  const note = carte?.querySelector('.note-univers');
+  if (!select || !note) return;
+
+  const designations = (lu.lignes || [])
+    .filter((l) => l.nature === 'produit' || l.nature === 'reference')
+    .map((l) => [l.designation, l.format].filter(Boolean).join(' '));
+  if (!designations.length) return;
+
+  note.textContent = 'lecture des produits…';
+  try {
+    const { data: { session } } = await db.auth.getSession();
+    const rep = await fetch('/.netlify/functions/ia-univers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token ?? ''}` },
+      body: JSON.stringify({ designations }),
+    });
+    const d = await rep.json().catch(() => ({}));
+    if (!rep.ok || !d.univers) { note.textContent = ''; return; }
+
+    // On ne remplace jamais un choix que le vendeur vient de faire a la main.
+    if (select.value) { note.textContent = ''; return; }
+    select.value = d.univers;
+    select.classList.add('devine');
+    note.textContent = d.confiance === 'faible'
+      ? `proposé d'après les produits, à vérifier`
+      : `deviné d'après les produits${d.raison ? ' : ' + d.raison : ''}`;
+  } catch (e) {
+    note.textContent = '';
+  }
 }
 
 async function enregistrer(carte, id, lu, corr) {

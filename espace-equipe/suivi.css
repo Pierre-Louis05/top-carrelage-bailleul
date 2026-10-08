@@ -282,3 +282,54 @@ details.brut pre {
 }
 .ia-texte:focus { outline: none; border-color: var(--or); }
 .ia-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+/* La petite phrase sous le champ Univers quand Claude l'a devine. */
+.note-univers {
+  display: block; margin-top: 5px;
+  font-size: 0.72rem; line-height: 1.5; color: var(--text-muted);
+}
+
+/* ===========================================================================
+   Ma journee
+   Une ligne par chose a faire, quatre colonnes qui se lisent de gauche a
+   droite : qui, quoi, combien, quand.
+   =========================================================================== */
+
+.point-jour {
+  background: var(--surface); border: 1px solid var(--or); border-left-width: 3px;
+  border-radius: var(--radius); padding: 18px 22px; margin-bottom: 26px;
+  font-size: 1rem; line-height: 1.75; white-space: pre-wrap;
+}
+.point-jour[hidden] { display: none; }
+
+.groupe-relance h3 .voir-tout {
+  margin-left: auto; font-family: var(--font); letter-spacing: 0; text-transform: none;
+  font-size: 0.78rem; color: var(--text-muted); text-decoration: none;
+}
+.groupe-relance h3 .voir-tout:hover { color: var(--or); }
+
+.journee-liste {
+  display: grid; gap: 1px; background: var(--border);
+  border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+}
+.journee-ligne {
+  display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.6fr) auto auto;
+  gap: 4px 18px; align-items: baseline;
+  background: var(--surface); padding: 12px 16px; font-size: 0.88rem;
+}
+.journee-ligne:hover { background: var(--surface2); }
+.j-gauche { font-weight: 700; min-width: 0; }
+.j-gauche a { color: var(--text); text-decoration: none; border-bottom: 1px solid transparent; }
+.j-gauche a:hover { border-bottom-color: var(--rouge); }
+.j-milieu { color: var(--text-muted); min-width: 0; overflow-wrap: anywhere; }
+.j-extra  { font-variant-numeric: tabular-nums; color: var(--text-muted); white-space: nowrap; }
+.j-droite { color: var(--text-muted); white-space: nowrap; text-align: right; }
+.alerte   { color: #FF6B75; }
+
+@media (max-width: 760px) {
+  .journee-ligne { grid-template-columns: 1fr auto; }
+  /* Le nom prend toute la largeur : sinon la colonne de droite, large a cause
+     de « en retard depuis le ... », le comprimait et coupait « DECO STORES ». */
+  .j-gauche, .j-milieu { grid-column: 1 / -1; }
+  .j-droite { text-align: right; }
+}

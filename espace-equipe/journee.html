@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ma journée · Espace Équipe Top Carrelage</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="../favicon-96.png" sizes="96x96" type="image/png" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <meta name="theme-color" content="#14263C" />
+  <link rel="stylesheet" href="../fonts/polices-equipe.css" />
+  <link rel="stylesheet" href="app.css?v=5" />
+  <link rel="stylesheet" href="suivi.css?v=8" />
+</head>
+<body>
+<div class="app-layout">
+
+<aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Top Carrelage</div>
+      <span class="sidebar-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">Chargement…</div>
+        <div class="sidebar-user-role" id="sidebarRole"></div>
+      </div>
+    </div>
+        <nav class="sidebar-nav">
+      <div class="sidebar-section">Demandes RDV</div>
+      <a href="dashboard.html" class="sidebar-link"><span class="ico" data-ico="demandes"></span> Tableau de bord<span class="sidebar-badge" id="badge-nouveau" style="display:none;">0</span></a>
+      <div class="sidebar-section">Site web</div>
+      <a href="messages.html" class="sidebar-link"><span class="ico" data-ico="messages"></span> Messages de contact</a>
+      <a href="temoignages.html" class="sidebar-link"><span class="ico" data-ico="avis"></span> Témoignages</a>
+      <div class="sidebar-section">Dépôt</div>
+      <a href="consommables.html" class="sidebar-link"><span class="ico" data-ico="stock"></span> Stock consommables</a>
+      <div class="sidebar-section">Clients</div>
+      <a href="journee.html" class="sidebar-link active"><span class="ico" data-ico="journee"></span> Ma journée</a>
+      <a href="suivi.html" class="sidebar-link"><span class="ico" data-ico="suivi"></span> Suivi client</a>
+      <a href="passage.html" class="sidebar-link"><span class="ico" data-ico="passage"></span> Fiche de passage</a>
+      <a href="relances.html" class="sidebar-link"><span class="ico" data-ico="relance"></span> Relances</a>
+      <a href="depot.html" class="sidebar-link"><span class="ico" data-ico="depot"></span> Déposer un document</a>
+      <div class="sidebar-section">Équipe</div>
+      <a href="planning.html" class="sidebar-link"><span class="ico" data-ico="planning"></span> Planning</a>
+      <a href="horaires.html" class="sidebar-link"><span class="ico" data-ico="horaires"></span> Emploi du temps</a>
+      <a href="pointage.html" class="sidebar-link"><span class="ico" data-ico="pointage"></span> Mon pointage</a>
+      <a href="conges.html" class="sidebar-link"><span class="ico" data-ico="conges"></span> Mes congés</a>
+      <a href="commandes.html" class="sidebar-link"><span class="ico" data-ico="commandes"></span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span class="ico" data-ico="presence"></span> Présence équipe</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Ma journée</div>
+      <div class="topbar-actions" id="topbarActions"></div>
+    </div>
+
+    <div class="page-content">
+
+      <div id="zoneJournee">
+        <div class="recherche-ligne">
+          <div class="boutons-choix" id="filtreQui">
+            <button data-qui="moi" class="choisi">Ce qui m'attend</button>
+            <button data-qui="tous">Toute l'équipe</button>
+          </div>
+          <button type="button" class="btn-ia" id="btnPoint">Le point du jour</button>
+          <span class="ia-etat" id="etatPoint"></span>
+        </div>
+
+        <div class="point-jour" id="pointJour" hidden></div>
+        <div id="sections"><p class="groupe-note">Chargement…</p></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="sidebar.js?v=8"></script>
+<script src="suivi-commun.js?v=5"></script>
+<script>
+
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let moi = null, monProfil = null;
+
+function toast(msg, duree = 3800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), duree);
+}
+
+async function connexion() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return false; }
+  moi = session.user;
+  const { data: p } = await db.from('employee_profiles').select('*').eq('id', moi.id).single();
+  if (p) {
+    monProfil = p;
+    document.getElementById('sidebarName').textContent = p.prenom + ' ' + p.nom;
+    document.getElementById('sidebarRole').textContent = p.poste;
+    document.getElementById('sidebarAvatar').textContent = (p.prenom[0] || '') + (p.nom[0] || '');
+  }
+  const btn = document.getElementById('logoutBtn');
+  if (btn) btn.addEventListener('click', async () => {
+    await db.auth.signOut(); window.location.href = 'index.html';
+  });
+  return true;
+}
+
+/**
+ * Une requete qui ne fait pas tomber la page.
+ *
+ * Les tables du suivi client peuvent ne pas exister si le SQL n'a pas ete
+ * execute. Une section vide vaut mieux qu'un ecran blanc.
+ */
+async function sansCasser(promesse) {
+  try {
+    const { data, error } = await promesse;
+    if (error) { console.warn(error.message); return []; }
+    return data || [];
+  } catch (e) { console.warn(e); return []; }
+}
+
+let tout = {}, qui = 'moi', vendeurs = {};
+
+async function charger() {
+  const auj = aujourdhui();
+  const dans7 = ajouterJours(auj, 7);
+  const ilY14 = ajouterJours(auj, -14);
+
+  const { data: profils } = await db.from('employee_profiles').select('id, prenom, nom');
+  (profils || []).forEach((p) => { vendeurs[p.id] = p.prenom + ' ' + p.nom; });
+
+  const [relances, messages, rdv, temoignages, devis, echantillons] = await Promise.all([
+    sansCasser(db.from('suivi_projets')
+      .select('id, titre, univers, vendeur_id, prochaine_relance, montant_ttc, suivi_clients(id, nom, ville)')
+      .not('prochaine_relance', 'is', null).eq('relance_arretee', false)
+      .lte('prochaine_relance', auj).order('prochaine_relance')),
+    sansCasser(db.from('contact_requests')
+      .select('id, nom, prenom, sujet, message, created_at')
+      .eq('status', 'nouveau').order('created_at', { ascending: false }).limit(20)),
+    sansCasser(db.from('rdv_requests')
+      .select('id, client_nom, client_prenom, univers, date_souhaitee, creneau, assigned_to, created_at')
+      .eq('status', 'nouveau').order('created_at', { ascending: false }).limit(20)),
+    sansCasser(db.from('testimonials')
+      .select('id, nom, prenom, note, created_at')
+      .eq('status', 'en_attente').order('created_at', { ascending: false }).limit(20)),
+    sansCasser(db.from('suivi_documents')
+      .select('id, numero, date_expiration, total_ttc, suivi_projets(id, etape, vendeur_id, suivi_clients(id, nom))')
+      .eq('type_doc', 'devis').not('date_expiration', 'is', null)
+      .gte('date_expiration', auj).lte('date_expiration', dans7).order('date_expiration')),
+    sansCasser(db.from('suivi_echantillons')
+      .select('id, designation, prete_le, caution, suivi_projets(id, vendeur_id, suivi_clients(id, nom))')
+      .is('rendu_le', null).lte('prete_le', ilY14).order('prete_le')),
+  ]);
+
+  tout = {
+    relances,
+    messages,
+    rdv,
+    temoignages,
+    // Un devis qui expire n'interesse que si le projet n'a pas avance.
+    devis: devis.filter((d) => ['devis_envoye', 'en_relance'].includes(d.suivi_projets?.etape)),
+    echantillons,
+  };
+  dessiner();
+}
+
+/** Ne garder que ce qui me concerne, quand le filtre le demande. */
+function aMoi(liste, champ) {
+  if (qui === 'tous') return liste;
+  return liste.filter((x) => {
+    const v = champ.split('.').reduce((o, c) => o?.[c], x);
+    return v == null || v === moi.id;      // non attribue : tout le monde le voit
+  });
+}
+
+function dessiner() {
+  const auj = aujourdhui();
+  const lien = (href, texte) => `<a href="${href}">${esc(texte)}</a>`;
+
+  const sections = [
+    {
+      titre: 'Relances à faire', page: 'relances.html',
+      lignes: aMoi(tout.relances, 'vendeur_id').map((p) => ({
+        gauche: lien(`client.html?id=${p.suivi_clients?.id}`, p.suivi_clients?.nom ?? 'Client'),
+        milieu: [p.titre, p.suivi_clients?.ville].filter(Boolean).join(' · '),
+        droite: p.prochaine_relance < auj
+          ? `<span class="alerte">en retard depuis le ${dateCourte(p.prochaine_relance)}</span>`
+          : `aujourd'hui`,
+        extra: p.montant_ttc ? euros(p.montant_ttc) : '',
+      })),
+      vide: 'Aucune relance à faire.',
+    },
+    {
+      titre: 'Devis qui expirent', page: 'suivi.html',
+      lignes: aMoi(tout.devis, 'suivi_projets.vendeur_id').map((d) => ({
+        gauche: lien(`client.html?id=${d.suivi_projets?.suivi_clients?.id}`,
+                     d.suivi_projets?.suivi_clients?.nom ?? 'Client'),
+        milieu: `Devis ${d.numero}`,
+        droite: d.date_expiration === auj
+          ? `<span class="alerte">expire aujourd'hui</span>`
+          : `expire le ${dateCourte(d.date_expiration)}`,
+        extra: d.total_ttc ? euros(d.total_ttc) : '',
+      })),
+      vide: 'Aucun devis sur le point d\'expirer.',
+    },
+    {
+      titre: 'Messages du site', page: 'messages.html',
+      lignes: tout.messages.map((m) => ({
+        gauche: lien('messages.html', `${m.prenom ?? ''} ${m.nom ?? ''}`.trim() || 'Sans nom'),
+        milieu: m.sujet || (m.message || '').slice(0, 70),
+        droite: dateCourte(m.created_at), extra: '',
+      })),
+      vide: 'Aucun message en attente.',
+    },
+    {
+      titre: 'Demandes de rendez-vous', page: 'dashboard.html',
+      lignes: aMoi(tout.rdv, 'assigned_to').map((r) => ({
+        gauche: lien('dashboard.html', `${r.client_prenom ?? ''} ${r.client_nom ?? ''}`.trim() || 'Sans nom'),
+        milieu: [UNIVERS[r.univers]?.libelle, r.creneau].filter(Boolean).join(' · '),
+        droite: r.date_souhaitee ? `souhaité le ${dateCourte(r.date_souhaitee)}` : dateCourte(r.created_at),
+        extra: '',
+      })),
+      vide: 'Aucune demande en attente.',
+    },
+    {
+      titre: 'Échantillons dehors', page: 'suivi.html',
+      lignes: aMoi(tout.echantillons, 'suivi_projets.vendeur_id').map((e) => ({
+        gauche: lien(`client.html?id=${e.suivi_projets?.suivi_clients?.id}`,
+                     e.suivi_projets?.suivi_clients?.nom ?? 'Client'),
+        milieu: e.designation,
+        droite: `<span class="alerte">prêté le ${dateCourte(e.prete_le)}</span>`,
+        extra: e.caution ? `caution ${euros(e.caution)}` : '',
+      })),
+      vide: 'Aucun échantillon en retard.',
+    },
+    {
+      titre: 'Témoignages à valider', page: 'temoignages.html',
+      lignes: tout.temoignages.map((t) => ({
+        gauche: lien('temoignages.html', `${t.prenom ?? ''} ${t.nom ?? ''}`.trim() || 'Sans nom'),
+        milieu: t.note ? `${t.note} sur 5` : '',
+        droite: dateCourte(t.created_at), extra: '',
+      })),
+      vide: 'Aucun témoignage en attente.',
+    },
+  ];
+
+  const aFaire = sections.reduce((n, s) => n + s.lignes.length, 0);
+
+  document.getElementById('sections').innerHTML =
+    (aFaire === 0 ? `
+      <div class="empty-state">
+        <h3>Rien ne vous attend</h3>
+        <p>Pas de relance, pas de message, pas de devis sur le point d'expirer.
+           Profitez-en pour déposer les documents de la veille.</p>
+      </div>` : '') +
+    sections.filter((s) => s.lignes.length).map((s) => `
+      <section class="groupe-relance">
+        <h3>${s.titre} <span class="n">${s.lignes.length}</span>
+          <a class="voir-tout" href="${s.page}">tout voir</a></h3>
+        <div class="journee-liste">
+          ${s.lignes.map((l) => `
+            <div class="journee-ligne">
+              <span class="j-gauche">${l.gauche}</span>
+              <span class="j-milieu">${esc(l.milieu ?? '')}</span>
+              <span class="j-extra">${esc(l.extra ?? '')}</span>
+              <span class="j-droite">${l.droite}</span>
+            </div>`).join('')}
+        </div>
+      </section>`).join('');
+
+  // Le resume envoye a Claude : des faits, pas de donnees personnelles de plus
+  // que ce qui est deja a l'ecran.
+  dessiner._resume = sections.filter((s) => s.lignes.length).map((s) =>
+    `${s.titre} (${s.lignes.length}) :\n` + s.lignes.map((l) =>
+      `- ${l.gauche.replace(/<[^>]+>/g, '')} | ${l.milieu ?? ''} | ${l.extra ?? ''} | ${l.droite.replace(/<[^>]+>/g, '')}`
+    ).join('\n')).join('\n\n') || 'Rien a faire aujourd\'hui.';
+}
+
+document.getElementById('filtreQui').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  document.querySelectorAll('#filtreQui button').forEach((x) => x.classList.remove('choisi'));
+  b.classList.add('choisi');
+  qui = b.dataset.qui;
+  dessiner();
+});
+
+document.getElementById('btnPoint').addEventListener('click', async () => {
+  const bouton = document.getElementById('btnPoint');
+  const etat = document.getElementById('etatPoint');
+  const zone = document.getElementById('pointJour');
+  bouton.disabled = true;
+  etat.textContent = 'Claude regarde votre journée…';
+  try {
+    const { data: { session } } = await db.auth.getSession();
+    const rep = await fetch('/.netlify/functions/ia-journee', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token ?? ''}` },
+      body: JSON.stringify({ resume: dessiner._resume }),
+    });
+    const d = await rep.json().catch(() => ({}));
+    if (!rep.ok) { etat.textContent = ''; toast(d.erreur || `Échec (${rep.status})`, 7000); return; }
+    zone.textContent = d.texte;
+    zone.hidden = false;
+    etat.textContent = '';
+  } catch (e) {
+    etat.textContent = '';
+    toast('Appel impossible : ' + e.message, 6000);
+  } finally {
+    bouton.disabled = false;
+  }
+});
+
+(async () => { if (await connexion()) charger(); })();
+</script>
+</body>
+</html>
