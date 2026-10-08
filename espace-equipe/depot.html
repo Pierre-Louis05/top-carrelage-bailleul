@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#14263C" />
   <link rel="stylesheet" href="../fonts/polices-equipe.css" />
   <link rel="stylesheet" href="app.css?v=5" />
-  <link rel="stylesheet" href="suivi.css?v=3" />
+  <link rel="stylesheet" href="suivi.css?v=4" />
 </head>
 <body>
 <div class="app-layout">
@@ -38,6 +38,7 @@
       <div class="sidebar-section">Clients</div>
       <a href="suivi.html" class="sidebar-link"><span class="ico" data-ico="suivi"></span> Suivi client</a>
       <a href="passage.html" class="sidebar-link"><span class="ico" data-ico="passage"></span> Fiche de passage</a>
+      <a href="relances.html" class="sidebar-link"><span class="ico" data-ico="relance"></span> Relances</a>
       <a href="depot.html" class="sidebar-link active"><span class="ico" data-ico="depot"></span> Déposer un document</a>
       <div class="sidebar-section">Équipe</div>
       <a href="planning.html" class="sidebar-link"><span class="ico" data-ico="planning"></span> Planning</a>
@@ -100,8 +101,8 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="sidebar.js?v=5"></script>
-<script src="suivi-commun.js?v=4"></script>
+<script src="sidebar.js?v=6"></script>
+<script src="suivi-commun.js?v=5"></script>
 <script>
 
 const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
@@ -422,6 +423,27 @@ async function enregistrer(carte, id, lu, corr) {
         etape: cible, vendeur_id: vendeurId,
         montant_ht: num('total_ht'), montant_ttc: num('total_ttc'),
       }).eq('id', projetId);
+    }
+
+    // 6. La relance. Un devis depose entre dans le circuit : premier rappel au
+    //    septieme jour, et jamais dans le passe si le devis est ancien. Une
+    //    commande ou une facture ferme le circuit, il n'y a plus a relancer.
+    //    Enveloppe dans un try : tant que sql/suivi_relances_setup.sql n'a pas
+    //    ete execute, la colonne n'existe pas, et ca ne doit pas empecher
+    //    d'enregistrer le document.
+    try {
+      if (typeDoc === 'devis') {
+        const base = val('date_doc') || aujourdhui();
+        const prevue = ajouterJours(base, RYTHME_RELANCES[0]);
+        await db.from('suivi_projets').update({
+          prochaine_relance: prevue < aujourdhui() ? aujourdhui() : prevue,
+          relance_arretee: false,
+        }).eq('id', projetId).is('prochaine_relance', null);
+      } else {
+        await db.from('suivi_projets').update({ prochaine_relance: null }).eq('id', projetId);
+      }
+    } catch (e) {
+      console.warn('Relance non programmée', e);
     }
 
     await tracer(db, projetId, 'depot',

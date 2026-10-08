@@ -33,6 +33,24 @@ const BUDGETS = {
   '5_10k': '5 000 à 10 000 €', plus_10k: 'plus de 10 000 €',
 };
 
+/**
+ * Rythme des relances : J+7, J+15 puis J+30 après la date du devis.
+ * Choisi par le magasin le 2026-10-08. Pour le changer, il suffit de modifier
+ * ces trois nombres : rien d'autre dans le code ne les suppose.
+ */
+const RYTHME_RELANCES = [7, 15, 30];
+
+const CANAUX_RELANCE = { telephone: 'Téléphone', mail: 'Mail', passage: 'Il est passé' };
+
+const RESULTATS_RELANCE = {
+  sans_reponse: { libelle: 'Pas de réponse',    suite: 'continuer' },
+  rappeler:     { libelle: 'À rappeler',        suite: 'continuer' },
+  reflechit:    { libelle: 'Il réfléchit',      suite: 'continuer' },
+  interesse:    { libelle: 'Intéressé',         suite: 'continuer' },
+  signe:        { libelle: 'Il a signé',        suite: 'signe'     },
+  refus:        { libelle: 'Il renonce',        suite: 'perdu'     },
+};
+
 const RAISONS_PERDU = {
   prix: 'Trop cher', delai: 'Délai trop long', concurrent: 'Parti chez un concurrent',
   abandonne: 'Projet abandonné', autre: 'Autre raison',
@@ -77,6 +95,41 @@ function cleNom(nom) {
     .toUpperCase()
     .replace(/\b(M|MME|MR|MLLE|MONSIEUR|MADAME|ET|SARL|SAS|EURL|SCI)\b\.?/g, '')
     .replace(/[^A-Z0-9]/g, '');
+}
+
+/** Une date au format que Postgres attend, sans décalage de fuseau. */
+const jourIso = (d) => {
+  const x = new Date(d);
+  return new Date(x.getTime() - x.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+};
+
+const aujourdhui = () => jourIso(new Date());
+
+const ajouterJours = (date, n) => {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return jourIso(d);
+};
+
+/**
+ * Date de la prochaine relance, ou null quand le rythme est épuisé.
+ *
+ * Les paliers comptent à partir de la date du devis, c'est ce qui a été
+ * demandé. Mais une relance faite en retard décale la suivante d'autant :
+ * sans cela, un vendeur qui appelle au vingtième jour verrait la deuxième
+ * relance tomber due le jour même, ce qui n'a aucun sens au téléphone.
+ */
+function prochaineRelance(dateDevis, relancesFaites) {
+  const n = relancesFaites.length;
+  if (!dateDevis || n >= RYTHME_RELANCES.length) return null;
+
+  const prevue = ajouterJours(dateDevis, RYTHME_RELANCES[n]);
+  if (n === 0) return prevue;
+
+  const ecart = RYTHME_RELANCES[n] - RYTHME_RELANCES[n - 1];
+  const derniere = relancesFaites[relancesFaites.length - 1].faite_le;
+  const apresDerniere = ajouterJours(derniere, ecart);
+  return prevue > apresDerniere ? prevue : apresDerniere;
 }
 
 /* ===== Lecture d'un PDF Sequoia ===== */

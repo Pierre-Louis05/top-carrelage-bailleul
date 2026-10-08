@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#14263C" />
   <link rel="stylesheet" href="../fonts/polices-equipe.css" />
   <link rel="stylesheet" href="app.css?v=5" />
-  <link rel="stylesheet" href="suivi.css?v=3" />
+  <link rel="stylesheet" href="suivi.css?v=4" />
 </head>
 <body>
 <div class="app-layout">
@@ -38,6 +38,7 @@
       <div class="sidebar-section">Clients</div>
       <a href="suivi.html" class="sidebar-link active"><span class="ico" data-ico="suivi"></span> Suivi client</a>
       <a href="passage.html" class="sidebar-link"><span class="ico" data-ico="passage"></span> Fiche de passage</a>
+      <a href="relances.html" class="sidebar-link"><span class="ico" data-ico="relance"></span> Relances</a>
       <a href="depot.html" class="sidebar-link"><span class="ico" data-ico="depot"></span> Déposer un document</a>
       <div class="sidebar-section">Équipe</div>
       <a href="planning.html" class="sidebar-link"><span class="ico" data-ico="planning"></span> Planning</a>
@@ -71,8 +72,8 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="sidebar.js?v=5"></script>
-<script src="suivi-commun.js?v=4"></script>
+<script src="sidebar.js?v=6"></script>
+<script src="suivi-commun.js?v=5"></script>
 <script>
 
 const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
@@ -271,6 +272,15 @@ function blocProjet(p) {
     vendeurs[p.vendeur_id],
   ].filter(Boolean);
 
+  // La prochaine relance, s'il y en a une de prevue. En retard, elle se voit.
+  const relance = !p.prochaine_relance ? '' : `
+    <div class="rattachement ${p.prochaine_relance < aujourdhui() ? 'doute' : 'nouveau'}"
+         style="margin:0 0 14px; font-size:0.85rem;">
+      ${p.prochaine_relance < aujourdhui() ? 'Relance en retard, prévue le' : 'Prochaine relance le'}
+      <b>${dateLongue(p.prochaine_relance)}</b>.
+      <a href="relances.html" style="color:var(--or);">Ouvrir les relances</a>
+    </div>`;
+
   return `<div class="projet-bloc" id="projet-${p.id}" data-projet="${p.id}">
     <header>
       <div>
@@ -287,6 +297,7 @@ function blocProjet(p) {
       </div>
     </header>
     <div class="corps">
+      ${relance}
       ${p.note ? `<div style="font-size:0.88rem; white-space:pre-wrap;">${esc(p.note)}</div>` : ''}
       ${p.raison_perdu ? `<div class="rattachement doute">Perdu : ${esc(RAISONS_PERDU[p.raison_perdu])}${
         p.detail_perdu ? ' · ' + esc(p.detail_perdu) : ''}</div>` : ''}

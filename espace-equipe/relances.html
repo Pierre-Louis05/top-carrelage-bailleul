@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relances · Espace Équipe Top Carrelage</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="../favicon-96.png" sizes="96x96" type="image/png" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <meta name="theme-color" content="#14263C" />
+  <link rel="stylesheet" href="../fonts/polices-equipe.css" />
+  <link rel="stylesheet" href="app.css?v=5" />
+  <link rel="stylesheet" href="suivi.css?v=4" />
+</head>
+<body>
+<div class="app-layout">
+
+<aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Top Carrelage</div>
+      <span class="sidebar-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">Chargement…</div>
+        <div class="sidebar-user-role" id="sidebarRole"></div>
+      </div>
+    </div>
+        <nav class="sidebar-nav">
+      <div class="sidebar-section">Demandes RDV</div>
+      <a href="dashboard.html" class="sidebar-link"><span class="ico" data-ico="demandes"></span> Tableau de bord<span class="sidebar-badge" id="badge-nouveau" style="display:none;">0</span></a>
+      <div class="sidebar-section">Site web</div>
+      <a href="messages.html" class="sidebar-link"><span class="ico" data-ico="messages"></span> Messages de contact</a>
+      <a href="temoignages.html" class="sidebar-link"><span class="ico" data-ico="avis"></span> Témoignages</a>
+      <div class="sidebar-section">Dépôt</div>
+      <a href="consommables.html" class="sidebar-link"><span class="ico" data-ico="stock"></span> Stock consommables</a>
+      <div class="sidebar-section">Clients</div>
+      <a href="suivi.html" class="sidebar-link"><span class="ico" data-ico="suivi"></span> Suivi client</a>
+      <a href="passage.html" class="sidebar-link"><span class="ico" data-ico="passage"></span> Fiche de passage</a>
+      <a href="relances.html" class="sidebar-link active"><span class="ico" data-ico="relance"></span> Relances</a>
+      <a href="depot.html" class="sidebar-link"><span class="ico" data-ico="depot"></span> Déposer un document</a>
+      <div class="sidebar-section">Équipe</div>
+      <a href="planning.html" class="sidebar-link"><span class="ico" data-ico="planning"></span> Planning</a>
+      <a href="horaires.html" class="sidebar-link"><span class="ico" data-ico="horaires"></span> Emploi du temps</a>
+      <a href="pointage.html" class="sidebar-link"><span class="ico" data-ico="pointage"></span> Mon pointage</a>
+      <a href="conges.html" class="sidebar-link"><span class="ico" data-ico="conges"></span> Mes congés</a>
+      <a href="commandes.html" class="sidebar-link"><span class="ico" data-ico="commandes"></span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span class="ico" data-ico="presence"></span> Présence équipe</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Relances</div>
+      <div class="topbar-actions" id="topbarActions"></div>
+    </div>
+
+    <div class="page-content">
+
+      <div id="zoneRelances">
+        <div class="recherche-ligne">
+          <div class="boutons-choix" id="filtreQui">
+            <button data-qui="moi" class="choisi">Mes relances</button>
+            <button data-qui="tous">Toute l'équipe</button>
+          </div>
+          <input type="search" id="recherche" placeholder="Nom du client, ville, numéro de devis…" autocomplete="off" />
+        </div>
+        <div id="groupes"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="sidebar.js?v=6"></script>
+<script src="suivi-commun.js?v=5"></script>
+<script>
+
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let moi = null, monProfil = null;
+
+function toast(msg, duree = 3800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), duree);
+}
+
+/** La table ou la colonne n'existe pas encore : on le dit au lieu d'une page vide. */
+function pasInstalle(err) {
+  return err && (err.code === '42P01' || err.code === '42703'
+    || /does not exist|schema cache|column .* does not exist/i.test(err.message || ''));
+}
+
+function montrerInstallation() {
+  document.getElementById('zoneRelances').innerHTML = `
+    <div class="empty-state">
+      <div class="empty-state-icon"><span class="ico" data-ico="alerte"></span></div>
+      <h3>Les relances ne sont pas encore installées</h3>
+      <p>Une table et deux colonnes doivent être créées une première fois dans Supabase.</p>
+      <p style="margin-top:14px; font-size:0.86rem;">
+        Ouvrez <b>Supabase &rsaquo; SQL Editor</b>, collez le contenu du fichier
+        <b>sql/suivi_relances_setup.sql</b> du dépôt, puis cliquez sur Run.
+        Rechargez ensuite cette page.
+      </p>
+    </div>`;
+  dessinerIcones?.();
+}
+
+async function connexion() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return false; }
+  moi = session.user;
+  const { data: p } = await db.from('employee_profiles').select('*').eq('id', moi.id).single();
+  if (p) {
+    monProfil = p;
+    document.getElementById('sidebarName').textContent = p.prenom + ' ' + p.nom;
+    document.getElementById('sidebarRole').textContent = p.poste;
+    document.getElementById('sidebarAvatar').textContent = (p.prenom[0] || '') + (p.nom[0] || '');
+  }
+  const btn = document.getElementById('logoutBtn');
+  if (btn) btn.addEventListener('click', async () => {
+    await db.auth.signOut(); window.location.href = 'index.html';
+  });
+  return true;
+}
+
+let projets = [], vendeurs = {}, qui = 'moi', terme = '';
+
+async function charger() {
+  const { data: profils } = await db.from('employee_profiles').select('id, prenom, nom');
+  (profils || []).forEach((p) => { vendeurs[p.id] = p.prenom + ' ' + p.nom; });
+
+  const { data, error } = await db.from('suivi_projets')
+    .select('*, suivi_clients(id, nom, telephone, email, ville), ' +
+            'suivi_documents(numero, type_doc, date_doc, total_ttc), ' +
+            'suivi_relances(id, faite_le, resultat, canal)')
+    .not('prochaine_relance', 'is', null)
+    .eq('relance_arretee', false)
+    .order('prochaine_relance', { ascending: true }).limit(400);
+
+  if (error) {
+    if (pasInstalle(error)) { montrerInstallation(); return; }
+    document.getElementById('groupes').innerHTML =
+      `<div class="empty-state"><h3>Chargement impossible</h3><p>${esc(error.message)}</p></div>`;
+    return;
+  }
+  projets = data || [];
+  dessiner();
+}
+
+/** La date du devis le plus ancien du projet : c'est elle qui cadence le rythme. */
+function dateDuDevis(p) {
+  const devis = (p.suivi_documents || []).filter((d) => d.type_doc === 'devis' && d.date_doc);
+  if (!devis.length) return null;
+  return devis.map((d) => d.date_doc).sort()[0];
+}
+
+function dernierDevis(p) {
+  const devis = (p.suivi_documents || []).filter((d) => d.type_doc === 'devis');
+  return devis.sort((a, b) => (b.date_doc || '').localeCompare(a.date_doc || ''))[0] ?? null;
+}
+
+const GROUPES = [
+  { cle: 'retard',    titre: 'En retard',      note: 'Ces clients auraient dû être rappelés.' },
+  { cle: 'jour',      titre: "Aujourd'hui",    note: 'La liste du jour.' },
+  { cle: 'semaine',   titre: 'Cette semaine',  note: 'À venir dans les sept prochains jours.' },
+  { cle: 'plus_tard', titre: 'Plus tard',      note: '' },
+];
+
+function dessiner() {
+  const auj = aujourdhui();
+  const dans7 = ajouterJours(auj, 7);
+  const t = terme.trim().toLowerCase();
+
+  const retenus = projets.filter((p) => {
+    if (qui === 'moi' && p.vendeur_id !== moi.id) return false;
+    if (!t) return true;
+    const foin = [p.suivi_clients?.nom, p.suivi_clients?.ville, p.titre,
+                  ...(p.suivi_documents || []).map((d) => d.numero)].join(' ').toLowerCase();
+    return foin.includes(t);
+  });
+
+  const parGroupe = { retard: [], jour: [], semaine: [], plus_tard: [] };
+  for (const p of retenus) {
+    const d = p.prochaine_relance;
+    if (d < auj) parGroupe.retard.push(p);
+    else if (d === auj) parGroupe.jour.push(p);
+    else if (d <= dans7) parGroupe.semaine.push(p);
+    else parGroupe.plus_tard.push(p);
+  }
+
+  const zone = document.getElementById('groupes');
+  if (!retenus.length) {
+    zone.innerHTML = `
+      <div class="empty-state">
+        <h3>Rien à relancer${qui === 'moi' ? ' de votre côté' : ''}</h3>
+        <p>${qui === 'moi'
+             ? "Aucun de vos devis n'attend un rappel. Vous pouvez regarder ceux de l'équipe."
+             : "Aucun devis en attente de rappel. Les relances apparaissent ici sept jours après l'envoi d'un devis."}</p>
+      </div>`;
+    return;
+  }
+
+  zone.innerHTML = GROUPES.filter((g) => parGroupe[g.cle].length).map((g) => `
+    <section class="groupe-relance">
+      <h3>${g.titre} <span class="n">${parGroupe[g.cle].length}</span></h3>
+      ${g.note ? `<p class="groupe-note">${g.note}</p>` : ''}
+      ${parGroupe[g.cle].map(carte).join('')}
+    </section>`).join('');
+
+  zone.querySelectorAll('.relance-carte').forEach(brancher);
+  dessinerIcones?.();
+}
+
+function carte(p) {
+  const c = p.suivi_clients || {};
+  const u = UNIVERS[p.univers] ?? UNIVERS.autre;
+  const d = dernierDevis(p);
+  const faites = (p.suivi_relances || []).length;
+  const rang = ['1re relance', '2e relance', '3e relance'][faites] ?? `${faites + 1}e relance`;
+  const retard = p.prochaine_relance < aujourdhui();
+
+  const infos = [
+    d ? `Devis ${esc(d.numero)} du ${dateCourte(d.date_doc)}` : 'Aucun devis enregistré',
+    d && d.total_ttc ? euros(d.total_ttc) : null,
+    c.ville ? esc(c.ville) : null,
+    vendeurs[p.vendeur_id] ? esc(vendeurs[p.vendeur_id]) : null,
+  ].filter(Boolean);
+
+  return `
+  <article class="relance-carte${retard ? ' en-retard' : ''}" id="r-${p.id}" data-id="${p.id}">
+    <div class="relance-bande" style="background:${u.couleur}"></div>
+    <div class="relance-corps">
+      <div class="relance-tete">
+        <div>
+          <a class="relance-client" href="client.html?id=${c.id}">${esc(c.nom ?? 'Client')}</a>
+          <div class="relance-titre">${esc([p.titre, p.titre === u.libelle ? null : u.libelle]
+                .filter(Boolean).join(' · '))}</div>
+        </div>
+        <div class="relance-quand">
+          <span class="puce-etape">${rang}</span>
+          <span>${retard ? 'prévue le ' : 'le '}${dateCourte(p.prochaine_relance)}</span>
+        </div>
+      </div>
+
+      <div class="relance-infos">${infos.map((x) => `<span>${x}</span>`).join('')}</div>
+
+      <div class="relance-contact">
+        ${c.telephone ? `<a href="tel:${esc(String(c.telephone).replace(/\s/g, ''))}">${esc(c.telephone)}</a>` : ''}
+        ${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : ''}
+      </div>
+
+      <div class="boutons-choix canal">
+        ${Object.entries(CANAUX_RELANCE).map(([k, v], i) =>
+          `<button type="button" data-canal="${k}"${i === 0 ? ' class="choisi"' : ''}>${v}</button>`).join('')}
+      </div>
+
+      <input class="note" type="text" placeholder="Ce qui s'est dit (facultatif)" autocomplete="off" />
+
+      <div class="boutons-choix resultats">
+        ${Object.entries(RESULTATS_RELANCE).map(([k, v]) =>
+          `<button type="button" data-res="${k}" class="res-${v.suite}">${v.libelle}</button>`).join('')}
+      </div>
+
+      <div class="relance-secondaire">
+        <label>Repousser au <input type="date" class="repousser" value="${p.prochaine_relance}" /></label>
+        <button type="button" class="lien-discret" data-act="repousser">Valider la date</button>
+        <button type="button" class="lien-discret" data-act="arreter">Ne plus relancer</button>
+      </div>
+    </div>
+  </article>`;
+}
+
+function brancher(carte) {
+  const id = carte.dataset.id;
+
+  carte.querySelectorAll('.canal button').forEach((b) =>
+    b.addEventListener('click', () => {
+      carte.querySelectorAll('.canal button').forEach((x) => x.classList.remove('choisi'));
+      b.classList.add('choisi');
+    }));
+
+  carte.querySelectorAll('.resultats button').forEach((b) =>
+    b.addEventListener('click', () => noter(id, b.dataset.res, carte)));
+
+  carte.querySelector('[data-act="repousser"]').addEventListener('click', async () => {
+    const d = carte.querySelector('.repousser').value;
+    if (!d) return toast('Choisissez une date.');
+    const { error } = await db.from('suivi_projets').update({ prochaine_relance: d }).eq('id', id);
+    if (error) return toast('Impossible : ' + error.message);
+    await tracer(db, id, 'relance', `Relance repoussée au ${dateLongue(d)}.`, moi.id);
+    toast('Repoussée au ' + dateLongue(d));
+    retirer(id, d);
+  });
+
+  carte.querySelector('[data-act="arreter"]').addEventListener('click', async () => {
+    const { error } = await db.from('suivi_projets')
+      .update({ relance_arretee: true, prochaine_relance: null, etape: 'en_sommeil' }).eq('id', id);
+    if (error) return toast('Impossible : ' + error.message);
+    await tracer(db, id, 'relance', 'Relances arrêtées, projet mis en sommeil.', moi.id);
+    toast('Projet mis en sommeil. Il reste dans le suivi client.');
+    retirer(id);
+  });
+}
+
+/**
+ * Enregistre une relance et calcule la suivante.
+ *
+ * L'étape ne recule jamais : une relance notée sur un projet déjà signé ne doit
+ * pas le ramener en arrière. Même règle que pour le dépôt d'un document.
+ */
+async function noter(id, resultat, carte) {
+  const p = projets.find((x) => x.id === id);
+  if (!p) return;
+
+  const boutons = carte.querySelectorAll('.resultats button');
+  boutons.forEach((b) => { b.disabled = true; });
+
+  const canal = carte.querySelector('.canal .choisi')?.dataset.canal ?? 'telephone';
+  const note = carte.querySelector('.note').value.trim();
+
+  const { error } = await db.from('suivi_relances').insert({
+    projet_id: id, prevue_le: p.prochaine_relance, canal, resultat,
+    note: note || null, vendeur_id: moi.id,
+  });
+  if (error) {
+    boutons.forEach((b) => { b.disabled = false; });
+    return toast('Enregistrement impossible : ' + error.message);
+  }
+
+  const faites = [...(p.suivi_relances || []).map((r) => ({ faite_le: r.faite_le })),
+                  { faite_le: new Date().toISOString() }]
+                 .sort((a, b) => a.faite_le.localeCompare(b.faite_le));
+
+  const suite = RESULTATS_RELANCE[resultat].suite;
+  let maj, message;
+
+  if (suite === 'signe') {
+    maj = { etape: 'signe', prochaine_relance: null };
+    message = 'Noté. Le projet passe en Signé.';
+  } else if (suite === 'perdu') {
+    maj = { etape: 'perdu', prochaine_relance: null };
+    message = 'Noté. Le projet passe en Perdu, vous pouvez préciser la raison dans le dossier.';
+  } else {
+    const suivante = prochaineRelance(dateDuDevis(p), faites);
+    if (suivante) {
+      maj = { prochaine_relance: suivante };
+      if (ETAPES[p.etape].ordre < ETAPES.en_relance.ordre) maj.etape = 'en_relance';
+      message = 'Noté. Prochaine relance le ' + dateLongue(suivante) + '.';
+    } else {
+      maj = { etape: 'en_sommeil', prochaine_relance: null };
+      message = 'Noté. Troisième relance faite, le projet passe en sommeil.';
+    }
+  }
+
+  await db.from('suivi_projets').update(maj).eq('id', id);
+  await tracer(db, id, 'relance',
+    `Relance ${CANAUX_RELANCE[canal].toLowerCase()} : ${RESULTATS_RELANCE[resultat].libelle}`
+    + (note ? ` — ${note}` : ''), moi.id);
+
+  toast(message, 5200);
+  retirer(id, maj.prochaine_relance ?? null);
+}
+
+/** Retire la carte de la liste, ou la replace si elle reste a faire plus tard. */
+function retirer(id, nouvelleDate) {
+  const p = projets.find((x) => x.id === id);
+  if (!p) return;
+  if (nouvelleDate) {
+    p.prochaine_relance = nouvelleDate;
+    p.suivi_relances = [...(p.suivi_relances || []), { faite_le: new Date().toISOString() }];
+  } else {
+    projets = projets.filter((x) => x.id !== id);
+  }
+  dessiner();
+}
+
+document.getElementById('recherche').addEventListener('input', (e) => {
+  terme = e.target.value; dessiner();
+});
+document.getElementById('filtreQui').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  document.querySelectorAll('#filtreQui button').forEach((x) => x.classList.remove('choisi'));
+  b.classList.add('choisi');
+  qui = b.dataset.qui;
+  dessiner();
+});
+
+(async () => { if (await connexion()) charger(); })();
+</script>
+</body>
+</html>
