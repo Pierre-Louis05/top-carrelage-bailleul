@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#14263C" />
   <link rel="stylesheet" href="../fonts/polices-equipe.css" />
   <link rel="stylesheet" href="app.css?v=5" />
-  <link rel="stylesheet" href="suivi.css?v=5" />
+  <link rel="stylesheet" href="suivi.css?v=6" />
 </head>
 <body>
 <div class="app-layout">
@@ -116,7 +116,6 @@ function montrerInstallation() {
         Rechargez ensuite cette page.
       </p>
     </div>`;
-  dessinerIcones?.();
 }
 
 async function connexion() {
@@ -222,7 +221,6 @@ function dessiner() {
     </section>`).join('');
 
   zone.querySelectorAll('.relance-carte').forEach(brancher);
-  dessinerIcones?.();
 }
 
 function carte(p) {
@@ -313,6 +311,9 @@ function brancher(carte) {
   carte.querySelectorAll('[data-ia]').forEach((b) =>
     b.addEventListener('click', () => ecrire(id, b.dataset.ia, carte)));
 
+  // La zone suit ce qu'on y ecrit : le vendeur corrige souvent le brouillon.
+  carte.querySelector('.ia-texte').addEventListener('input', (e) => ajusterHauteur(e.target));
+
   carte.querySelector('[data-act="copier"]').addEventListener('click', async () => {
     const zone = carte.querySelector('.ia-texte');
     try {
@@ -347,6 +348,12 @@ function brancher(carte) {
     toast('Projet mis en sommeil. Il reste dans le suivi client.');
     retirer(id);
   });
+}
+
+/** La zone de brouillon epouse la hauteur du texte, sans depasser l'ecran. */
+function ajusterHauteur(zone) {
+  zone.style.height = 'auto';
+  zone.style.height = Math.min(zone.scrollHeight + 6, Math.round(window.innerHeight * 0.7)) + 'px';
 }
 
 /**
@@ -424,11 +431,12 @@ async function ecrire(id, forme, carte) {
       return;
     }
 
+    // On montre la zone AVANT de la mesurer : un element masque a une hauteur
+    // de contenu nulle, et le brouillon restait coince dans une petite boite.
+    sortie.hidden = false;
     const zone = carte.querySelector('.ia-texte');
     zone.value = data.texte;
-    zone.style.height = 'auto';
-    zone.style.height = Math.min(zone.scrollHeight + 4, 420) + 'px';
-    sortie.hidden = false;
+    ajusterHauteur(zone);
     etat.textContent = 'Brouillon, à relire avant envoi.';
 
     // Un lien mailto pre-rempli quand on a l'adresse. L'objet est la premiere
