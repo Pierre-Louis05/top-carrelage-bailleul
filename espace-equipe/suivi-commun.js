@@ -191,13 +191,30 @@ function jetons(morceaux) {
   for (const m of morceaux) {
     const t = String(m.texte);
     const large = m.large || t.length * 3.2;
+    const parCar = large / Math.max(t.length, 1);
     let i = 0;
     for (const mot of t.split(/\s+/)) {
-      if (mot) out.push({ x: m.x + (large * i) / Math.max(t.length, 1), texte: mot });
+      if (mot) out.push({ x: m.x + parCar * i, large: parCar * mot.length, texte: mot });
       i += mot.length + 1;
     }
   }
-  return out.sort((a, b) => a.x - b.x);
+  out.sort((a, b) => a.x - b.x);
+
+  // Sequoia sépare les milliers par une espace : « 5 088,00 » arrive en deux
+  // mots, et lire le second seul donnait 88 au lieu de 5 088. On les recolle
+  // quand ils se touchent, ce qui ne peut pas arriver entre deux colonnes.
+  const colles = [];
+  for (const j of out) {
+    const d = colles[colles.length - 1];
+    if (d && /^-?\d{1,3}$/.test(d.texte) && /^\d{3}(?:[.,]\d+)?$/.test(j.texte)
+        && j.x - (d.x + d.large) < 5) {
+      d.texte += j.texte;
+      d.large = j.x + j.large - d.x;
+    } else {
+      colles.push({ ...j });
+    }
+  }
+  return colles;
 }
 
 /**
@@ -245,7 +262,15 @@ function cadreClient(lignes) {
   // Sequoia imprime « Tel : fixe / portable ». On retient le portable quand il
   // existe : c'est le numéro qui joint vraiment le client, et celui par lequel
   // on reconnaît son dossier d'un document à l'autre.
-  const telephone = tels.find((t) => /^0[67]/.test(normaliserTel(t) ?? '')) ?? tels[0] ?? null;
+  const choisi = tels.find((t) => /^0[67]/.test(normaliserTel(t) ?? '')) ?? tels[0] ?? null;
+
+  // Sequoia imprime parfois le numéro d'une traite, « 0620070788 ». On le
+  // remet en paires pour l'affichage ; la reconnaissance, elle, passe par
+  // telephone_norme et ne voit pas la différence.
+  const norme = normaliserTel(choisi);
+  const telephone = choisi && !/[\s.-]/.test(choisi) && norme && norme.length === 10
+    ? norme.replace(/(\d{2})(?=\d)/g, '$1 ').trim()
+    : choisi;
 
   return {
     nom, telephone, email,
@@ -324,8 +349,15 @@ function interpreterSequoia(lignes) {
   const total_ht  = nombre(valeurApres(lignes, /TOTAL\s*H\.?T\.?\s*:?\s*([\d\s.,]+)/i));
   const total_ttc = nombre(valeurApres(lignes, /(?:TOTAL\s*T\.?T\.?C\.?|NET\s*A\s*PAYER)\s*:?\s*([\d\s.,]+)/i));
   const acompte   = nombre(valeurApres(lignes, /ACOMPTE[^:]*:?\s*([\d\s.,]+)/i));
-  const reste     = nombre(valeurApres(lignes, /RESTE[^:]*:?\s*([\d\s.,]+)/i));
+  // La facture ecrit « Net a payer » la ou le devis ecrit « Reste a payer ».
+  const reste     = nombre(valeurApres(lignes, /RESTE\s*[AÀ]?\s*PAYER\s*:?\s*([\d\s.,]+)/i))
+                 ?? nombre(valeurApres(lignes, /NET\s*[AÀ]\s*PAYER\s*:?\s*([\d\s.,]+)/i));
   const poids_kg  = nombre(valeurApres(lignes, /POIDS[^:]*:?\s*([\d\s.,]+)/i));
+
+  // Echeance de reglement, sur les factures : « Echeance 1 : 09/10/2026 ».
+  let echeance = null;
+  const mEch = texteBrut.match(/[ÉE]CH[ÉE]ANCE\s*\d*\s*:?\s*(\d{2})[/.-](\d{2})[/.-](\d{4})/i);
+  if (mEch) echeance = `${mEch[3]}-${mEch[2]}-${mEch[1]}`;
 
   // Document lié : la facture cite « COMMANDE CM… », le bon de commande ne cite rien
   const numero_lie = texteBrut.match(/COMMANDE\s+(CM\s?\d{4,10})/i)?.[1]?.replace(/\s/g, '') ?? null;
@@ -341,18 +373,10 @@ function interpreterSequoia(lignes) {
 
   const lignesDoc = extraireLignes(lignes);
 
-  // Contrôle de lecture : la somme des lignes doit retomber sur le total HT.
-  // Si elle n'y retombe pas, c'est le tableau qui a été mal lu, et l'écran de
-  // validation le dit au lieu de laisser croire que tout est juste.
-  const somme = lignesDoc
-    .filter((l) => l.nature === 'produit' || l.nature === 'remise')
-    .reduce((s, l) => s + (l.montant ?? 0), 0);
-  const controle_lignes =
-    total_ht === null || !lignesDoc.length ? null
-      : { somme: +somme.toFixed(2), total_ht, concorde: Math.abs(somme - total_ht) < 1 };
+  const controle_lignes = controlerLignes(lignesDoc, total_ht, total_ttc);
 
   return {
-    type_doc, numero, date_doc, date_expiration,
+    type_doc, numero, date_doc, date_expiration, echeance,
     total_ht, total_ttc, acompte, reste_a_payer: reste, poids_kg,
     numero_lie, texte_brut: texteBrut,
     client: {
@@ -373,43 +397,114 @@ function interpreterSequoia(lignes) {
 }
 
 /**
+ * Décide comment lire la dernière colonne, et vérifie la lecture du tableau.
+ *
+ * Les trois documents ne s'accordent pas. Sur un devis et un bon de commande,
+ * la dernière colonne est un prix unitaire après remise : le montant de la
+ * ligne vaut quantité fois ce prix. Sur une facture, c'est déjà le montant de
+ * la ligne. Et le total sur lequel l'addition retombe est le HT sur le devis,
+ * le TTC sur les deux autres.
+ *
+ * Plutôt que d'écrire ces trois cas en dur, on essaie les deux lectures et on
+ * garde celle qui retombe sur un total imprimé sur le document. C'est ce qui
+ * permet de vérifier DM08044 (946,25 HT), CM002794 (2 700,00 TTC) et FM06639
+ * (13 370,13 TTC) sans rien supposer de la mise en page.
+ */
+function controlerLignes(lignesDoc, total_ht, total_ttc) {
+  const comptees = lignesDoc.filter((l) => l.nature === 'produit' || l.nature === 'remise');
+  if (!comptees.length) return null;
+
+  const LECTURES = {
+    quantite: (l) => (l.qte ?? 1) * (l.prix_net ?? 0),
+    montant:  (l) => l.prix_net ?? 0,
+  };
+
+  const essais = [];
+  for (const [mode, calcul] of Object.entries(LECTURES)) {
+    const somme = +comptees.reduce((t, l) => t + calcul(l), 0).toFixed(2);
+    for (const [base, total] of [['HT', total_ht], ['TTC', total_ttc]]) {
+      if (total === null || total === undefined) continue;
+      essais.push({ mode, base, total, somme, ecart: Math.abs(somme - total) });
+    }
+  }
+  if (!essais.length) return null;
+
+  essais.sort((a, b) => a.ecart - b.ecart);
+  const retenu = essais[0];
+  // Un centime d'arrondi par ligne est normal, au-delà c'est une erreur de lecture.
+  const concorde = retenu.ecart <= Math.max(1, Math.abs(retenu.total) * 0.002);
+
+  if (concorde) {
+    const calcul = LECTURES[retenu.mode];
+    for (const l of lignesDoc) {
+      l.montant = l.prix_net === null || l.prix_net === undefined ? null : +calcul(l).toFixed(2);
+    }
+  }
+  return { somme: retenu.somme, total: retenu.total, base: retenu.base, mode: retenu.mode, concorde };
+}
+
+/**
  * Extrait les lignes de produits.
  *
- * L'en-tête du tableau annonce DÉSIGNATION, FORMAT, QTÉ, UNITÉ, PU HT, REM,
- * plus une dernière colonne sans titre. L'unité reste l'ancre la plus fiable :
- * le nombre qui la précède est la quantité, ceux qui la suivent sont le prix
- * catalogue puis le prix net.
+ * Les en-têtes diffèrent d'un document à l'autre : le devis annonce
+ * DÉSIGNATION FORMAT QTÉ UNITÉ PU HT REM, le bon de commande met PU TTC et
+ * PRIX TTC, la facture ajoute une colonne CODE à gauche et n'intitule même pas
+ * la colonne des unités. On relève donc les abscisses sur la ligne d'en-tête
+ * plutôt que de les supposer.
  *
- * Sans cette ancre, le format du carreau trompe la lecture : sur
- * « LINEN CLOUD 4D/100X100X2/A/R 100X100X20 0.000 M2 », compter les nombres de
- * gauche à droite donne une quantité tirée du format.
+ * L'unité reste l'ancre : le nombre qui la précède est la quantité, ceux qui
+ * la suivent sont le prix catalogue, la remise puis le prix net. Sans cette
+ * ancre, le format du carreau trompe la lecture.
  */
 const UNITES = ['M2', 'M²', 'ML', 'U', 'PCE', 'PCS', 'SAC', 'BTE', 'KG', 'L', 'P', 'LOT', 'ENS', 'H'];
+
+// Une facture groupe ses lignes par commande d'origine : « COMMANDE CM002690
+// du 30/07/2026 ». Sans ce repère, cette ligne serait recollée à la
+// désignation du produit précédent.
+const RE_SECTION_COMMANDE = /^COMMANDE\s+(CM\s?\d{4,10})(?:\s+du\s+(\d{2})[/.-](\d{2})[/.-](\d{4}))?/i;
 
 function extraireLignes(lignes) {
   const sortie = [];
   let dansTableau = false;
-  let xFormat = null;
+  let cols = { code: null, designation: null, format: null };
 
   for (const l of lignes) {
     const t = l.texte;
 
     if (/D[ÉE]SIGNATION/i.test(t) && /(QT[ÉE]|QUANTIT[ÉE])/i.test(t)) {
       dansTableau = true;
-      xFormat = jetons(l.morceaux).find((j) => /^FORMAT$/i.test(j.texte))?.x ?? null;
+      const entete = jetons(l.morceaux);
+      const xDe = (motif) => entete.find((j) => motif.test(j.texte))?.x ?? null;
+      cols = {
+        code: xDe(/^CODE$/i),
+        designation: xDe(/^D[ÉE]SIGNATION$/i),
+        format: xDe(/^FORMAT$/i),
+      };
       continue;
     }
-    if (/TOTAL\s*H\.?T|CONDITIONS|MODE DE R[ÈE]GLEMENT|Page\s+\d|DEVIS VALABLE/i.test(t)) {
+    // Fin du tableau. « Règlement », « Échéance » et « Acompte » apparaissent
+    // sur la facture avant les totaux : sans eux, « Echéance 1 : 09/10/2026
+    // 4 870,13 EUR » devenait une ligne de produit à 870,13 euros.
+    if (/TOTAL\s*H\.?T|CONDITIONS|R[ÈE]GLEMENT|[ÉE]CH[ÉE]ANCE|ACOMPTE\s*(VERS[ÉE])?\s*:|ENCAISS[ÉE]|R[ÉE]SERVE DE PROPRIETE|Page\s+\d|DEVIS VALABLE/i.test(t)) {
       dansTableau = false;
       continue;
     }
     if (!dansTableau || t.length < 2) continue;
 
-    const lue = lireLigne(jetons(l.morceaux), xFormat, t);
+    const section = t.match(RE_SECTION_COMMANDE);
+    if (section) {
+      sortie.push({
+        designation: t, format: null, code: null, qte: null, pu: null, prix_net: null,
+        montant: null, nature: 'commentaire', commande_liee: section[1].replace(/\s/g, ''), texte: t,
+      });
+      continue;
+    }
 
-    // Sequoia fait déborder une désignation trop longue sur la ligne suivante.
-    // Sans unité ni prix, cette suite appartient au produit du dessus : la
-    // rattacher évite de créer une fausse ligne, comme « ETERNO » sur DM08044.
+    const lue = lireLigne(jetons(l.morceaux), cols, t);
+
+    // Une désignation trop longue déborde sur la ligne suivante, sans unité ni
+    // prix. Cette suite appartient au produit du dessus : la rattacher évite de
+    // créer une fausse ligne, comme « ETERNO » sur DM08044.
     if (!lue && sortie.length) {
       const prec = sortie[sortie.length - 1];
       prec.designation = `${prec.designation} ${t}`.replace(/\s+/g, ' ').trim();
@@ -422,11 +517,11 @@ function extraireLignes(lignes) {
 }
 
 /** Lit une ligne du tableau à partir de ses mots placés. Rend null si ce n'en est pas une. */
-function lireLigne(jets, xFormat, texte) {
+function lireLigne(jets, cols, texte) {
   const estNombre = (m) => /^-?\d+(?:[.,]\d+)?$/.test(m);
 
   // L'unité la plus à droite qui soit précédée d'un nombre : chercher la
-  // première attraperait le « L » ou le « P » d'un libellé.
+  // première attraperait le « KG » du format, ou le « L » d'un libellé.
   let iU = -1;
   for (let i = jets.length - 1; i > 0; i--) {
     if (UNITES.includes(jets[i].texte.toUpperCase().replace(/\./g, '')) && estNombre(jets[i - 1].texte)) {
@@ -435,18 +530,15 @@ function lireLigne(jets, xFormat, texte) {
   }
 
   if (iU < 0) {
-    // Pas d'unité. Une ligne de remise porte quand même un prix ; une suite de
-    // désignation n'en porte aucun, et on la rend au produit du dessus.
     const prix = jets.filter((j) => /^-?\d+[.,]\d{2}$/.test(j.texte)).map((j) => nombre(j.texte));
-    if (!prix.length) return null;
+    if (!prix.length) return null;        // suite de désignation
     const nombres = jets.filter((j) => estNombre(j.texte)).map((j) => nombre(j.texte));
     const ligne = {
       designation: jets.filter((j) => !estNombre(j.texte)).map((j) => j.texte).join(' ').trim() || texte,
-      format: null,
+      format: null, code: null,
       qte: nombres.length > prix.length ? nombres[0] : null,
       pu: prix[0], prix_net: prix[prix.length - 1], montant: null, texte,
     };
-    ligne.montant = ligne.qte === null ? ligne.prix_net : +(ligne.qte * ligne.prix_net).toFixed(2);
     ligne.nature = classerLigne(ligne);
     return ligne;
   }
@@ -454,22 +546,22 @@ function lireLigne(jets, xFormat, texte) {
   const qte = nombre(jets[iU - 1].texte);
   const apres = jets.slice(iU + 1).filter((j) => estNombre(j.texte)).map((j) => nombre(j.texte));
   const pu = apres.length ? apres[0] : null;
-
-  // La dernière colonne, sans en-tête sur le modèle Sequoia, porte le prix
-  // après remise. C'est elle qui fait le montant : sur DM08044, 100 × 2,17
-  // plus 25 × 29,17 retombe exactement sur le total HT de 946,25.
   const prix_net = apres.length > 1 ? apres[apres.length - 1] : pu;
 
+  // Découpage des colonnes de gauche. La marge de 10 points tient compte des
+  // valeurs qui débordent un peu à gauche de leur en-tête : sur FM06639, le
+  // format « 5 KG » commence à 282 sous un en-tête placé à 289.
   const avant = jets.slice(0, iU - 1);
-  const gauche = xFormat === null ? avant : avant.filter((j) => j.x < xFormat - 6);
-  const droite = xFormat === null ? [] : avant.filter((j) => j.x >= xFormat - 6);
+  const prendre = (min, max) => avant
+    .filter((j) => (min === null || j.x >= min) && (max === null || j.x < max))
+    .map((j) => j.texte).join(' ').trim() || null;
 
+  const xCode = cols.code === null ? null : cols.designation - 6;
   const ligne = {
-    designation: gauche.map((j) => j.texte).join(' ').trim() || texte,
-    format: droite.map((j) => j.texte).join(' ').trim() || null,
-    qte, pu, prix_net,
-    montant: qte !== null && prix_net !== null ? +(qte * prix_net).toFixed(2) : null,
-    texte,
+    code: xCode === null ? null : prendre(null, xCode),
+    designation: prendre(xCode, cols.format === null ? null : cols.format - 10) || texte,
+    format: cols.format === null ? null : prendre(cols.format - 10, null),
+    qte, pu, prix_net, montant: null, texte,
   };
   ligne.nature = classerLigne(ligne);
   return ligne;

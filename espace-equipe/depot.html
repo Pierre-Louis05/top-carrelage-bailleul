@@ -101,7 +101,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="sidebar.js?v=5"></script>
-<script src="suivi-commun.js?v=3"></script>
+<script src="suivi-commun.js?v=4"></script>
 <script>
 
 const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
@@ -214,9 +214,9 @@ function afficherValidation(id, fichier, lu, corr) {
     { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 });
   const ctrlHtml = !ctrl ? '' : ctrl.concorde
     ? `<p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 8px;">
-         Lecture vérifiée : les lignes totalisent ${exact(ctrl.somme)}, comme le total HT du document.</p>`
+         Lecture vérifiée : les lignes totalisent ${exact(ctrl.somme)}, comme le total ${ctrl.base} du document.</p>`
     : `<div class="rattachement doute" style="margin-bottom:10px;">
-         Les lignes totalisent ${exact(ctrl.somme)} alors que le document annonce ${exact(ctrl.total_ht)}.
+         Les lignes totalisent ${exact(ctrl.somme)} alors que le document annonce ${exact(ctrl.total)} ${ctrl.base}.
          Le tableau a sans doute été mal lu : vérifiez les totaux avant d'enregistrer.</div>`;
 
   const lignesHtml = lu.lignes.length ? `
@@ -402,7 +402,7 @@ async function enregistrer(carte, id, lu, corr) {
     // 4. Le document
     const { error: eDoc } = await db.from('suivi_documents').insert({
       projet_id: projetId, type_doc: typeDoc, numero: val('numero').toUpperCase(),
-      date_doc: val('date_doc') || null, date_expiration: lu.date_expiration,
+      date_doc: val('date_doc') || null, date_expiration: lu.date_expiration, echeance: lu.echeance,
       total_ht: num('total_ht'), total_ttc: num('total_ttc'),
       acompte: lu.acompte, reste_a_payer: lu.reste_a_payer, poids_kg: lu.poids_kg,
       lignes: lu.lignes, numero_lie: numeroLie, texte_brut: lu.texte_brut,
