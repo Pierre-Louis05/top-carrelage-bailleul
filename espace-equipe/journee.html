@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#14263C" />
   <link rel="stylesheet" href="../fonts/polices-equipe.css" />
   <link rel="stylesheet" href="app.css?v=5" />
-  <link rel="stylesheet" href="suivi.css?v=8" />
+  <link rel="stylesheet" href="suivi.css?v=9" />
 </head>
 <body>
 <div class="app-layout">
@@ -39,6 +39,7 @@
       <a href="journee.html" class="sidebar-link active"><span class="ico" data-ico="journee"></span> Ma journée</a>
       <a href="suivi.html" class="sidebar-link"><span class="ico" data-ico="suivi"></span> Suivi client</a>
       <a href="passage.html" class="sidebar-link"><span class="ico" data-ico="passage"></span> Fiche de passage</a>
+      <a href="taches.html" class="sidebar-link"><span class="ico" data-ico="taches"></span> Choses à faire</a>
       <a href="relances.html" class="sidebar-link"><span class="ico" data-ico="relance"></span> Relances</a>
       <a href="depot.html" class="sidebar-link"><span class="ico" data-ico="depot"></span> Déposer un document</a>
       <div class="sidebar-section">Équipe</div>
@@ -72,6 +73,13 @@
           <span class="ia-etat" id="etatPoint"></span>
         </div>
 
+        <div class="capture">
+          <input type="text" id="noteRapide" autocomplete="off"
+                 placeholder="Une chose à ne pas oublier : « envoyer le devis à Mme Dupont jeudi »" />
+          <button type="button" class="btn-primary" id="btnNoter">Noter</button>
+        </div>
+        <div class="capture-etat" id="etatNote"></div>
+
         <div class="point-jour" id="pointJour" hidden></div>
         <div id="sections"><p class="groupe-note">Chargement…</p></div>
       </div>
@@ -83,7 +91,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="sidebar.js?v=8"></script>
+<script src="sidebar.js?v=9"></script>
 <script src="suivi-commun.js?v=5"></script>
 <script>
 
@@ -134,7 +142,7 @@ async function sansCasser(promesse) {
   } catch (e) { console.warn(e); return []; }
 }
 
-let tout = {}, qui = 'moi', vendeurs = {};
+let tout = {}, qui = 'moi', vendeurs = {}, prenoms = {};
 
 async function charger() {
   const auj = aujourdhui();
@@ -142,9 +150,15 @@ async function charger() {
   const ilY14 = ajouterJours(auj, -14);
 
   const { data: profils } = await db.from('employee_profiles').select('id, prenom, nom');
-  (profils || []).forEach((p) => { vendeurs[p.id] = p.prenom + ' ' + p.nom; });
+  (profils || []).forEach((p) => {
+    vendeurs[p.id] = p.prenom + ' ' + p.nom;
+    prenoms[p.id] = p.prenom;
+  });
 
-  const [relances, messages, rdv, temoignages, devis, echantillons] = await Promise.all([
+  const [taches, relances, messages, rdv, temoignages, devis, echantillons] = await Promise.all([
+    sansCasser(db.from('suivi_taches')
+      .select('id, texte, echeance, pour_qui, client_id, cree_par, suivi_clients(id, nom)')
+      .is('fait_le', null).order('echeance', { ascending: true, nullsFirst: false }).limit(200)),
     sansCasser(db.from('suivi_projets')
       .select('id, titre, univers, vendeur_id, prochaine_relance, montant_ttc, suivi_clients(id, nom, ville)')
       .not('prochaine_relance', 'is', null).eq('relance_arretee', false)
@@ -168,6 +182,10 @@ async function charger() {
   ]);
 
   tout = {
+    // Sans echeance veut dire « des que possible » : la tache compte pour
+    // aujourd'hui, sinon elle n'apparaitrait jamais nulle part.
+    taches: taches.filter((t) => !t.echeance || t.echeance <= auj),
+    taches_plus_tard: taches.filter((t) => t.echeance && t.echeance > auj),
     relances,
     messages,
     rdv,
@@ -193,6 +211,21 @@ function dessiner() {
   const lien = (href, texte) => `<a href="${href}">${esc(texte)}</a>`;
 
   const sections = [
+    {
+      titre: 'À faire', page: 'taches.html',
+      lignes: aMoi(tout.taches, 'pour_qui').map((t) => ({
+        gauche: t.suivi_clients
+          ? lien(`client.html?id=${t.suivi_clients.id}`, t.suivi_clients.nom)
+          : esc(vendeurs[t.pour_qui] ?? 'Pour moi'),
+        milieu: t.texte,
+        droite: !t.echeance ? 'dès que possible'
+          : t.echeance < auj ? `<span class="alerte">depuis le ${dateCourte(t.echeance)}</span>`
+          : `aujourd'hui`,
+        extra: '',
+        action: `<button type="button" class="j-fait" data-tache="${t.id}">Fait</button>`,
+      })),
+      vide: 'Rien de noté.',
+    },
     {
       titre: 'Relances à faire', page: 'relances.html',
       lignes: aMoi(tout.relances, 'vendeur_id').map((p) => ({
@@ -274,14 +307,18 @@ function dessiner() {
           <a class="voir-tout" href="${s.page}">tout voir</a></h3>
         <div class="journee-liste">
           ${s.lignes.map((l) => `
-            <div class="journee-ligne">
+            <div class="journee-ligne${l.action ? ' avec-action' : ''}">
               <span class="j-gauche">${l.gauche}</span>
               <span class="j-milieu">${esc(l.milieu ?? '')}</span>
               <span class="j-extra">${esc(l.extra ?? '')}</span>
               <span class="j-droite">${l.droite}</span>
+              ${l.action ?? ''}
             </div>`).join('')}
         </div>
       </section>`).join('');
+
+  document.querySelectorAll('.j-fait').forEach((b) =>
+    b.addEventListener('click', () => marquerFaite(b.dataset.tache, b)));
 
   // Le resume envoye a Claude : des faits, pas de donnees personnelles de plus
   // que ce qui est deja a l'ecran.
@@ -290,6 +327,105 @@ function dessiner() {
       `- ${l.gauche.replace(/<[^>]+>/g, '')} | ${l.milieu ?? ''} | ${l.extra ?? ''} | ${l.droite.replace(/<[^>]+>/g, '')}`
     ).join('\n')).join('\n\n') || 'Rien a faire aujourd\'hui.';
 }
+
+/**
+ * Enregistre une note prise a la volee.
+ *
+ * Le vendeur est au telephone : il ecrit une ligne et passe a autre chose.
+ * Claude en tire la date, la personne et le client, mais s'il echoue la note
+ * est enregistree telle quelle. Perdre la note serait pire que la ranger
+ * approximativement, et c'est tout l'interet par rapport au carnet papier.
+ */
+async function noterTache() {
+  const champ = document.getElementById('noteRapide');
+  const etat = document.getElementById('etatNote');
+  const bouton = document.getElementById('btnNoter');
+  const note = champ.value.trim();
+  if (!note) return;
+
+  bouton.disabled = true;
+  etat.textContent = 'Claude range la note…';
+
+  let compris = { texte: note, echeance: null, pour_qui: null, client: null };
+  try {
+    const { data: { session } } = await db.auth.getSession();
+    const rep = await fetch('/.netlify/functions/ia-tache', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token ?? ''}` },
+      body: JSON.stringify({
+        note, aujourdhui: aujourdhui(),
+        prenoms: Object.values(prenoms),
+      }),
+    });
+    const d = await rep.json().catch(() => ({}));
+    if (rep.ok && d.texte) compris = d;
+    else etat.textContent = 'Note enregistrée telle quelle.';
+  } catch (e) {
+    etat.textContent = 'Note enregistrée telle quelle.';
+  }
+
+  // Le prenom rendu par Claude est rapproche de l'equipe, exactement : LOUIS
+  // et LOUISE sont deux personnes, jamais un debut de mot.
+  let pourQui = moi.id;
+  if (compris.pour_qui) {
+    const cle = cleNom(compris.pour_qui);
+    const trouve = Object.entries(prenoms).find(([, p]) => cleNom(p) === cle);
+    if (trouve) pourQui = trouve[0];
+  }
+
+  // Le client n'est rattache que si un seul dossier correspond : un doute
+  // laisse la tache sans dossier plutot que de la ranger chez le mauvais.
+  let clientId = null;
+  if (compris.client) {
+    const { data } = await sansCasserBrut(db.from('suivi_clients').select('id, nom').limit(500));
+    const cle = cleNom(compris.client);
+    const exacts = (data || []).filter((c) => cleNom(c.nom) === cle);
+    if (exacts.length === 1) clientId = exacts[0].id;
+  }
+
+  const { error } = await db.from('suivi_taches').insert({
+    texte: compris.texte, echeance: compris.echeance,
+    pour_qui: pourQui, client_id: clientId, cree_par: moi.id,
+  });
+
+  bouton.disabled = false;
+  if (error) {
+    etat.textContent = '';
+    toast(/suivi_taches/.test(error.message)
+      ? "Les tâches ne sont pas encore installées : exécutez sql/suivi_taches_setup.sql dans Supabase."
+      : 'Enregistrement impossible : ' + error.message, 8000);
+    return;
+  }
+
+  champ.value = '';
+  etat.textContent = [
+    'Noté',
+    compris.echeance ? 'pour le ' + dateLongue(compris.echeance) : 'dès que possible',
+    pourQui !== moi.id ? 'pour ' + (vendeurs[pourQui] ?? '') : null,
+    clientId ? 'dossier ' + compris.client : null,
+  ].filter(Boolean).join(', ') + '.';
+  champ.focus();
+  charger();
+}
+
+/** Comme sansCasser, mais rend l'objet complet quand on veut lire l'erreur. */
+async function sansCasserBrut(promesse) {
+  try { return await promesse; } catch (e) { return { data: [], error: e }; }
+}
+
+async function marquerFaite(id, bouton) {
+  bouton.disabled = true;
+  const { error } = await db.from('suivi_taches')
+    .update({ fait_le: new Date().toISOString(), fait_par: moi.id }).eq('id', id);
+  if (error) { bouton.disabled = false; return toast('Impossible : ' + error.message); }
+  tout.taches = tout.taches.filter((t) => t.id !== id);
+  dessiner();
+}
+
+document.getElementById('btnNoter').addEventListener('click', noterTache);
+document.getElementById('noteRapide').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); noterTache(); }
+});
 
 document.getElementById('filtreQui').addEventListener('click', (e) => {
   const b = e.target.closest('button');

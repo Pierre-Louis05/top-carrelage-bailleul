@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Choses à faire · Espace Équipe Top Carrelage</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="../favicon-96.png" sizes="96x96" type="image/png" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <meta name="theme-color" content="#14263C" />
+  <link rel="stylesheet" href="../fonts/polices-equipe.css" />
+  <link rel="stylesheet" href="app.css?v=5" />
+  <link rel="stylesheet" href="suivi.css?v=9" />
+</head>
+<body>
+<div class="app-layout">
+
+<aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Top Carrelage</div>
+      <span class="sidebar-logo-sub">Espace Équipe</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">Chargement…</div>
+        <div class="sidebar-user-role" id="sidebarRole"></div>
+      </div>
+    </div>
+        <nav class="sidebar-nav">
+      <div class="sidebar-section">Demandes RDV</div>
+      <a href="dashboard.html" class="sidebar-link"><span class="ico" data-ico="demandes"></span> Tableau de bord<span class="sidebar-badge" id="badge-nouveau" style="display:none;">0</span></a>
+      <div class="sidebar-section">Site web</div>
+      <a href="messages.html" class="sidebar-link"><span class="ico" data-ico="messages"></span> Messages de contact</a>
+      <a href="temoignages.html" class="sidebar-link"><span class="ico" data-ico="avis"></span> Témoignages</a>
+      <div class="sidebar-section">Dépôt</div>
+      <a href="consommables.html" class="sidebar-link"><span class="ico" data-ico="stock"></span> Stock consommables</a>
+      <div class="sidebar-section">Clients</div>
+      <a href="journee.html" class="sidebar-link"><span class="ico" data-ico="journee"></span> Ma journée</a>
+      <a href="suivi.html" class="sidebar-link"><span class="ico" data-ico="suivi"></span> Suivi client</a>
+      <a href="passage.html" class="sidebar-link"><span class="ico" data-ico="passage"></span> Fiche de passage</a>
+      <a href="taches.html" class="sidebar-link active"><span class="ico" data-ico="taches"></span> Choses à faire</a>
+      <a href="relances.html" class="sidebar-link"><span class="ico" data-ico="relance"></span> Relances</a>
+      <a href="depot.html" class="sidebar-link"><span class="ico" data-ico="depot"></span> Déposer un document</a>
+      <div class="sidebar-section">Équipe</div>
+      <a href="planning.html" class="sidebar-link"><span class="ico" data-ico="planning"></span> Planning</a>
+      <a href="horaires.html" class="sidebar-link"><span class="ico" data-ico="horaires"></span> Emploi du temps</a>
+      <a href="pointage.html" class="sidebar-link"><span class="ico" data-ico="pointage"></span> Mon pointage</a>
+      <a href="conges.html" class="sidebar-link"><span class="ico" data-ico="conges"></span> Mes congés</a>
+      <a href="commandes.html" class="sidebar-link"><span class="ico" data-ico="commandes"></span> Commandes</a>
+      <a href="presence-equipe.html" class="sidebar-link" id="lienPresenceEquipe" style="display:none;"><span class="ico" data-ico="presence"></span> Présence équipe</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Choses à faire</div>
+      <div class="topbar-actions" id="topbarActions"></div>
+    </div>
+
+    <div class="page-content">
+
+      <div id="zoneTaches">
+        <div class="capture">
+          <input type="text" id="noteRapide" autocomplete="off"
+                 placeholder="Une chose à ne pas oublier : « demander à Simon de rappeler Colpaert jeudi »" />
+          <button type="button" class="btn-primary" id="btnNoter">Noter</button>
+        </div>
+        <div class="capture-etat" id="etatNote"></div>
+
+        <div class="recherche-ligne">
+          <div class="boutons-choix" id="filtreQui">
+            <button data-qui="moi" class="choisi">Les miennes</button>
+            <button data-qui="tous">Toute l'équipe</button>
+          </div>
+          <input type="search" id="recherche" placeholder="Chercher dans les notes…" autocomplete="off" />
+        </div>
+
+        <div id="sections"><p class="groupe-note">Chargement…</p></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="sidebar.js?v=9"></script>
+<script src="suivi-commun.js?v=5"></script>
+<script>
+
+const SUPABASE_URL = 'https://hzploaweyewjyxdhpmvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NfYsr2yMHIYRJ6F3H96EXg_KWZE4_RQ';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let moi = null, monProfil = null;
+let taches = [], faites = [], qui = 'moi', terme = '', vendeurs = {}, prenoms = {};
+
+function toast(msg, duree = 4000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), duree);
+}
+
+async function connexion() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return false; }
+  moi = session.user;
+  const { data: p } = await db.from('employee_profiles').select('*').eq('id', moi.id).single();
+  if (p) {
+    monProfil = p;
+    document.getElementById('sidebarName').textContent = p.prenom + ' ' + p.nom;
+    document.getElementById('sidebarRole').textContent = p.poste;
+    document.getElementById('sidebarAvatar').textContent = (p.prenom[0] || '') + (p.nom[0] || '');
+  }
+  const btn = document.getElementById('logoutBtn');
+  if (btn) btn.addEventListener('click', async () => {
+    await db.auth.signOut(); window.location.href = 'index.html';
+  });
+  return true;
+}
+
+function pasInstalle(err) {
+  return err && (err.code === '42P01' || /does not exist|schema cache/i.test(err.message || ''));
+}
+
+async function charger() {
+  const { data: profils } = await db.from('employee_profiles').select('id, prenom, nom');
+  (profils || []).forEach((p) => { vendeurs[p.id] = p.prenom + ' ' + p.nom; prenoms[p.id] = p.prenom; });
+
+  const champs = 'id, texte, echeance, pour_qui, client_id, cree_par, cree_le, fait_le, fait_par, suivi_clients(id, nom)';
+
+  const { data, error } = await db.from('suivi_taches').select(champs)
+    .is('fait_le', null).order('echeance', { ascending: true, nullsFirst: false }).limit(400);
+
+  if (error) {
+    document.getElementById('sections').innerHTML = pasInstalle(error)
+      ? `<div class="empty-state">
+           <h3>Les choses à faire ne sont pas encore installées</h3>
+           <p>Une table doit être créée une première fois dans Supabase.</p>
+           <p style="margin-top:14px; font-size:0.86rem;">
+             Ouvrez <b>Supabase &rsaquo; SQL Editor</b>, collez le contenu du fichier
+             <b>sql/suivi_taches_setup.sql</b> du dépôt, puis cliquez sur Run.</p>
+         </div>`
+      : `<div class="empty-state"><h3>Chargement impossible</h3><p>${esc(error.message)}</p></div>`;
+    return;
+  }
+  taches = data || [];
+
+  // Les quinze dernieres faites : assez pour retrouver ce qu'on a fait hier,
+  // pas assez pour encombrer la page.
+  const { data: d2 } = await db.from('suivi_taches').select(champs)
+    .not('fait_le', 'is', null).order('fait_le', { ascending: false }).limit(15);
+  faites = d2 || [];
+
+  dessiner();
+}
+
+const GROUPES = [
+  { cle: 'retard',  titre: 'En retard',           note: 'Ces promesses datent.' },
+  { cle: 'jour',    titre: "Aujourd'hui",         note: '' },
+  { cle: 'sansdate',titre: 'Dès que possible',    note: 'Notées sans date.' },
+  { cle: 'semaine', titre: 'Cette semaine',       note: '' },
+  { cle: 'apres',   titre: 'Plus tard',           note: '' },
+];
+
+function dessiner() {
+  const auj = aujourdhui();
+  const dans7 = ajouterJours(auj, 7);
+  const t = terme.trim().toLowerCase();
+
+  const garder = (x) => {
+    if (qui === 'moi' && x.pour_qui && x.pour_qui !== moi.id) return false;
+    if (!t) return true;
+    return [x.texte, x.suivi_clients?.nom].filter(Boolean).join(' ').toLowerCase().includes(t);
+  };
+
+  const retenues = taches.filter(garder);
+  const par = { retard: [], jour: [], sansdate: [], semaine: [], apres: [] };
+  for (const x of retenues) {
+    if (!x.echeance) par.sansdate.push(x);
+    else if (x.echeance < auj) par.retard.push(x);
+    else if (x.echeance === auj) par.jour.push(x);
+    else if (x.echeance <= dans7) par.semaine.push(x);
+    else par.apres.push(x);
+  }
+
+  const ligne = (x, finie) => `
+    <div class="journee-ligne${finie ? ' finie' : ' avec-action'}">
+      <span class="j-gauche">${x.suivi_clients
+        ? `<a href="client.html?id=${x.suivi_clients.id}">${esc(x.suivi_clients.nom)}</a>`
+        : esc(vendeurs[x.pour_qui] ?? '')}</span>
+      <span class="j-milieu">${esc(x.texte)}</span>
+      <span class="j-extra">${x.pour_qui && x.pour_qui !== moi.id ? esc(prenoms[x.pour_qui] ?? '') : ''}</span>
+      <span class="j-droite">${finie
+        ? 'fait le ' + dateCourte(x.fait_le)
+        : !x.echeance ? 'sans date'
+        : x.echeance < auj ? `<span class="alerte">${dateCourte(x.echeance)}</span>`
+        : dateCourte(x.echeance)}</span>
+      ${finie
+        ? `<button type="button" class="j-fait" data-rouvrir="${x.id}">Rouvrir</button>`
+        : `<button type="button" class="j-fait" data-tache="${x.id}">Fait</button>`}
+    </div>`;
+
+  const sections = GROUPES.filter((g) => par[g.cle].length).map((g) => `
+    <section class="groupe-relance">
+      <h3>${g.titre} <span class="n">${par[g.cle].length}</span></h3>
+      ${g.note ? `<p class="groupe-note">${g.note}</p>` : ''}
+      <div class="journee-liste">${par[g.cle].map((x) => ligne(x, false)).join('')}</div>
+    </section>`).join('');
+
+  const finies = faites.filter(garder);
+
+  document.getElementById('sections').innerHTML =
+    (retenues.length ? sections : `
+      <div class="empty-state">
+        <h3>Rien de noté</h3>
+        <p>Écrivez ci-dessus ce que vous venez de promettre au téléphone.
+           La date, la personne et le client sont compris tout seuls.</p>
+      </div>`)
+    + (finies.length ? `
+      <section class="groupe-relance">
+        <h3>Faites récemment <span class="n">${finies.length}</span></h3>
+        <div class="journee-liste">${finies.map((x) => ligne(x, true)).join('')}</div>
+      </section>` : '');
+
+  document.querySelectorAll('[data-tache]').forEach((b) =>
+    b.addEventListener('click', () => basculer(b.dataset.tache, true, b)));
+  document.querySelectorAll('[data-rouvrir]').forEach((b) =>
+    b.addEventListener('click', () => basculer(b.dataset.rouvrir, false, b)));
+}
+
+async function basculer(id, finir, bouton) {
+  bouton.disabled = true;
+  const { error } = await db.from('suivi_taches').update(
+    finir ? { fait_le: new Date().toISOString(), fait_par: moi.id }
+          : { fait_le: null, fait_par: null }).eq('id', id);
+  if (error) { bouton.disabled = false; return toast('Impossible : ' + error.message); }
+  charger();
+}
+
+/** Identique a la saisie de Ma journee : une note, rangee par Claude. */
+async function noterTache() {
+  const champ = document.getElementById('noteRapide');
+  const etat = document.getElementById('etatNote');
+  const bouton = document.getElementById('btnNoter');
+  const note = champ.value.trim();
+  if (!note) return;
+
+  bouton.disabled = true;
+  etat.textContent = 'Claude range la note…';
+
+  let compris = { texte: note, echeance: null, pour_qui: null, client: null };
+  try {
+    const { data: { session } } = await db.auth.getSession();
+    const rep = await fetch('/.netlify/functions/ia-tache', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token ?? ''}` },
+      body: JSON.stringify({ note, aujourdhui: aujourdhui(), prenoms: Object.values(prenoms) }),
+    });
+    const d = await rep.json().catch(() => ({}));
+    if (rep.ok && d.texte) compris = d;
+    else etat.textContent = 'Note enregistrée telle quelle.';
+  } catch (e) {
+    etat.textContent = 'Note enregistrée telle quelle.';
+  }
+
+  let pourQui = moi.id;
+  if (compris.pour_qui) {
+    const cle = cleNom(compris.pour_qui);
+    const trouve = Object.entries(prenoms).find(([, p]) => cleNom(p) === cle);
+    if (trouve) pourQui = trouve[0];
+  }
+
+  let clientId = null;
+  if (compris.client) {
+    const { data } = await db.from('suivi_clients').select('id, nom').limit(500);
+    const cle = cleNom(compris.client);
+    const exacts = (data || []).filter((c) => cleNom(c.nom) === cle);
+    if (exacts.length === 1) clientId = exacts[0].id;
+  }
+
+  const { error } = await db.from('suivi_taches').insert({
+    texte: compris.texte, echeance: compris.echeance,
+    pour_qui: pourQui, client_id: clientId, cree_par: moi.id,
+  });
+
+  bouton.disabled = false;
+  if (error) { etat.textContent = ''; return toast('Enregistrement impossible : ' + error.message, 8000); }
+
+  champ.value = '';
+  etat.textContent = [
+    'Noté',
+    compris.echeance ? 'pour le ' + dateLongue(compris.echeance) : 'dès que possible',
+    pourQui !== moi.id ? 'pour ' + (vendeurs[pourQui] ?? '') : null,
+    clientId ? 'dossier ' + compris.client : null,
+  ].filter(Boolean).join(', ') + '.';
+  champ.focus();
+  charger();
+}
+
+document.getElementById('btnNoter').addEventListener('click', noterTache);
+document.getElementById('noteRapide').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); noterTache(); }
+});
+document.getElementById('recherche').addEventListener('input', (e) => { terme = e.target.value; dessiner(); });
+document.getElementById('filtreQui').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  document.querySelectorAll('#filtreQui button').forEach((x) => x.classList.remove('choisi'));
+  b.classList.add('choisi');
+  qui = b.dataset.qui;
+  dessiner();
+});
+
+(async () => { if (await connexion()) charger(); })();
+</script>
+</body>
+</html>

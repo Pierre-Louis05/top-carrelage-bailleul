@@ -18,6 +18,7 @@ const ICONES = {
   stock:     '<path d="M3 9h18M3 15h18M9 3v18M15 3v18"/><rect x="3" y="3" width="18" height="18" rx="2"/>',
   suivi:     '<path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   passage:   '<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z"/><path d="M14 6l4 4"/>',
+  taches:    '<path d="M9 5h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h1"/><path d="M8.5 3.5h7v3h-7z"/><path d="M8.5 12l2 2 4-4.5"/>',
   journee:   '<path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M4 9h16M9 4v3M15 4v3"/><path d="M8.5 14l2 2 4.5-4.5"/>',
   relance:   '<path d="M3.5 5.5A2 2 0 0 1 5.5 3.5h2l1.5 3.6-1.8 1.3a12 12 0 0 0 5.4 5.4l1.3-1.8 3.6 1.5v2a2 2 0 0 1-2 2A14.5 14.5 0 0 1 3.5 5.5z"/><path d="M16.5 2.5v3h3"/>',
   depot:     '<path d="M12 3v11M8 10l4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
@@ -75,6 +76,12 @@ const A_COMPTER = [
   { lien: 'suivi.html',      table: 'suivi_projets',    colonne: 'etape',  valeur: 'premier_passage' },
   // Les relances ne se comptent pas par egalite mais par date : tout ce qui
   // est du aujourd'hui ou en retard. D'ou ce filtre libre.
+  // Les choses notees a la volee : echues, ou sans date, c'est-a-dire des que
+  // possible. Sans ce compteur, une note prise au telephone ne se rappelle a
+  // personne tant qu'on n'ouvre pas la page.
+  { lien: 'journee.html',    table: 'suivi_taches',
+    filtre: (q) => q.is('fait_le', null)
+                    .or(`echeance.is.null,echeance.lte.${new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10)}`) },
   { lien: 'relances.html',   table: 'suivi_projets',
     filtre: (q) => q.not('prochaine_relance', 'is', null)
                     .lte('prochaine_relance', new Date(Date.now() - new Date().getTimezoneOffset() * 60000)

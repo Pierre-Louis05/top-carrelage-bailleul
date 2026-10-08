@@ -333,3 +333,34 @@ details.brut pre {
   .j-gauche, .j-milieu { grid-column: 1 / -1; }
   .j-droite { text-align: right; }
 }
+
+/* ----- Noter une chose a faire, au vol ----- */
+.capture { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.capture input {
+  flex: 1; min-width: 240px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  color: var(--text); padding: 14px 16px; font-family: var(--font); font-size: 0.95rem;
+}
+.capture input:focus { outline: none; border-color: var(--or); }
+.capture input::placeholder { color: var(--text-faible); }
+/* .btn-primary est en pleine largeur par defaut, ce qui le renvoyait sous le
+   champ. Ici il se tient a cote : la note se tape et se valide d'un geste. */
+.capture .btn-primary { width: auto; flex: 0 0 auto; padding: 0 30px; }
+.capture-etat {
+  min-height: 20px; margin-bottom: 20px;
+  font-size: 0.8rem; color: var(--text-muted);
+}
+
+.journee-ligne.avec-action { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.6fr) auto auto auto; }
+.j-fait {
+  background: none; border: 1px solid var(--border); border-radius: 999px;
+  color: var(--text-muted); cursor: pointer; padding: 4px 13px;
+  font-family: var(--font); font-size: 0.74rem; letter-spacing: 0.04em; text-transform: uppercase;
+  transition: var(--transition); white-space: nowrap;
+}
+.j-fait:hover:not(:disabled) { border-color: #1F8A5B; color: #7BE0AE; }
+.j-fait:disabled { opacity: 0.4; cursor: default; }
+
+@media (max-width: 760px) {
+  .journee-ligne.avec-action { grid-template-columns: 1fr auto; }
+}
