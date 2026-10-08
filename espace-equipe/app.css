@@ -960,6 +960,29 @@ input, select, textarea { font-family: var(--font); }
 }
 .btn-logout:hover { border-color: var(--rouge); color: var(--rouge-clair); }
 
+/* ----- Menu replie, 64 px de large -----
+   Quatre defauts mesures dans cet etat, tous corriges ici.
+   Les liens gardaient le rembourrage de l'etat deplie : l'icone tombait a
+   44 px du bord alors que le milieu du menu est a 32. Le bouton Deconnexion
+   debordait de 46 px et n'affichait que « econn ». L'avatar etait decale. Et
+   les pastilles de nouveautes etaient invisibles, ce qui vidait de son sens le
+   rappel des choses a faire. */
+.sidebar:not(.expanded) .sidebar-link {
+  justify-content: center; gap: 0;
+  padding: 10px 0; margin: 2px 8px;
+}
+/* Le libelle etait seulement rendu transparent : il gardait sa largeur, 103 px,
+   et poussait l'icone a -32 px, hors du menu. C'est pour ca qu'aucune icone ne
+   se voyait une fois le menu replie. On le retire de la mise en page.
+   La pastille est exclue : elle doit rester, posee sur l'icone. */
+.sidebar:not(.expanded) .sidebar-link-label,
+.sidebar:not(.expanded) .sidebar-link > span:not(:first-child):not(.sidebar-badge) {
+  display: none;
+}
+.sidebar:not(.expanded) .sidebar-user { justify-content: center; }
+.sidebar:not(.expanded) .sidebar-avatar { margin-left: 0; }
+.sidebar:not(.expanded) .btn-logout { font-size: 0; padding: 9px 0; }
+
 /* ----- Zone principale ----- */
 .main-content { margin-left: 64px; background: var(--bg); }
 .main-content.sidebar-pinned { margin-left: 246px; }
@@ -1051,8 +1074,13 @@ p .ico, span .ico, td .ico, li .ico, button .ico, label .ico { vertical-align: -
 }
 .sidebar-link.active .sidebar-badge { background: rgba(255,255,255,0.25); }
 /* Replie, le chiffre ne tient pas : un point suffit a signaler qu'il y a
-   quelque chose, et le libelle complet revient au survol. */
+   quelque chose, et le libelle complet revient au survol.
+   Il etait pose a gauche, du temps ou l'icone l'etait aussi, et il etait
+   surtout invisible : seul l'etat deplie lui donnait de l'opacite. */
 .sidebar:not(.expanded) .sidebar-badge {
-  position: absolute; top: 6px; left: 30px; min-width: 9px; width: 9px;
-  height: 9px; padding: 0; font-size: 0; margin: 0;
+  opacity: 1;
+  position: absolute; top: 7px; left: auto; right: 10px;
+  min-width: 0; width: 8px; height: 8px;
+  padding: 0; margin: 0; font-size: 0; line-height: 0; border-radius: 50%;
+  border: 2px solid var(--marine-fonce); box-sizing: content-box;
 }
