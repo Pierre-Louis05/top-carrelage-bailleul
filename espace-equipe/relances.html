@@ -380,12 +380,26 @@ async function ecrire(id, forme, carte) {
     .filter(Boolean).join(' ; ') || null;
 
   try {
-    const { data: { session } } = await db.auth.getSession();
+    // Un onglet laisse ouvert porte un jeton perime : getSession rend ce qui est
+    // stocke sans toujours le renouveler, et le serveur refuse. On renouvelle
+    // donc avant d'appeler quand il reste moins de deux minutes.
+    let { data: { session } } = await db.auth.getSession();
+    const resteSec = (session?.expires_at ?? 0) - Math.floor(Date.now() / 1000);
+    if (session && resteSec < 120) {
+      const { data } = await db.auth.refreshSession();
+      if (data?.session) session = data.session;
+    }
+    if (!session?.access_token) {
+      etat.textContent = '';
+      toast('Vous n\'êtes plus connecté. Rechargez la page et reconnectez-vous.', 7000);
+      return;
+    }
+
     const rep = await fetch('/.netlify/functions/ia-relance', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${session?.access_token ?? ''}`,
+        Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
         forme,

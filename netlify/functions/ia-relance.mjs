@@ -79,9 +79,14 @@ export default async (requete) => {
     // Supabase ne se corrige pas en se reconnectant. Dire l'un pour l'autre
     // envoie le vendeur chercher au mauvais endroit.
     const detail = await qui.text();
-    console.error('Verification de session', qui.status, detail.slice(0, 200));
+    console.error('Verification de session', qui.status, detail.slice(0, 300));
+    // Le code de Supabase part dans le message. Dire seulement « session
+    // expiree » a deja coute deux allers-retours : les deux causes possibles
+    // donnaient exactement la meme phrase a l'ecran.
+    let code = '';
+    try { code = JSON.parse(detail).error_code || JSON.parse(detail).message || ''; } catch { /* ignore */ }
     return qui.status === 401 || qui.status === 403
-      ? erreur(401, 'Session expiree, reconnectez-vous')
+      ? erreur(401, `Session refusee par Supabase (${qui.status}${code ? ' ' + code : ''}).`)
       : erreur(502, `Verification de session impossible (${qui.status}).`);
   }
 
