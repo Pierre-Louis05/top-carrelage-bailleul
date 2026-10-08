@@ -251,3 +251,32 @@ details.brut pre {
   .relance-quand { width: 100%; }
   .relance-secondaire { flex-direction: column; align-items: flex-start; }
 }
+
+/* ----- Le brouillon ecrit par Claude ----- */
+.relance-ia {
+  display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center;
+  font-size: 0.8rem;
+}
+.relance-ia .ia-etat { color: var(--text-muted); }
+.relance-ia .lien-discret:disabled, .btn-ia:disabled { opacity: 0.45; cursor: default; }
+
+/* Le bouton qui appelle Claude. Discret mais trouvable : c'est une aide a la
+   redaction, pas l'action principale de la carte, qui reste de noter l'appel. */
+.btn-ia {
+  background: var(--surface2); border: 1px solid var(--or); border-radius: var(--radius);
+  color: var(--or); padding: 8px 14px; cursor: pointer;
+  font-family: var(--font); font-size: 0.82rem; transition: var(--transition);
+}
+.btn-ia:hover:not(:disabled) { background: var(--or); color: #fff; }
+.ia-sortie { width: 100%; display: grid; gap: 10px; margin-top: 4px; }
+/* Sans cette ligne, le « display: grid » ci-dessus l'emporte sur l'attribut
+   hidden et la zone de brouillon reste visible, vide, sur chaque carte. */
+.ia-sortie[hidden] { display: none; }
+.ia-texte {
+  width: 100%; min-height: 150px; resize: vertical;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+  color: var(--text); padding: 13px 15px;
+  font-family: var(--font); font-size: 0.9rem; line-height: 1.65;
+}
+.ia-texte:focus { outline: none; border-color: var(--or); }
+.ia-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }

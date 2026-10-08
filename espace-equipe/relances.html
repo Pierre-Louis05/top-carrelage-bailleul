@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#14263C" />
   <link rel="stylesheet" href="../fonts/polices-equipe.css" />
   <link rel="stylesheet" href="app.css?v=5" />
-  <link rel="stylesheet" href="suivi.css?v=4" />
+  <link rel="stylesheet" href="suivi.css?v=5" />
 </head>
 <body>
 <div class="app-layout">
@@ -144,9 +144,9 @@ async function charger() {
   (profils || []).forEach((p) => { vendeurs[p.id] = p.prenom + ' ' + p.nom; });
 
   const { data, error } = await db.from('suivi_projets')
-    .select('*, suivi_clients(id, nom, telephone, email, ville), ' +
+    .select('*, suivi_clients(id, nom, telephone, email, ville, type_client), ' +
             'suivi_documents(numero, type_doc, date_doc, total_ttc), ' +
-            'suivi_relances(id, faite_le, resultat, canal)')
+            'suivi_relances(id, faite_le, resultat, canal, note)')
     .not('prochaine_relance', 'is', null)
     .eq('relance_arretee', false)
     .order('prochaine_relance', { ascending: true }).limit(400);
@@ -275,6 +275,20 @@ function carte(p) {
           `<button type="button" data-res="${k}" class="res-${v.suite}">${v.libelle}</button>`).join('')}
       </div>
 
+      <div class="relance-ia">
+        <button type="button" class="btn-ia" data-ia="mail">Écrire le mail</button>
+        <button type="button" class="btn-ia" data-ia="sms">Écrire un SMS</button>
+        <span class="ia-etat"></span>
+        <div class="ia-sortie" hidden>
+          <textarea class="ia-texte" rows="8"></textarea>
+          <div class="ia-actions">
+            <button type="button" class="btn-action btn-sm" data-act="copier">Copier</button>
+            <a class="btn-action btn-sm ia-ouvrir" href="#" style="display:none; text-decoration:none;">Ouvrir dans le mail</a>
+            <button type="button" class="lien-discret" data-act="reecrire">Réécrire</button>
+          </div>
+        </div>
+      </div>
+
       <div class="relance-secondaire">
         <label>Repousser au <input type="date" class="repousser" value="${p.prochaine_relance}" /></label>
         <button type="button" class="lien-discret" data-act="repousser">Valider la date</button>
@@ -296,6 +310,25 @@ function brancher(carte) {
   carte.querySelectorAll('.resultats button').forEach((b) =>
     b.addEventListener('click', () => noter(id, b.dataset.res, carte)));
 
+  carte.querySelectorAll('[data-ia]').forEach((b) =>
+    b.addEventListener('click', () => ecrire(id, b.dataset.ia, carte)));
+
+  carte.querySelector('[data-act="copier"]').addEventListener('click', async () => {
+    const zone = carte.querySelector('.ia-texte');
+    try {
+      await navigator.clipboard.writeText(zone.value);
+      toast('Message copié. Collez-le dans votre mail, relisez, puis envoyez.');
+    } catch {
+      // Le presse-papier est refuse hors contexte securise : on selectionne,
+      // le vendeur fait Cmd+C. Mieux qu'un bouton qui ne fait rien.
+      zone.select();
+      toast('Sélectionné. Faites Cmd+C pour copier.');
+    }
+  });
+
+  carte.querySelector('[data-act="reecrire"]').addEventListener('click', () =>
+    ecrire(id, carte.dataset.forme || 'mail', carte));
+
   carte.querySelector('[data-act="repousser"]').addEventListener('click', async () => {
     const d = carte.querySelector('.repousser').value;
     if (!d) return toast('Choisissez une date.');
@@ -314,6 +347,96 @@ function brancher(carte) {
     toast('Projet mis en sommeil. Il reste dans le suivi client.');
     retirer(id);
   });
+}
+
+/**
+ * Demande a Claude un brouillon de message pour ce client.
+ *
+ * Rien n'est envoye d'ici : le vendeur relit, corrige, puis envoie depuis sa
+ * messagerie. C'est la premiere des six regles. La cle API n'est pas dans
+ * cette page mais dans une fonction Netlify : le code d'ici est public.
+ */
+async function ecrire(id, forme, carte) {
+  const p = projets.find((x) => x.id === id);
+  if (!p) return;
+
+  carte.dataset.forme = forme;
+  const etat = carte.querySelector('.ia-etat');
+  const sortie = carte.querySelector('.ia-sortie');
+  const boutons = carte.querySelectorAll('[data-ia], [data-act="reecrire"]');
+  boutons.forEach((b) => { b.disabled = true; });
+  etat.textContent = 'Claude rédige…';
+
+  const c = p.suivi_clients || {};
+  const d = dernierDevis(p);
+  const faites = (p.suivi_relances || []).sort((a, b) => a.faite_le.localeCompare(b.faite_le));
+  const jours = d?.date_doc
+    ? Math.round((Date.now() - new Date(d.date_doc).getTime()) / 86400000) : null;
+
+  // Ce qui s'est dit aux relances precedentes, pour ne pas repeter la meme
+  // phrase trois fois de suite.
+  const historique = faites
+    .map((r) => [RESULTATS_RELANCE[r.resultat]?.libelle, r.note].filter(Boolean).join(', '))
+    .filter(Boolean).join(' ; ') || null;
+
+  try {
+    const { data: { session } } = await db.auth.getSession();
+    const rep = await fetch('/.netlify/functions/ia-relance', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session?.access_token ?? ''}`,
+      },
+      body: JSON.stringify({
+        forme,
+        client: c.nom,
+        type_client: c.type_client,
+        projet: p.titre,
+        univers: UNIVERS[p.univers]?.libelle ?? null,
+        numero_devis: d?.numero ?? null,
+        date_devis: d?.date_doc ? dateLongue(d.date_doc) : null,
+        jours,
+        montant: d?.total_ttc ?? p.montant_ttc ?? null,
+        rang: faites.length + 1,
+        historique,
+        vendeur: (monProfil?.prenom) ?? null,
+      }),
+    });
+
+    const data = await rep.json().catch(() => ({}));
+    if (!rep.ok) {
+      etat.textContent = '';
+      toast(data.erreur || `Échec (${rep.status})`, 7000);
+      return;
+    }
+
+    const zone = carte.querySelector('.ia-texte');
+    zone.value = data.texte;
+    zone.style.height = 'auto';
+    zone.style.height = Math.min(zone.scrollHeight + 4, 420) + 'px';
+    sortie.hidden = false;
+    etat.textContent = 'Brouillon, à relire avant envoi.';
+
+    // Un lien mailto pre-rempli quand on a l'adresse. L'objet est la premiere
+    // ligne quand Claude en a mis une.
+    const lien = carte.querySelector('.ia-ouvrir');
+    if (forme === 'mail' && c.email) {
+      const lignes = data.texte.split('\n');
+      const mObjet = lignes[0].match(/^\s*Objet\s*:\s*(.+)$/i);
+      const objet = mObjet ? mObjet[1].trim() : `Votre devis ${d?.numero ?? ''}`.trim();
+      const corps = mObjet ? lignes.slice(1).join('\n').trim() : data.texte;
+      lien.href = `mailto:${encodeURIComponent(c.email)}`
+        + `?subject=${encodeURIComponent(objet)}&body=${encodeURIComponent(corps)}`;
+      lien.style.display = '';
+    } else {
+      lien.style.display = 'none';
+    }
+  } catch (e) {
+    etat.textContent = '';
+    toast('Appel impossible : ' + e.message, 6000);
+  } finally {
+    boutons.forEach((b) => { b.disabled = false; });
+  }
 }
 
 /**
