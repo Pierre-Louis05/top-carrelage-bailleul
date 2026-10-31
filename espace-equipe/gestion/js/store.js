@@ -147,7 +147,10 @@
     const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `topamenagement-sauvegarde-${today()}.json`;
+    // Une sauvegarde de donnees inventees doit se reconnaitre a son nom : on
+    // ne voudrait pas la restaurer un jour en croyant reprendre du reel.
+    const marque = db.settings && db.settings.jeu_essai ? 'JEU-D-ESSAI-' : '';
+    a.download = `topamenagement-${marque}sauvegarde-${today()}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();

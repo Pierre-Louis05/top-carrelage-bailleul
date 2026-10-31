@@ -405,3 +405,16 @@ td input[list]::placeholder { color: #A0AAB9; }
   opacity: 0.85;
 }
 .retour-espace:hover { opacity: 1; }
+
+/* Bandeau du jeu d'essai. Il doit se voir sans gener la lecture : des donnees
+   inventees qu'on prendrait pour de vraies seraient pires que des ecrans vides. */
+.bandeau-essai { display: none; }
+.bandeau-essai.actif, .bandeau-essai.propose {
+  display: flex; flex-wrap: wrap; gap: 12px 18px;
+  align-items: center; justify-content: space-between;
+  margin: 0 0 18px; padding: 13px 18px; border-radius: 12px;
+  font-size: 0.92rem; line-height: 1.5;
+}
+.bandeau-essai.actif   { background: #FFF3DE; border: 1px solid #E3C78A; color: #6B4E12; }
+.bandeau-essai.propose { background: #F2F5FA; border: 1px solid #D5DBE6; color: #3C4A61; }
+.bandeau-essai .btn { flex: 0 0 auto; }
