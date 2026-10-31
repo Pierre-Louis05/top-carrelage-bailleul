@@ -103,12 +103,31 @@
 
   /* Liste avec filtre de statut + recherche */
   function listPage(box, cfg) {
-    const state = { q: '', statut: 'tous' };
+    const state = { q: '', statut: 'tous', commercial: 'tous' };
     const statuts = ['tous'].concat(cfg.statuts);
+    const C = () => window.Commerciaux;
+
+    // Un document sans commercial reste visible quand on filtre sur « Non
+    // attribué » : c'est justement ceux-la qu'on cherche a retrouver.
+    const garderCommercial = (x) => {
+      if (state.commercial === 'tous') return true;
+      const id = C() ? C().duDocument(x) : (x.commercial_id || '');
+      return state.commercial === 'aucun' ? !id : id === state.commercial;
+    };
+    const retenus = () => cfg.items().filter(x =>
+      (state.statut === 'tous' || cfg.statutOf(x) === state.statut) && garderCommercial(x));
+
+    // Quand un filtre cache tout, dire « créez votre premier devis » est faux
+    // et deroutant : il en existe, ils sont juste masques.
+    const vide = () => (state.statut !== 'tous' || state.commercial !== 'tous' || state.q)
+      && cfg.items().length
+      ? { title: 'Rien ne correspond à ce filtre',
+          text: 'Changez de statut, de commercial, ou videz la recherche.' }
+      : cfg.empty;
+
     function draw() {
       const q = state.q.toLowerCase();
-      const items = cfg.items().filter(x => (state.statut === 'tous' || cfg.statutOf(x) === state.statut) &&
-        (!q || (cfg.searchText(x)).toLowerCase().includes(q)))
+      const items = retenus().filter(x => (!q || (cfg.searchText(x)).toLowerCase().includes(q)))
         .sort((a, b) => (b.numero || '').localeCompare(a.numero || ''));
       const counts = {};
       cfg.items().forEach(x => { const s = cfg.statutOf(x); counts[s] = (counts[s] || 0) + 1; });
@@ -121,16 +140,23 @@
               ${statuts.map(s => `<button class="btn ${state.statut === s ? '' : 'ghost'} small" data-statut="${esc(s)}">${esc(s === 'tous' ? 'Tous' : s)} <span class="muted">${s === 'tous' ? cfg.items().length : (counts[s] || 0)}</span></button>`).join('')}
             </div>
             <div class="btn-row">
+              ${(C() && C().actifs().length) ? `<select id="filtre-commercial" class="filtre-commercial">
+                <option value="tous">Tous les commerciaux</option>
+                <option value="aucun" ${state.commercial === 'aucun' ? 'selected' : ''}>Non attribué</option>
+                ${C().actifs().map(c => `<option value="${c.id}" ${state.commercial === c.id ? 'selected' : ''}>${esc(c.nom)}</option>`).join('')}
+              </select>` : ''}
               ${UI.searchBox('Rechercher…', state.q)}
               ${cfg.newRoute ? `<a class="btn gold" href="#${cfg.newRoute}">${I('plus')} ${esc(cfg.newLabel)}</a>` : ''}
             </div>
           </div>
-          <div id="list-body">${UI.table(items, cfg.cols, cfg.empty)}</div>
+          <div id="list-body">${UI.table(items, cfg.cols, vide())}</div>
         </div>`;
       box.querySelectorAll('[data-statut]').forEach(b => b.onclick = () => { state.statut = b.dataset.statut; draw(); });
+      const selC = box.querySelector('#filtre-commercial');
+      if (selC) selC.onchange = () => { state.commercial = selC.value; draw(); };
       UI.bindSearch(box, v => { state.q = v; const body = box.querySelector('#list-body'); body.innerHTML = UI.table(
-        cfg.items().filter(x => (state.statut === 'tous' || cfg.statutOf(x) === state.statut) && (!v || cfg.searchText(x).toLowerCase().includes(v.toLowerCase())))
-          .sort((a, b) => (b.numero || '').localeCompare(a.numero || '')), cfg.cols, cfg.empty); });
+        retenus().filter(x => (!v || cfg.searchText(x).toLowerCase().includes(v.toLowerCase())))
+          .sort((a, b) => (b.numero || '').localeCompare(a.numero || '')), cfg.cols, vide()); });
     }
     draw();
   }
@@ -157,6 +183,7 @@
       cols: [
         { label: 'N°', render: d => `<a class="link" href="#devis-${d.id}">${esc(d.numero)}</a><small>${S().dateFr(d.date)}</small>` },
         { label: 'Client', render: d => esc(clientNom(d.client_id)) },
+        { label: 'Commercial', render: d => { const C = window.Commerciaux; const n = C ? C.nom(C.duDocument(d)) : ''; return n ? esc(n) : '<span class="muted">non attribué</span>'; } },
         { label: 'Statut', render: d => UI.badge(d.statut) },
         { label: 'Total TTC', num: true, cls: 'strong', render: d => S().money(totalDevis(d).ttc) }
       ],
@@ -184,6 +211,7 @@
           <div class="field"><label>Statut</label>
             <select name="statut">${['brouillon', 'envoyé', 'accepté', 'refusé', 'expiré'].map(s => `<option ${d.statut === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
           <div class="field"><label>Remise globale (%)</label><input type="number" min="0" max="100" step="0.5" name="remise_pct" value="${d.remise_pct || 0}"></div>
+          <div class="field"><label>Commercial</label>${C ? C.select(d.commercial_id || (isNew ? C.duDocument(d) : '')) : ''}</div>
         </div>
       </div>
       <div class="card">
@@ -218,6 +246,18 @@
     UI.lineEditor(document.getElementById('lines'), lignes, { interne: true, onChange: () => { refreshTotals(); bar.querySelector('.dirty').textContent = 'Modifications non enregistrées'; bar.querySelector('.dirty').classList.add('on'); } });
     refreshTotals();
     box.querySelector('[name="remise_pct"]').addEventListener('input', refreshTotals);
+
+    // Changer de client propose le commercial qui le suit, sauf si on en a
+    // deja choisi un a la main : le choix explicite prime toujours.
+    const selClient = box.querySelector('[name="client_id"]');
+    const selCommercial = box.querySelector('[name="commercial_id"]');
+    if (selClient && selCommercial) {
+      selClient.addEventListener('change', () => {
+        if (selCommercial.value) return;
+        const cl = db.clients.find(x => x.id === selClient.value);
+        if (cl && cl.commercial_id) selCommercial.value = cl.commercial_id;
+      });
+    }
     bindDirty(box.querySelector('.card'), bar);
 
     function readHeader() {
@@ -226,6 +266,8 @@
       d.statut = box.querySelector('[name="statut"]').value;
       d.remise_pct = Number(box.querySelector('[name="remise_pct"]').value) || 0;
       d.notes = box.querySelector('[name="notes"]').value;
+      const selCom = box.querySelector('[name="commercial_id"]');
+      if (selCom) d.commercial_id = selCom.value;
     }
     document.getElementById('dv-save').onclick = () => {
       readHeader();
@@ -263,6 +305,7 @@
     const cmd = {
       id: S().uid(), numero: S().nextNumber('CMD'), date: S().today(), client_id: devis.client_id,
       devis_id: devis.id, lignes: JSON.parse(JSON.stringify(devis.lignes)), remise_pct: devis.remise_pct || 0,
+      commercial_id: window.Commerciaux ? window.Commerciaux.duDocument(devis) : (devis.commercial_id || ''),
       statut: 'commandée', date_livraison: '', notes: devis.notes, facture_id: null, stock_sorti: false
     };
     S().db.commandes.push(cmd);
@@ -311,6 +354,7 @@
           <div class="field"><label>Livraison prévue</label><input type="date" name="date_livraison" value="${c.date_livraison || ''}"></div>
           <div class="field"><label>Statut</label>
             <select name="statut">${['commandée', 'en cours', 'livrée', 'facturée', 'annulée'].map(s => `<option ${c.statut === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+          <div class="field"><label>Commercial</label>${C ? C.select(C.duDocument(c)) : ''}</div>
         </div>
       </div>
       <div class="card">
@@ -341,6 +385,8 @@
       c.date_livraison = box.querySelector('[name="date_livraison"]').value;
       c.statut = box.querySelector('[name="statut"]').value;
       c.notes = box.querySelector('[name="notes"]').value;
+      const selCom = box.querySelector('[name="commercial_id"]');
+      if (selCom) c.commercial_id = selCom.value;
     }
     document.getElementById('cm-save').onclick = () => { save(); UI.commit('Commande enregistrée'); };
     const fb = document.getElementById('cm-fact');
@@ -357,7 +403,8 @@
     const f = {
       id: S().uid(), numero: S().nextNumber('FAC'), date: S().today(), date_echeance: S().addDays(S().today(), 30),
       client_id: cmd.client_id, commande_id: cmd.id, lignes: JSON.parse(JSON.stringify(cmd.lignes)),
-      remise_pct: cmd.remise_pct || 0, paiements: [], notes: cmd.notes || ''
+      remise_pct: cmd.remise_pct || 0, paiements: [], notes: cmd.notes || '',
+      commercial_id: window.Commerciaux ? window.Commerciaux.duDocument(cmd) : (cmd.commercial_id || '')
     };
     db.factures.push(f);
     cmd.facture_id = f.id;
@@ -392,6 +439,7 @@
         { label: 'N°', render: f => `<a class="link" href="#facture-${f.id}">${esc(f.numero)}</a><small>${S().dateFr(f.date)}</small>` },
         { label: 'Client', render: f => esc(clientNom(f.client_id)) },
         { label: 'Échéance', render: f => S().dateFr(f.date_echeance) },
+        { label: 'Commercial', render: f => { const C = window.Commerciaux; const n = C ? C.nom(C.duDocument(f)) : ''; return n ? esc(n) : '<span class="muted">non attribué</span>'; } },
         { label: 'Statut', render: f => UI.badge(statutFacture(f)) },
         { label: 'Total TTC', num: true, render: f => S().money(totalFacture(f).ttc) },
         { label: 'Reste dû', num: true, cls: 'strong', render: f => S().money(resteAPayer(f)) }
@@ -427,6 +475,7 @@
         </div>
         <div class="grid grid-form">
           <div class="field"><label>Date d'échéance</label><input type="date" id="fa-ech" value="${f.date_echeance || ''}"></div>
+          <div class="field"><label>Commercial</label>${C ? C.select(C.duDocument(f)) : ''}</div>
         </div>
       </div>
       <div class="grid grid-2">
@@ -471,6 +520,8 @@
     }
     drawPays();
     document.getElementById('fa-ech').onchange = (e) => { f.date_echeance = e.target.value; UI.commit('Échéance mise à jour'); };
+    const selComF = box.querySelector('[name="commercial_id"]');
+    if (selComF) selComF.onchange = () => { f.commercial_id = selComF.value; UI.commit('Commercial mis à jour'); };
     document.getElementById('pay-add').onclick = () => {
       const m = Number(document.getElementById('pay-m').value);
       if (!m || m <= 0) { UI.toast('Montant invalide.', true); return; }

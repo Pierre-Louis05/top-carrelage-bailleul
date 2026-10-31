@@ -34,6 +34,7 @@
         <div class="field"><label>Adresse</label><input name="adresse" value="${esc(c.adresse)}"></div>
         <div class="field"><label>Code postal</label><input name="cp" value="${esc(c.cp)}" inputmode="numeric"></div>
         <div class="field"><label>Ville</label><input name="ville" value="${esc(c.ville)}"></div>
+        <div class="field"><label>Commercial qui suit ce client</label>${window.Commerciaux ? window.Commerciaux.select(c.commercial_id) : ''}</div>
         <div class="field full"><label>Notes</label><textarea name="notes">${esc(c.notes)}</textarea></div>
       </div>`;
   }

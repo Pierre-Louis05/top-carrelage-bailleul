@@ -148,6 +148,7 @@
         <div class="card kpi"><div class="label">Taux d'acceptation</div><div class="value">${pct(accept, envoyes || 1)} %</div><div class="sub">${refuses} devis refusé(s)</div></div>
         <div class="card kpi"><div class="label">Total encaissé</div><div class="value">${S().money(encaisse)}</div></div>
       </div>
+      ${parCommercial(annee)}
       <div class="grid grid-2" style="margin-top:18px">
         <div class="card"><div class="card-head"><h2>Évolution du CA HT ${annee}</h2></div>${chart(ca, MOIS)}</div>
         <div class="card"><div class="card-head"><h2>Ventes par article (HT, cumul)</h2></div>
@@ -155,6 +156,76 @@
             <div class="progress navy"><span style="width:${(x.v / topArt[0].v) * 100}%"></span></div></div>`).join('') : `<div class="empty"><strong>Pas encore de ventes</strong></div>`}
         </div>
       </div>`;
+  }
+
+  /**
+   * Le chiffre de chacun, sur l'annee en cours.
+   *
+   * Le CA est celui des factures : un devis accepte n'est pas encore du
+   * chiffre. Le taux de transformation, lui, se lit sur les devis, et on
+   * ignore les brouillons, qui ne sont jamais partis chez le client.
+   */
+  function parCommercial(annee) {
+    const db = S().db;
+    const C = window.Commerciaux;
+    if (!C || !C.tous().length) return '';
+
+    const qui = (doc) => C.duDocument(doc);
+    const lignes = C.tous().map(co => {
+      const fact = db.factures.filter(f => qui(f) === co.id && Number(f.date.slice(0, 4)) === annee);
+      const devis = db.devis.filter(d => qui(d) === co.id);
+      const envoyes = devis.filter(d => d.statut !== 'brouillon');
+      const gagnes = devis.filter(d => d.statut === 'accepté' || d.commande_id);
+      return {
+        nom: co.nom, actif: co.actif !== false,
+        ca: fact.reduce((t, f) => t + V().totalFacture(f).ht, 0),
+        // L'encaisse est un montant TTC. Sans le facture TTC a cote, il
+        // paraissait plus grand que le chiffre d'affaires et on ne comprenait
+        // plus rien a la ligne.
+        ttc: fact.reduce((t, f) => t + V().totalFacture(f).ttc, 0),
+        encaisse: fact.reduce((t, f) => t + V().totalPaye(f), 0),
+        reste: fact.reduce((t, f) => t + V().resteAPayer(f), 0),
+        clients: db.clients.filter(c => c.commercial_id === co.id).length,
+        envoyes: envoyes.length, gagnes: gagnes.length,
+      };
+    });
+
+    // Ce qui n'est attribue a personne doit se voir, sinon la somme des
+    // colonnes ne retombe pas sur le chiffre du magasin et on cherche pourquoi.
+    const orphelines = db.factures.filter(f => !qui(f) && Number(f.date.slice(0, 4)) === annee);
+    const caOrphelin = orphelines.reduce((t, f) => t + V().totalFacture(f).ht, 0);
+
+    const visibles = lignes.filter(l => l.actif || l.ca || l.envoyes || l.clients)
+                           .sort((a, b) => b.ca - a.ca);
+    if (!visibles.length && !caOrphelin) return '';
+    const maxi = Math.max(1, ...visibles.map(l => l.ca));
+
+    return `<div class="card" style="margin-top:18px">
+      <div class="card-head"><div><h2>Chiffre par commercial ${annee}</h2>
+        <span class="muted">CA facturé hors taxes, et transformation des devis</span></div></div>
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>Commercial</th><th>Part</th><th class="num">CA HT</th><th class="num">Facturé TTC</th>
+          <th class="num">Encaissé TTC</th><th class="num">Reste dû</th><th class="num">Clients</th>
+          <th class="num">Devis envoyés</th><th class="num">Gagnés</th><th class="num">Taux</th></tr></thead>
+        <tbody>
+          ${visibles.map(l => `<tr>
+            <td data-label="Commercial"><strong>${esc(l.nom)}</strong>${l.actif ? '' : ' <span class="badge">inactif</span>'}</td>
+            <td data-label="Part" style="min-width:110px"><div class="progress navy"><span style="width:${(l.ca / maxi) * 100}%"></span></div></td>
+            <td data-label="CA HT" class="num strong">${S().money(l.ca)}</td>
+            <td data-label="Facturé TTC" class="num">${S().money(l.ttc)}</td>
+            <td data-label="Encaissé TTC" class="num">${S().money(l.encaisse)}</td>
+            <td data-label="Reste dû" class="num">${S().money(l.reste)}</td>
+            <td data-label="Clients" class="num">${l.clients}</td>
+            <td data-label="Devis envoyés" class="num">${l.envoyes}</td>
+            <td data-label="Gagnés" class="num">${l.gagnes}</td>
+            <td data-label="Taux" class="num">${l.envoyes ? pct(l.gagnes, l.envoyes) + ' %' : '—'}</td>
+          </tr>`).join('')}
+          ${caOrphelin ? `<tr>
+            <td data-label="Commercial"><span class="muted">Non attribué</span></td>
+            <td></td><td data-label="CA HT" class="num">${S().money(caOrphelin)}</td>
+            <td colspan="7" class="muted">${orphelines.length} facture(s) sans commercial</td></tr>` : ''}
+        </tbody></table></div>
+    </div>`;
   }
 
   /* ---------- Objectifs ---------- */

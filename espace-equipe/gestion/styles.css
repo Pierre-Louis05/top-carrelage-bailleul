@@ -418,3 +418,10 @@ td input[list]::placeholder { color: #A0AAB9; }
 .bandeau-essai.actif   { background: #FFF3DE; border: 1px solid #E3C78A; color: #6B4E12; }
 .bandeau-essai.propose { background: #F2F5FA; border: 1px solid #D5DBE6; color: #3C4A61; }
 .bandeau-essai .btn { flex: 0 0 auto; }
+
+/* Filtre par commercial dans l'en-tete des listes. */
+.filtre-commercial {
+  height: 38px; padding: 0 10px; border-radius: 9px;
+  border: 1px solid #D5DBE6; background: #fff; color: #3C4A61;
+  font: inherit; font-size: 0.88rem; max-width: 190px;
+}

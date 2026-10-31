@@ -32,7 +32,8 @@
       commercial: ''
     },
     counters: { DEV: 0, CMD: 0, FAC: 0, ACH: 0 },
-    clients: [],        // { id, type:'particulier'|'pro', nom, contact, email, tel, adresse, cp, ville, notes, created }
+    commerciaux: [],    // { id, nom, actif } : qui suit le client, et de qui est le chiffre
+    clients: [],        // { id, type:'particulier'|'pro', nom, contact, email, tel, adresse, cp, ville, notes, created, commercial_id }
     fournisseurs: [],   // { id, nom, contact, email, tel, adresse, cp, ville, delai_jours, notes }
     articles: [],       // { id, ref, designation, unite, prix_achat, prix_vente, tva, stock, stock_alerte, fournisseur_id, emplacement }
     devis: [],          // { id, numero, date, client_id, lignes:[], remise_pct, statut, validite, notes, commande_id }

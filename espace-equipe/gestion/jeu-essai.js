@@ -56,9 +56,20 @@
     ];
     const ref = (r) => a.find(x => x.ref === r);
 
+    // Les vendeurs du magasin. Ce sont de vrais prenoms, donnes par
+    // Pierre-Louis : ce n'est pas une donnee inventee, et il peut les
+    // renommer ou les desactiver depuis l'ecran Commerciaux.
+    const co = (n, actif) => ({ id: id(), nom: n, actif: actif !== false });
+    const commerciaux = [
+      co('Pierre-Louis'), co('Jérémie'), co('Simon'),
+      co('Louis'), co('Louise'), co('Manon'), co('Freddy', false),
+    ];
+    const [pl, jeremie, simon, , louise, manon] = commerciaux;
+
     const cl = (type, nom, contact, ville, cp, tel) =>
       ({ id: id(), type, nom, contact: contact || '', email: '', tel: tel || '',
-         adresse: '', cp: cp || '', ville: ville || '', notes: '', created: jour(-120) });
+         adresse: '', cp: cp || '', ville: ville || '', notes: '', created: jour(-120),
+         commercial_id: '' });
 
     const clients = [
       cl('particulier', 'MARTIN Julien', '', 'Bailleul', '59270', '06 00 00 00 01'),
@@ -68,6 +79,11 @@
       cl('pro', 'SARL BÂTI CONFORT', 'M. Delattre', 'Nieppe', '59850', '03 00 00 00 05'),
       cl('pro', 'SCI LES ACACIAS', 'Mme Carpentier', 'Estaires', '59940', '03 00 00 00 06'),
     ];
+    // Chacun suivi par quelqu'un, sauf le dernier : on voit ainsi a quoi
+    // ressemble la ligne « Non attribué » dans les chiffres.
+    [pl, jeremie, simon, pl, louise, null].forEach((c, i) => {
+      clients[i].commercial_id = c ? c.id : '';
+    });
 
     const ligne = (article, qte, remise) => ({
       article_id: article.id, designation: article.designation, qte,
@@ -80,31 +96,31 @@
     const devis = [
       { id: id(), numero: 'DEV-2026-0001', date: jour(-42), client_id: clients[0].id,
         lignes: [ligne(ref('CAR-6060-BEI'), 38.5, 5), ligne(ref('COL-C2TE-25'), 8), ligne(ref('JOI-FIN-5'), 3)],
-        remise_pct: 0, statut: 'accepté', validite: 30, notes: 'Pose par son artisan.', commande_id: null },
+        remise_pct: 0, statut: 'accepté', validite: 30, notes: 'Pose par son artisan.', commande_id: null, commercial_id: pl.id },
       { id: id(), numero: 'DEV-2026-0002', date: jour(-27), client_id: clients[4].id,
         lignes: [ligne(ref('CAR-TER-2020'), 62), ligne(ref('PLO-NM1-110'), 180)],
-        remise_pct: 3, statut: 'envoyé', validite: 30, notes: 'Terrasse sur plots.', commande_id: null },
+        remise_pct: 3, statut: 'envoyé', validite: 30, notes: 'Terrasse sur plots.', commande_id: null, commercial_id: louise.id },
       { id: id(), numero: 'DEV-2026-0003', date: jour(-19), client_id: clients[1].id,
         lignes: [ligne(ref('SAN-REC-9012'), 1), ligne(ref('SAN-MIT-LAV'), 2), ligne(ref('SAN-VAS-5135'), 1), ligne(ref('CAR-3060-BLA'), 24)],
-        remise_pct: 0, statut: 'envoyé', validite: 30, notes: '', commande_id: null },
+        remise_pct: 0, statut: 'envoyé', validite: 30, notes: '', commande_id: null, commercial_id: jeremie.id },
       { id: id(), numero: 'DEV-2026-0004', date: jour(-3), client_id: clients[2].id,
         lignes: [ligne(ref('PAR-CHE-1190'), 46), ligne(ref('PAR-SOU-21DB'), 5), ligne(ref('PAR-PLI-1950'), 28)],
-        remise_pct: 0, statut: 'brouillon', validite: 30, notes: 'Attend le métrage définitif.', commande_id: null },
+        remise_pct: 0, statut: 'brouillon', validite: 30, notes: 'Attend le métrage définitif.', commande_id: null, commercial_id: simon.id },
       { id: id(), numero: 'DEV-2026-0005', date: jour(-58), client_id: clients[3].id,
         lignes: [ligne(ref('CAR-6060-GRI'), 31)],
-        remise_pct: 0, statut: 'expiré', validite: 30, notes: '', commande_id: null },
+        remise_pct: 0, statut: 'expiré', validite: 30, notes: '', commande_id: null, commercial_id: manon.id },
     ];
 
     const commandes = [
       { id: id(), numero: 'CMD-2026-0001', date: jour(-40), client_id: clients[0].id,
         devis_id: devis[0].id, lignes: JSON.parse(JSON.stringify(devis[0].lignes)), remise_pct: 0,
-        statut: 'facturée', date_livraison: jour(-24), notes: '', facture_id: null, stock_sorti: true },
+        statut: 'facturée', date_livraison: jour(-24), notes: '', facture_id: null, stock_sorti: true, commercial_id: pl.id },
       { id: id(), numero: 'CMD-2026-0002', date: jour(-11), client_id: clients[5].id,
         lignes: [ligne(ref('CAR-3060-BLA'), 42), ligne(ref('COL-C2TE-25'), 6)],
-        remise_pct: 0, statut: 'en cours', date_livraison: jour(6), notes: 'Livraison sur chantier.', facture_id: null },
+        remise_pct: 0, statut: 'en cours', date_livraison: jour(6), notes: 'Livraison sur chantier.', facture_id: null, commercial_id: louise.id },
       { id: id(), numero: 'CMD-2026-0003', date: jour(-5), client_id: clients[2].id,
         lignes: [ligne(ref('SAN-MIT-LAV'), 1)], remise_pct: 0,
-        statut: 'commandée', date_livraison: jour(14), notes: '', facture_id: null },
+        statut: 'commandée', date_livraison: jour(14), notes: '', facture_id: null, commercial_id: simon.id },
     ];
     devis[0].commande_id = commandes[0].id;
 
@@ -114,19 +130,19 @@
       { id: id(), numero: 'FAC-2026-0001', date: moisPasse(3), date_echeance: S_.addDays(moisPasse(3), 30),
         client_id: clients[3].id, commande_id: null,
         lignes: [ligne(ref('CAR-6060-BEI'), 52), ligne(ref('COL-C2TE-25'), 10)],
-        remise_pct: 0, paiements: [], notes: '' },
+        remise_pct: 0, paiements: [], notes: '', commercial_id: manon.id },
       { id: id(), numero: 'FAC-2026-0002', date: moisPasse(2), date_echeance: S_.addDays(moisPasse(2), 30),
         client_id: clients[4].id, commande_id: null,
         lignes: [ligne(ref('PAR-CHE-1190'), 72), ligne(ref('PAR-PLI-1950'), 40), ligne(ref('PAR-SOU-21DB'), 8)],
-        remise_pct: 2, paiements: [], notes: '' },
+        remise_pct: 2, paiements: [], notes: '', commercial_id: jeremie.id },
       { id: id(), numero: 'FAC-2026-0003', date: moisPasse(1), date_echeance: S_.addDays(moisPasse(1), 30),
         client_id: clients[1].id, commande_id: null,
         lignes: [ligne(ref('SAN-REC-9012'), 1), ligne(ref('SAN-VAS-5135'), 2)],
-        remise_pct: 0, paiements: [], notes: '' },
+        remise_pct: 0, paiements: [], notes: '', commercial_id: jeremie.id },
       { id: id(), numero: 'FAC-2026-0004', date: jour(-24), date_echeance: jour(6),
         client_id: clients[0].id, commande_id: commandes[0].id,
         lignes: JSON.parse(JSON.stringify(commandes[0].lignes)),
-        remise_pct: 0, paiements: [], notes: '' },
+        remise_pct: 0, paiements: [], notes: '', commercial_id: pl.id },
     ];
     commandes[0].facture_id = factures[3].id;
 
@@ -187,7 +203,7 @@
       // Les compteurs repartent au-dela des numeros utilises, sinon le premier
       // vrai document reprendrait un numero deja pris.
       counters: { DEV: devis.length, CMD: commandes.length, FAC: factures.length, ACH: achats.length },
-      clients, fournisseurs: [f1, f2], articles: a,
+      commerciaux, clients, fournisseurs: [f1, f2], articles: a,
       devis, commandes, factures, achats, mouvements, objectifs,
     };
   }
