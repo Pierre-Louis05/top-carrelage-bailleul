@@ -13,7 +13,16 @@
  */
 (async () => {
   const racine = document.documentElement;
-  const rendre = () => { racine.style.visibility = ''; };
+
+  // « visible » et pas une chaine vide : vider le style en ligne laisse la
+  // regle « html { visibility: hidden } » de la page s'appliquer, et l'ecran
+  // restait blanc une fois connecte. C'est exactement ce qui s'est produit.
+  const rendre = () => { racine.style.visibility = 'visible'; };
+
+  // Filet de securite : quoi qu'il arrive dans ce fichier, la page finit par
+  // s'afficher. Une page blanche est pire qu'un affichage non protege, d'autant
+  // que l'espace equipe est deja hors des moteurs de recherche.
+  setTimeout(rendre, 4000);
 
   if (typeof supabase === 'undefined') {
     // Sans la librairie, on ne sait pas qui est connecte. On montre quand meme
