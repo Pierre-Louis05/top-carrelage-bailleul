@@ -211,7 +211,7 @@
           <div class="field"><label>Statut</label>
             <select name="statut">${['brouillon', 'envoyé', 'accepté', 'refusé', 'expiré'].map(s => `<option ${d.statut === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
           <div class="field"><label>Remise globale (%)</label><input type="number" min="0" max="100" step="0.5" name="remise_pct" value="${d.remise_pct || 0}"></div>
-          <div class="field"><label>Commercial</label>${C ? C.select(d.commercial_id || (isNew ? C.duDocument(d) : '')) : ''}</div>
+          <div class="field"><label>Commercial</label>${window.Commerciaux ? window.Commerciaux.select(d.commercial_id || (isNew ? window.Commerciaux.duDocument(d) : '')) : ''}</div>
         </div>
       </div>
       <div class="card">
@@ -354,7 +354,7 @@
           <div class="field"><label>Livraison prévue</label><input type="date" name="date_livraison" value="${c.date_livraison || ''}"></div>
           <div class="field"><label>Statut</label>
             <select name="statut">${['commandée', 'en cours', 'livrée', 'facturée', 'annulée'].map(s => `<option ${c.statut === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-          <div class="field"><label>Commercial</label>${C ? C.select(C.duDocument(c)) : ''}</div>
+          <div class="field"><label>Commercial</label>${window.Commerciaux ? window.Commerciaux.select(window.Commerciaux.duDocument(c)) : ''}</div>
         </div>
       </div>
       <div class="card">
@@ -475,7 +475,7 @@
         </div>
         <div class="grid grid-form">
           <div class="field"><label>Date d'échéance</label><input type="date" id="fa-ech" value="${f.date_echeance || ''}"></div>
-          <div class="field"><label>Commercial</label>${C ? C.select(C.duDocument(f)) : ''}</div>
+          <div class="field"><label>Commercial</label>${window.Commerciaux ? window.Commerciaux.select(window.Commerciaux.duDocument(f)) : ''}</div>
         </div>
       </div>
       <div class="grid grid-2">
