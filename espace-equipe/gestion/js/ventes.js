@@ -24,32 +24,145 @@
     return c ? c.nom : '— client supprimé —';
   }
 
+  /**
+   * Choix du client : une recherche, pas une liste deroulante.
+   *
+   * Le logiciel actuel du magasin compte plus de 43 000 fiches, avec beaucoup
+   * de doublons : une liste deroulante y est inutilisable. On cherche donc au
+   * clavier, sur le nom, la ville, le code postal, le telephone et le mail, et
+   * chaque resultat affiche de quoi distinguer deux fiches de meme nom.
+   */
   function clientSelect(selectedId) {
-    const list = S().db.clients.slice().sort((a, b) => a.nom.localeCompare(b.nom));
-    return `<div class="btn-row" style="flex-wrap:nowrap;gap:8px">
-      <select name="client_id" style="flex:1;min-width:0">${UI.options(list, selectedId, c => c.nom, list.length ? '— choisir un client —' : '— aucun client encore —')}</select>
-      <button type="button" class="btn ghost" data-newclient title="Créer un nouveau client" style="padding:0 12px">${I('plus')}<span class="hide-sm">Client</span></button>
+    const c = S().db.clients.find(x => x.id === selectedId);
+    return `<div class="choix-client" data-choix-client>
+      <input type="hidden" name="client_id" value="${esc(selectedId || '')}">
+      <div class="cc-ligne">
+        <div class="cc-champ">
+          <input type="text" class="cc-recherche" autocomplete="off" spellcheck="false"
+                 placeholder="Nom, ville, téléphone…" value="${c ? esc(c.nom) : ''}"
+                 aria-label="Rechercher un client">
+          <button type="button" class="cc-vider" ${c ? '' : 'hidden'} title="Effacer">&times;</button>
+          <div class="cc-resultats" hidden></div>
+        </div>
+        <button type="button" class="btn ghost" data-newclient title="Créer un nouveau client"
+                style="padding:0 12px">${I('plus')}<span class="hide-sm">Client</span></button>
+      </div>
+      <div class="cc-choisi" ${c ? '' : 'hidden'}>${c ? detailClient(c) : ''}</div>
     </div>`;
   }
 
-  /* Bouton « + Client » : ajoute le client à la liste et le sélectionne, sans quitter le devis */
+  function detailClient(c) {
+    return [c.type === 'pro' ? 'Professionnel' : 'Particulier',
+            c.ville ? esc((c.cp ? c.cp + ' ' : '') + c.ville) : '',
+            c.tel ? esc(c.tel) : '', c.email ? esc(c.email) : ''].filter(Boolean).join(' · ');
+  }
+
+  function texteClient(c) {
+    return [c.nom, c.contact, c.ville, c.cp, c.tel, c.email].filter(Boolean).join(' ').toLowerCase();
+  }
+
+  /** Les resultats sont limites a vingt : au-dela personne ne lit, et une
+   *  liste de milliers de lignes fige la page. */
+  function bindChoixClient(root) {
+    const boite = root.querySelector('[data-choix-client]');
+    if (!boite) return;
+    const champ = boite.querySelector('.cc-recherche');
+    const cache = boite.querySelector('[name="client_id"]');
+    const liste = boite.querySelector('.cc-resultats');
+    const choisi = boite.querySelector('.cc-choisi');
+    const vider = boite.querySelector('.cc-vider');
+    let index = -1;
+
+    const fermer = () => { liste.hidden = true; liste.innerHTML = ''; index = -1; };
+
+    const poser = (c) => {
+      if (!c) return;
+      cache.value = c.id;
+      champ.value = c.nom;
+      choisi.innerHTML = detailClient(c);
+      choisi.hidden = false;
+      vider.hidden = false;
+      fermer();
+      cache.dispatchEvent(new Event('change', { bubbles: true }));
+      champ.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+
+    const chercher = () => {
+      const q = champ.value.trim().toLowerCase();
+      if (!q) { fermer(); return; }
+      const mots = q.split(/\s+/);
+      // Une recherche faite surtout de chiffres est un numero de telephone :
+      // decoupee en mots, « 06 00 00 00 03 » ramenait aussi le 03 00 00 00 06.
+      // On compare alors les chiffres entre eux, sans les espaces.
+      const chiffres = q.replace(/\D/g, '');
+      const telephone = chiffres.length >= 4 && chiffres.length >= q.replace(/\s/g, '').length - 2;
+      const trouves = [];
+      for (const c of S().db.clients) {
+        const t = texteClient(c);
+        const ok = telephone
+          ? [c.tel, c.email].filter(Boolean).join(' ').replace(/\D/g, '').includes(chiffres)
+          : mots.every(m => t.includes(m));
+        if (ok) {
+          trouves.push(c);
+          if (trouves.length > 60) break;
+        }
+      }
+      trouves.sort((a, b) => {
+        const da = a.nom.toLowerCase().startsWith(q) ? 0 : 1;
+        const dbb = b.nom.toLowerCase().startsWith(q) ? 0 : 1;
+        return da - dbb || a.nom.localeCompare(b.nom);
+      });
+      const vus = trouves.slice(0, 20);
+      liste.innerHTML = vus.length
+        ? vus.map((c, i) => `<button type="button" class="cc-item" data-id="${c.id}" data-i="${i}">
+             <span class="cc-nom">${esc(c.nom)}</span>
+             <span class="cc-detail">${detailClient(c)}</span></button>`).join('')
+          + (trouves.length > vus.length
+             ? `<div class="cc-plus">${trouves.length > 60 ? 'plus de 60' : trouves.length} résultats, affinez la recherche</div>` : '')
+        : `<div class="cc-rien">Aucun client ne correspond.
+             <button type="button" class="btn ghost small" data-creer>Créer « ${esc(champ.value.trim())} »</button></div>`;
+      liste.hidden = false;
+      liste.querySelectorAll('.cc-item').forEach(b =>
+        b.onclick = () => poser(S().db.clients.find(x => x.id === b.dataset.id)));
+      const creer = liste.querySelector('[data-creer]');
+      if (creer) creer.onclick = () => window.Clients.quickClient(poser, champ.value.trim());
+    };
+
+    champ.addEventListener('input', () => {
+      // Taper efface le choix : sinon on croit avoir change de client alors que
+      // l'ancien identifiant est toujours enregistre.
+      if (cache.value) { cache.value = ''; choisi.hidden = true; }
+      vider.hidden = !champ.value;
+      chercher();
+    });
+    champ.addEventListener('focus', chercher);
+    champ.addEventListener('keydown', (e) => {
+      const items = [...liste.querySelectorAll('.cc-item')];
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!items.length) return;
+        index = (index + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+        items.forEach((x, i) => x.classList.toggle('actif', i === index));
+        items[index].scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter' && index >= 0 && items[index]) {
+        e.preventDefault(); items[index].click();
+      } else if (e.key === 'Escape') { fermer(); }
+    });
+    vider.addEventListener('click', () => {
+      cache.value = ''; champ.value = ''; choisi.hidden = true; vider.hidden = true;
+      fermer(); champ.focus();
+      cache.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    document.addEventListener('click', (e) => { if (!boite.contains(e.target)) fermer(); });
+    boite.poser = poser;
+  }
+
+  /* Bouton « + Client » : ajoute le client et le selectionne, sans quitter le devis */
   function bindNewClient(root) {
     const btn = root.querySelector('[data-newclient]');
     if (!btn) return;
-    btn.onclick = () => window.Clients.quickClient(c => {
-      const sel = root.querySelector('[name="client_id"]');
-      const opt = document.createElement('option');
-      opt.value = c.id; opt.textContent = c.nom; opt.selected = true;
-      const all = Array.from(sel.options).filter(o => o.value);
-      all.push(opt);
-      all.sort((a, b) => a.textContent.localeCompare(b.textContent));
-      const placeholder = sel.options[0];
-      sel.innerHTML = '';
-      sel.appendChild(placeholder);
-      all.forEach(o => sel.appendChild(o));
-      sel.value = c.id;
-      sel.dispatchEvent(new Event('change', { bubbles: true }));
-    });
+    const boite = root.querySelector('[data-choix-client]');
+    btn.onclick = () => window.Clients.quickClient(c => { if (boite && boite.poser) boite.poser(c); });
   }
 
   /* Marge calculée à partir des prix internes : affichée uniquement dans le logiciel */
@@ -245,6 +358,7 @@
     };
     UI.lineEditor(document.getElementById('lines'), lignes, { interne: true, onChange: () => { refreshTotals(); bar.querySelector('.dirty').textContent = 'Modifications non enregistrées'; bar.querySelector('.dirty').classList.add('on'); } });
     refreshTotals();
+    bindChoixClient(box);
     box.querySelector('[name="remise_pct"]').addEventListener('input', refreshTotals);
 
     // Changer de client propose le commercial qui le suit, sauf si on en a

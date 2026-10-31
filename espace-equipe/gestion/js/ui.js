@@ -47,7 +47,8 @@
     { group: 'Contacts', items: [
       { view: 'clients', label: 'Clients', icon: 'users' },
       { view: 'fournisseurs', label: 'Fournisseurs', icon: 'truck' },
-      { view: 'commerciaux', label: 'Commerciaux', icon: 'users' }
+      { view: 'commerciaux', label: 'Commerciaux', icon: 'users' },
+      { view: 'transporteurs', label: 'Transporteurs', icon: 'truck' }
     ] },
     { group: 'Stock & achats', items: [
       { view: 'articles', label: 'Articles & stock', icon: 'box', badge: 'stock' },

@@ -30,29 +30,79 @@
     const S_ = S();
     const id = () => S_.uid();
 
-    const f1 = { id: id(), nom: 'Céramiques du Littoral', contact: 'Service commercial',
+    // Les trois grilles de transport du magasin, relevees sur la fiche affichee
+    // au comptoir. Ce sont de vrais tarifs : un bandeau invite a les verifier
+    // avant de s'en servir pour chiffrer, une erreur de saisie se paierait sur
+    // un devis.
+    const tr = (nom, pays, o) => Object.assign({ id: id(), nom, pays, actif: true }, o);
+    const transporteurs = [
+      tr('SERRET', 'Espagne', {
+        mini_kg: 2000, forfait: 255, ramasse: 14, frais_facture: 0,
+        plafond_kg: 24000, plafond_prix: 2200, poids_reference: 8000,
+        tranches: [
+          { de: 2001, a: 5000, prix_tonne: 136.76 },
+          { de: 5001, a: 10000, prix_tonne: 127.22 },
+          { de: 10001, a: 15000, prix_tonne: 119.88 },
+          { de: 15001, a: 20000, prix_tonne: 110.10 },
+        ],
+        envoi: 'mercredi soir', chargement: 'le mardi', arrivage: 'environ le vendredi',
+        note: 'Minimum 2000 kg, plus 20 € par ramasse. Cumul de poids.',
+      }),
+      tr('DEHOSSE', 'Italie', {
+        mini_kg: 1500, forfait: 145, ramasse: 40, frais_facture: 3,
+        plafond_kg: 24000, plafond_prix: 0, poids_reference: 8000,
+        tranches: [
+          { de: 1501, a: 5000, prix_tonne: 125 },
+          { de: 5001, a: 24000, prix_tonne: 115 },
+        ],
+        envoi: 'mercredi soir', chargement: 'le mardi suivant', arrivage: 'environ le vendredi',
+        note: 'Cumul de poids. Envoi TUS et CAP le mardi soir.',
+      }),
+      tr('CODOGNOTTO', 'Portugal', {
+        mini_kg: 2500, forfait: 240, ramasse: 50, frais_facture: 0,
+        plafond_kg: 24000, plafond_prix: 0, poids_reference: 8000,
+        tranches: [
+          { de: 2501, a: 3000, prix_tonne: 93 },
+          { de: 3001, a: 5001, prix_tonne: 90 },
+          { de: 5001, a: 15000, prix_tonne: 89 },
+          { de: 15001, a: 24000, prix_tonne: 87 },
+        ],
+        envoi: 'le samedi', chargement: 'le mercredi', arrivage: 'environ le vendredi',
+        note: 'Cumul de poids. KERION sans ramasse, ALELUIA à transférer en Espagne.',
+      }),
+    ];
+    const [serret, dehosse, codognotto] = transporteurs;
+
+    const f1 = { id: id(), nom: 'Céramiques du Littoral', code: 'CERLIT', pays: 'Espagne',
+                 famille: 'Carrelage', transporteur_id: serret.id, contact: 'Service commercial',
                  email: '', tel: '', adresse: '', cp: '', ville: '', delai_jours: 21, notes: '' };
-    const f2 = { id: id(), nom: 'Bois et Sols Réunis', contact: 'Service commercial',
+    const f2 = { id: id(), nom: 'Bois et Sols Réunis', code: 'BOISOL', pays: 'Portugal',
+                 famille: 'Parquet', transporteur_id: codognotto.id, contact: 'Service commercial',
                  email: '', tel: '', adresse: '', cp: '', ville: '', delai_jours: 14, notes: '' };
 
-    const art = (ref, designation, unite, achat, vente, stock, alerte, fo, empl, tva) =>
-      ({ id: id(), ref, designation, unite, prix_achat: achat, prix_vente: vente, tva: tva || 20,
-         stock, stock_alerte: alerte, fournisseur_id: fo, emplacement: empl });
+    const art = (ref, designation, unite, achat, vente, stock, alerte, fo, empl, poids, format, mult) =>
+      ({ id: id(), ref, designation, format: format || '', unite,
+         unite_stock: unite === 'm²' ? 'M2' : 'PCS',
+         multiple_vente: mult || 0, mini_palette: 0,
+         poids_unitaire: poids || 0, code_barre: '', photo: '', commentaire: '',
+         prix_achat: achat, prix_vente: vente, tva: 20,
+         stock, stock_alerte: alerte, fournisseur_id: fo, emplacement: empl,
+         cree_le: jour(-150) + 'T09:00:00.000Z', maj_le: jour(-20) + 'T09:00:00.000Z' });
 
     const a = [
-      art('CAR-6060-BEI', 'Carrelage grès cérame 60x60 beige mat', 'm²', 18.40, 32.90, 148, 40, f1.id, 'Allée A - Rack 2'),
-      art('CAR-6060-GRI', 'Carrelage grès cérame 60x60 gris anthracite', 'm²', 19.10, 34.50, 22, 40, f1.id, 'Allée A - Rack 3'),
-      art('CAR-3060-BLA', 'Faïence murale 30x60 blanc brillant', 'm²', 9.70, 19.90, 310, 60, f1.id, 'Allée A - Rack 5'),
-      art('CAR-TER-2020', 'Carreau terrasse 20mm 60x60 pierre', 'm²', 26.80, 48.00, 64, 30, f1.id, 'Extérieur - Palette 4'),
-      art('PLO-NM1-110', 'Plot réglable 110 mm tête fixe', 'pce', 1.85, 3.60, 420, 150, f1.id, 'Extérieur - Bac 1'),
-      art('COL-C2TE-25', 'Colle carrelage C2TE sac 25 kg', 'sac', 11.20, 21.50, 74, 30, f1.id, 'Allée C - Sol'),
-      art('JOI-FIN-5', 'Joint fin sac 5 kg gris perle', 'sac', 7.40, 14.90, 12, 25, f1.id, 'Allée C - Étagère'),
-      art('SAN-REC-9012', 'Receveur de douche 90x120 blanc', 'pce', 212.00, 398.00, 6, 4, f1.id, 'Allée D - Box 2'),
-      art('SAN-MIT-LAV', 'Mitigeur lavabo nickel brossé', 'pce', 78.50, 149.00, 18, 8, f1.id, 'Allée D - Box 5'),
-      art('SAN-VAS-5135', 'Vasque à poser 51x35 blanc mat', 'pce', 96.00, 189.00, 9, 5, f1.id, 'Allée D - Box 6'),
-      art('PAR-CHE-1190', 'Parquet contrecollé chêne naturel 1190x185', 'm²', 29.40, 54.00, 96, 40, f2.id, 'Allée E - Rack 1'),
-      art('PAR-SOU-21DB', 'Sous-couche acoustique 21 dB rouleau 10 m', 'pce', 42.00, 78.00, 7, 10, f2.id, 'Allée E - Sol'),
-      art('PAR-PLI-1950', 'Plinthe chêne naturel 1950 x 65', 'pce', 10.60, 19.90, 54, 20, f2.id, 'Allée E - Rack 2'),
+      art('CAR-6060-BEI', 'Carrelage grès cérame 60x60 beige mat', 'm²', 18.40, 32.90, 148, 40, f1.id, 'Allée A - Rack 2', 21.2, '60X60X9', 1.44),
+      art('CAR-6060-GRI', 'Carrelage grès cérame 60x60 gris anthracite', 'm²', 19.10, 34.50, 22, 40, f1.id, 'Allée A - Rack 3', 21.2, '60X60X9', 1.44),
+      art('CAR-3060-BLA', 'Faïence murale 30x60 blanc brillant', 'm²', 9.70, 19.90, 310, 60, f1.id, 'Allée A - Rack 5', 14.5, '30X60X8', 1.08),
+      art('CAR-TER-2020', 'Carreau terrasse 20mm 60x60 pierre', 'm²', 26.80, 48.00, 64, 30, f1.id, 'Extérieur - Palette 4', 46.0, '60X60X20', 0.72),
+      art('PLO-NM1-110', 'Plot réglable 110 mm tête fixe', 'pce', 1.85, 3.60, 420, 150, f1.id, 'Extérieur - Bac 1', 0.18, '25/40', 0),
+      art('COL-C2TE-25', 'Colle carrelage C2TE sac 25 kg', 'sac', 11.20, 21.50, 74, 30, f1.id, 'Allée C - Sol', 25.0, '', 0),
+      art('JOI-FIN-5', 'Joint fin sac 5 kg gris perle', 'sac', 7.40, 14.90, 12, 25, f1.id, 'Allée C - Étagère', 5.0, '', 0),
+      art('SAN-REC-9012', 'Receveur de douche 90x120 blanc', 'pce', 212.00, 398.00, 6, 4, f1.id, 'Allée D - Box 2', 38.0, '90X120', 0),
+      art('SAN-MIT-LAV', 'Mitigeur lavabo nickel brossé', 'pce', 78.50, 149.00, 18, 8, f1.id, 'Allée D - Box 5', 2.4, '', 0),
+      art('SAN-VAS-5135', 'Vasque à poser 51x35 blanc mat', 'pce', 96.00, 189.00, 9, 5, f1.id, 'Allée D - Box 6', 11.0, '510X350X110', 0),
+      art('PAR-CHE-1190', 'Parquet contrecollé chêne naturel 1190x185', 'm²', 29.40, 54.00, 96, 40, f2.id, 'Allée E - Rack 1', 9.8, '1190X185X10', 2.2),
+      art('PAR-SOU-21DB', 'Sous-couche acoustique 21 dB rouleau 10 m', 'pce', 42.00, 78.00, 7, 10, f2.id, 'Allée E - Sol', 4.2, '1X10M', 0),
+      art('PAR-PLI-1950', 'Plinthe chêne naturel 1950 x 65', 'pce', 10.60, 19.90, 54, 20, f2.id, 'Allée E - Rack 2', 1.1, '1950X65', 0),
     ];
     const ref = (r) => a.find(x => x.ref === r);
 
@@ -197,13 +247,14 @@
         delai_relance_jours: 15, delai_stockage_alerte: 14,
         tel_reception: '', validite_devis_jours: 30,
         objectif_ca_mensuel: 45000, objectif_ca_annuel: 540000,
+        gazole_pct: 4.5, gazole_maj: jour(-12), coef_vente: 1.6,
         commercial: 'Pierre-Louis',
         jeu_essai: true,
       },
       // Les compteurs repartent au-dela des numeros utilises, sinon le premier
       // vrai document reprendrait un numero deja pris.
       counters: { DEV: devis.length, CMD: commandes.length, FAC: factures.length, ACH: achats.length },
-      commerciaux, clients, fournisseurs: [f1, f2], articles: a,
+      commerciaux, transporteurs, clients, fournisseurs: [f1, f2], articles: a,
       devis, commandes, factures, achats, mouvements, objectifs,
     };
   }

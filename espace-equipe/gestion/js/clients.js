@@ -43,7 +43,13 @@
     f = f || {};
     return `
       <div class="grid grid-form">
+        <div class="field"><label>Code fournisseur</label><input name="code" value="${esc(f.code)}" placeholder="Abrégé, repris sur les commandes"></div>
         <div class="field"><label>Nom *</label><input name="nom" value="${esc(f.nom)}"></div>
+        <div class="field"><label>Pays</label><input name="pays" value="${esc(f.pays)}" placeholder="Espagne, Italie, Portugal, France…"></div>
+        <div class="field"><label>Fournisseur de</label><input name="famille" value="${esc(f.famille)}" placeholder="Carrelage, sanitaire, parquet…"></div>
+        <div class="field"><label>Transporteur</label><select name="transporteur_id">${
+          window.Transport ? UI.options(window.Transport.actifs(), f.transporteur_id, t => t.nom + (t.pays ? ' · ' + t.pays : ''), '— aucun —') : ''
+        }</select></div>
         <div class="field"><label>Personne de contact</label><input name="contact" value="${esc(f.contact)}"></div>
         <div class="field"><label>Téléphone</label><input name="tel" value="${esc(f.tel)}"></div>
         <div class="field"><label>Email</label><input name="email" type="email" value="${esc(f.email)}"></div>
@@ -298,7 +304,7 @@
   }
 
   /* Création rapide (4 champs) depuis un devis : le client est sélectionné sans quitter la page */
-  function quickClient(onCreated) {
+  function quickClient(onCreated, nomPrerempli) {
     const html = `
       <div class="grid grid-form">
         <div class="field full"><label>Type</label>
@@ -306,7 +312,7 @@
             <label class="btn ghost small" style="margin:0"><input type="radio" name="type" value="particulier" checked style="width:auto;min-height:0;margin-right:6px">Particulier</label>
             <label class="btn ghost small" style="margin:0"><input type="radio" name="type" value="pro" style="width:auto;min-height:0;margin-right:6px">Professionnel</label>
           </div></div>
-        <div class="field full"><label>Nom ou raison sociale *</label><input name="nom" autofocus></div>
+        <div class="field full"><label>Nom ou raison sociale *</label><input name="nom" value="${esc(nomPrerempli || '')}" autofocus></div>
         <div class="field"><label>Téléphone</label><input name="tel" inputmode="tel"></div>
         <div class="field"><label>Email</label><input name="email" type="email"></div>
         <div class="field"><label>Ville</label><input name="ville"></div>

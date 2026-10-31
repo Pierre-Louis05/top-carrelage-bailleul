@@ -72,21 +72,80 @@
 
   function articleForm(a, isNew) {
     const db = S().db;
-    const f = a || { unite: 'm²', tva: 20, stock: 0, stock_alerte: 0 };
+    const f = a || { unite: 'm²', unite_stock: 'M2', tva: 20, stock: 0, stock_alerte: 0 };
+    const T = window.Transport;
+    const ch = (l, html, aide) => `<div class="field"><label>${l}</label>${html}${aide ? `<span class="aide-champ">${aide}</span>` : ''}</div>`;
     return `
+      <div class="sous-titre-form">Identification</div>
       <div class="grid grid-form">
-        <div class="field"><label>Référence *</label><input name="ref" value="${esc(f.ref)}"></div>
-        <div class="field"><label>Désignation *</label><input name="designation" value="${esc(f.designation)}"></div>
-        <div class="field"><label>Unité</label><input name="unite" value="${esc(f.unite)}" placeholder="m², pièce, sac…"></div>
-        <div class="field"><label>Prix d'achat HT (€)</label><input name="prix_achat" type="number" step="0.01" min="0" value="${f.prix_achat ?? ''}"></div>
-        <div class="field"><label>Prix de vente HT (€)</label><input name="prix_vente" type="number" step="0.01" min="0" value="${f.prix_vente ?? ''}"></div>
-        <div class="field"><label>TVA</label><select name="tva">${db.settings.tva_rates.map(r => `<option value="${r}" ${Number(f.tva) === r ? 'selected' : ''}>${r} %</option>`).join('')}</select></div>
-        <div class="field"><label>Fournisseur</label><select name="fournisseur_id">${UI.options(db.fournisseurs, f.fournisseur_id, x => x.nom, '— aucun —')}</select></div>
-        <div class="field"><label>Emplacement</label><input name="emplacement" value="${esc(f.emplacement)}" placeholder="Entrepôt, rayon…"></div>
-        ${isNew ? `<div class="field"><label>Stock initial</label><input name="stock" type="number" step="0.01" value="0"></div>` : ''}
-        <div class="field"><label>Seuil d'alerte</label><input name="stock_alerte" type="number" step="0.01" min="0" value="${f.stock_alerte ?? 0}"></div>
+        ${ch('Code article *', `<input name="ref" value="${esc(f.ref)}">`)}
+        ${ch('Désignation *', `<input name="designation" value="${esc(f.designation)}">`)}
+        ${ch('Format', `<input name="format" value="${esc(f.format)}" placeholder="60x60x9, 45X90X9…">`)}
+        ${ch('Code-barres', `<input name="code_barre" value="${esc(f.code_barre)}" inputmode="numeric">`)}
+        ${ch('Fournisseur', `<select name="fournisseur_id">${UI.options(db.fournisseurs, f.fournisseur_id, x => x.nom + (x.pays ? ' · ' + x.pays : ''), '— aucun —')}</select>`)}
+        ${ch('Emplacement', `<input name="emplacement" value="${esc(f.emplacement)}" placeholder="Allée, rack, bain…">`)}
       </div>
-      <p class="help">Le seuil d'alerte signale un stock bas dès qu'il atteint cette quantité.</p>`;
+
+      <div class="sous-titre-form">Unités et conditionnement</div>
+      <div class="grid grid-form">
+        ${ch('Unité de saisie', `<input name="unite" value="${esc(f.unite)}" placeholder="m², pièce, sac…">`, 'Ce qui est tapé sur le devis')}
+        ${ch('Unité de stock', `<input name="unite_stock" value="${esc(f.unite_stock)}" placeholder="M2, PCS…">`, 'Ce qui est compté au dépôt')}
+        ${ch('Multiple de vente', `<input name="multiple_vente" type="number" step="0.001" min="0" value="${f.multiple_vente ?? ''}">`, 'Contenu d\'une boîte, par exemple 1,620 m²')}
+        ${ch('Minimum pour le tarif palette', `<input name="mini_palette" type="number" step="0.01" min="0" value="${f.mini_palette ?? ''}">`, 'En unité de saisie')}
+        ${ch('Poids unitaire (kg)', `<input name="poids_unitaire" type="number" step="0.001" min="0" value="${f.poids_unitaire ?? ''}">`, 'Sert au calcul du transport')}
+        ${ch('Seuil d\'alerte', `<input name="stock_alerte" type="number" step="0.01" min="0" value="${f.stock_alerte ?? 0}">`)}
+        ${isNew ? ch('Stock initial', `<input name="stock" type="number" step="0.01" value="0">`) : ''}
+      </div>
+
+      <div class="sous-titre-form">Prix</div>
+      <div class="grid grid-form">
+        ${ch('Prix d\'achat HT (€)', `<input name="prix_achat" type="number" step="0.01" min="0" value="${f.prix_achat ?? ''}">`)}
+        ${ch('Prix de vente HT (€)', `<input name="prix_vente" type="number" step="0.01" min="0" value="${f.prix_vente ?? ''}">`)}
+        ${ch('TVA', `<select name="tva">${db.settings.tva_rates.map(r => `<option value="${r}" ${Number(f.tva) === r ? 'selected' : ''}>${r} %</option>`).join('')}</select>`)}
+      </div>
+      <div id="apercu-revient" class="apercu-revient"></div>
+
+      <div class="sous-titre-form">Photo et commentaire</div>
+      <div class="grid grid-form">
+        <div class="field">
+          <label>Photo du produit</label>
+          <div class="zone-photo">
+            <img id="ap-photo" src="${f.photo || ''}" alt="" ${f.photo ? '' : 'hidden'}>
+            <div class="btn-row">
+              <label class="btn ghost small" style="cursor:pointer">Choisir une image
+                <input type="file" id="ap-fichier" accept="image/*" hidden></label>
+              <button type="button" class="btn ghost small" id="ap-vider" ${f.photo ? '' : 'hidden'}>Retirer</button>
+            </div>
+          </div>
+          <span class="aide-champ">L'image est réduite avant d'être enregistrée, pour ne pas saturer le navigateur.</span>
+        </div>
+        ${ch('Commentaire', `<textarea name="commentaire" rows="4">${esc(f.commentaire)}</textarea>`)}
+      </div>
+      <input type="hidden" name="photo" value="${esc(f.photo)}">`;
+  }
+
+  /* Reduction de l'image avant enregistrement : une photo d'appareil fait
+     plusieurs mega-octets, et le navigateur refuse d'enregistrer au-dela de
+     quelques mega pour toute l'application. */
+  function reduireImage(fichier, cote) {
+    return new Promise((ok, ko) => {
+      const lecteur = new FileReader();
+      lecteur.onerror = () => ko(lecteur.error);
+      lecteur.onload = () => {
+        const img = new Image();
+        img.onerror = () => ko(new Error('Image illisible'));
+        img.onload = () => {
+          const r = Math.min(1, cote / Math.max(img.width, img.height));
+          const c = document.createElement('canvas');
+          c.width = Math.round(img.width * r);
+          c.height = Math.round(img.height * r);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          ok(c.toDataURL('image/jpeg', 0.72));
+        };
+        img.src = lecteur.result;
+      };
+      lecteur.readAsDataURL(fichier);
+    });
   }
 
   function articleModal(a) {
@@ -96,21 +155,90 @@
       { label: 'Annuler', cls: 'ghost', fn: (b, close) => close() },
       { label: 'Enregistrer', cls: '', fn: (b, close) => {
         const g = n => b.querySelector(`[name="${n}"]`);
+        const txt = n => (g(n) ? g(n).value.trim() : '');
+        const nb = n => { const e = g(n); return e && e.value !== '' ? (Number(e.value) || 0) : 0; };
         const o = {
-          ref: g('ref').value.trim(), designation: g('designation').value.trim(), unite: g('unite').value.trim(),
-          prix_achat: Number(g('prix_achat').value) || 0, prix_vente: Number(g('prix_vente').value) || 0,
-          tva: Number(g('tva').value), fournisseur_id: g('fournisseur_id').value, emplacement: g('emplacement').value.trim(),
-          stock_alerte: Number(g('stock_alerte').value) || 0
+          ref: txt('ref'), designation: txt('designation'), format: txt('format'),
+          code_barre: txt('code_barre'), unite: txt('unite'), unite_stock: txt('unite_stock'),
+          multiple_vente: nb('multiple_vente'), mini_palette: nb('mini_palette'),
+          poids_unitaire: nb('poids_unitaire'),
+          prix_achat: nb('prix_achat'), prix_vente: nb('prix_vente'),
+          tva: Number(g('tva').value), fournisseur_id: g('fournisseur_id').value,
+          emplacement: txt('emplacement'), stock_alerte: nb('stock_alerte'),
+          photo: g('photo').value, commentaire: txt('commentaire'),
+          maj_le: new Date().toISOString(),
         };
-        if (!o.ref || !o.designation) { UI.toast('Référence et désignation sont obligatoires.', true); return; }
+        if (!o.ref || !o.designation) { UI.toast('Code article et désignation sont obligatoires.', true); return; }
+        const doublon = db.articles.find(x => x.ref.toLowerCase() === o.ref.toLowerCase() && (!a || x.id !== a.id));
+        if (doublon) { UI.toast('Ce code article existe déjà.', true); return; }
         if (isNew) {
-          o.id = S().uid(); o.stock = 0; db.articles.push(o);
-          const init = Number(g('stock').value) || 0;
+          o.id = S().uid(); o.stock = 0; o.cree_le = new Date().toISOString();
+          db.articles.push(o);
+          const init = nb('stock');
           if (init) mouvement(o.id, init, 'Stock initial', '');
         } else Object.assign(a, o);
-        close(); UI.commit('Article enregistré');
+        close();
+        if (!S().save()) { UI.toast('Enregistrement refusé par le navigateur : la photo est peut-être trop lourde.', true); return; }
+        UI.commit('Article enregistré');
       } }
     ], { wide: true });
+
+    /* Apercu du prix de revient rendu, qui se met a jour pendant la saisie. */
+    const racine = document.querySelector('.modal');
+    const zone = document.getElementById('apercu-revient');
+    const recalc = () => {
+      const T = window.Transport;
+      const q = n => racine.querySelector(`[name="${n}"]`);
+      const poids = Number(q('poids_unitaire').value) || 0;
+      const achat = Number(q('prix_achat').value) || 0;
+      const vente = Number(q('prix_vente').value) || 0;
+      const fo = S().db.fournisseurs.find(x => x.id === q('fournisseur_id').value);
+      const t = (T && fo) ? T.parId(fo.transporteur_id) : null;
+      if (!zone) return;
+      if (!t || !poids) {
+        zone.innerHTML = `<span class="muted">Transport non calculé${!poids ? ' : poids unitaire manquant'
+          : ' : aucun transporteur sur le fournisseur'}.</span>`;
+        return;
+      }
+      const parKg = T.coutParKg(t);
+      const transport = poids * parKg;
+      const revient = achat + transport;
+      const coef = Number(S().db.settings.coef_vente) || 0;
+      const conseille = coef ? revient * coef : 0;
+      const marge = vente - revient;
+      zone.innerHTML = `
+        <div><span>Transport</span><strong>${S().money(transport)}</strong>
+          <small>${esc(t.nom)} · ${S().money(parKg)} le kg</small></div>
+        <div><span>Prix de revient rendu</span><strong>${S().money(revient)}</strong>
+          <small>achat ${S().money(achat)} + transport</small></div>
+        ${conseille ? `<div><span>Prix de vente conseillé</span><strong>${S().money(conseille)}</strong>
+          <small>coefficient ${S().num(coef)}</small></div>` : ''}
+        ${vente ? `<div class="${marge >= 0 ? '' : 'negatif'}"><span>Marge au prix saisi</span>
+          <strong>${S().money(marge)}</strong>
+          <small>${revient ? S().num((marge / revient) * 100) + ' %' : ''}</small></div>` : ''}`;
+    };
+    ['poids_unitaire', 'prix_achat', 'prix_vente', 'fournisseur_id'].forEach(n => {
+      const e = racine.querySelector(`[name="${n}"]`);
+      if (e) { e.addEventListener('input', recalc); e.addEventListener('change', recalc); }
+    });
+    recalc();
+
+    /* Photo */
+    const img = document.getElementById('ap-photo');
+    const champPhoto = racine.querySelector('[name="photo"]');
+    const btnVider = document.getElementById('ap-vider');
+    document.getElementById('ap-fichier').addEventListener('change', async (e) => {
+      const fichier = e.target.files && e.target.files[0];
+      if (!fichier) return;
+      try {
+        const data = await reduireImage(fichier, 420);
+        champPhoto.value = data;
+        img.src = data; img.hidden = false; btnVider.hidden = false;
+      } catch (err) { UI.toast('Image illisible.', true); }
+    });
+    btnVider.addEventListener('click', () => {
+      champPhoto.value = ''; img.src = ''; img.hidden = true; btnVider.hidden = true;
+    });
   }
 
   /* Fiche article : stock, prix, historique */

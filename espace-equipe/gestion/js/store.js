@@ -29,13 +29,27 @@
       validite_devis_jours: 30,
       objectif_ca_mensuel: 0,
       objectif_ca_annuel: 0,
-      commercial: ''
+      commercial: '',
+      // Indexation gazole : un pourcentage qui s'ajoute au cout transport.
+      // Il change tous les mois, d'ou le champ plutot qu'une valeur en dur.
+      gazole_pct: 0,
+      gazole_maj: '',
+      // Coefficient applique au prix de revient rendu pour proposer un prix de
+      // vente. 1.6 veut dire « prix de revient plus 60 % ».
+      coef_vente: 0
     },
     counters: { DEV: 0, CMD: 0, FAC: 0, ACH: 0 },
     commerciaux: [],    // { id, nom, actif } : qui suit le client, et de qui est le chiffre
+    transporteurs: [],  // { id, nom, pays, actif, mini_kg, forfait, tranches:[{de,a,prix_tonne}],
+                        //   plafond_kg, plafond_prix, ramasse, frais_facture, poids_reference,
+                        //   envoi, chargement, arrivage, contact, telephone, note }
     clients: [],        // { id, type:'particulier'|'pro', nom, contact, email, tel, adresse, cp, ville, notes, created, commercial_id }
-    fournisseurs: [],   // { id, nom, contact, email, tel, adresse, cp, ville, delai_jours, notes }
-    articles: [],       // { id, ref, designation, unite, prix_achat, prix_vente, tva, stock, stock_alerte, fournisseur_id, emplacement }
+    fournisseurs: [],   // { id, code, nom, pays, famille, transporteur_id, contact, email, tel,
+                        //   adresse, cp, ville, delai_jours, notes }
+    articles: [],       // { id, ref, designation, format, unite, unite_stock, multiple_vente,
+                        //   mini_palette, poids_unitaire, code_barre, photo, commentaire,
+                        //   prix_achat, prix_vente, tva, stock, stock_alerte, fournisseur_id,
+                        //   emplacement, cree_le, maj_le }
     devis: [],          // { id, numero, date, client_id, lignes:[], remise_pct, statut, validite, notes, commande_id }
     commandes: [],      // { id, numero, date, client_id, devis_id, lignes, remise_pct, statut, date_livraison, notes, facture_id }
     factures: [],       // { id, numero, date, date_echeance, client_id, commande_id, lignes, remise_pct, statut, paiements:[{date,montant,mode}], notes }

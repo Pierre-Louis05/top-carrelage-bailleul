@@ -425,3 +425,95 @@ td input[list]::placeholder { color: #A0AAB9; }
   border: 1px solid #D5DBE6; background: #fff; color: #3C4A61;
   font: inherit; font-size: 0.88rem; max-width: 190px;
 }
+
+/* ----- Fiche article enrichie ----- */
+.sous-titre-form {
+  margin: 20px 0 10px; font-size: 0.74rem; font-weight: 750;
+  letter-spacing: 0.1em; text-transform: uppercase; color: #6F829C;
+  border-top: 1px solid #E8EDF4; padding-top: 14px;
+}
+.sous-titre-form:first-child { margin-top: 0; border-top: 0; padding-top: 0; }
+.aide-champ { display: block; margin-top: 4px; font-size: 0.74rem; color: #6F829C; line-height: 1.4; }
+
+.zone-photo { display: grid; gap: 10px; }
+.zone-photo img {
+  max-width: 180px; max-height: 140px; border-radius: 10px;
+  border: 1px solid #D5DBE6; object-fit: cover; background: #F2F5FA;
+}
+
+/* Le prix de revient rendu, calcule pendant la saisie. */
+.apercu-revient {
+  display: grid; gap: 8px; margin-top: 14px; padding: 14px 16px;
+  background: #F2F5FA; border: 1px solid #D5DBE6; border-radius: 10px;
+  font-size: 0.88rem;
+}
+.apercu-revient > div { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.apercu-revient span:first-child { min-width: 180px; color: #3C4A61; }
+.apercu-revient strong { font-size: 1rem; color: #14263C; }
+.apercu-revient small { color: #6F829C; }
+.apercu-revient .negatif strong { color: #C0392B; }
+
+/* ----- Transporteurs ----- */
+.bloc-transporteur {
+  border: 1px solid #E8EDF4; border-radius: 12px;
+  padding: 16px 18px; margin-bottom: 16px;
+}
+.infos-transporteur {
+  display: flex; flex-wrap: wrap; gap: 6px 20px;
+  margin-top: 12px; font-size: 0.84rem; color: #3C4A61;
+}
+.alerte-douce { color: #8A6D1F; }
+.ligne-tranche {
+  display: grid; grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 8px; margin-bottom: 8px; align-items: center;
+}
+.ligne-tranche input {
+  height: 38px; padding: 0 10px; border-radius: 9px;
+  border: 1px solid #D5DBE6; font: inherit; font-size: 0.88rem;
+}
+@media (max-width: 640px) {
+  .ligne-tranche { grid-template-columns: 1fr 1fr; }
+}
+
+/* ----- Choix du client : une recherche, pas une liste deroulante -----
+   Le logiciel du magasin compte plus de 43 000 fiches avec beaucoup de
+   doublons : il faut chercher au clavier et voir de quoi distinguer deux
+   fiches qui portent le meme nom. */
+.choix-client { display: grid; gap: 8px; }
+.cc-ligne { display: flex; gap: 8px; align-items: flex-start; }
+.cc-champ { position: relative; flex: 1; min-width: 0; }
+.cc-champ input { width: 100%; padding-right: 32px; }
+.cc-vider {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  background: none; border: 0; cursor: pointer; font-size: 20px; line-height: 1;
+  color: #6F829C; padding: 0 4px;
+}
+.cc-vider:hover { color: #14263C; }
+
+.cc-resultats {
+  /* Le champ vit dans une grille a quatre colonnes, donc etroit. La liste, elle,
+     doit rester lisible : elle deborde volontairement du champ. */
+  position: absolute; z-index: 40; left: 0; top: calc(100% + 4px);
+  min-width: min(380px, 86vw); width: max-content; max-width: min(520px, 90vw);
+  max-height: 320px; overflow-y: auto;
+  background: #fff; border: 1px solid #D5DBE6; border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(16, 31, 56, 0.16);
+}
+.cc-resultats[hidden] { display: none; }
+.cc-item {
+  display: grid; gap: 2px; width: 100%; text-align: left;
+  padding: 9px 13px; background: none; border: 0; cursor: pointer;
+  border-bottom: 1px solid #F2F5FA; font: inherit;
+}
+.cc-item:last-child { border-bottom: 0; }
+.cc-item:hover, .cc-item.actif { background: #F2F5FA; }
+.cc-nom { font-weight: 650; color: #14263C; font-size: 0.92rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-detail { font-size: 0.78rem; color: #6F829C;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-plus, .cc-rien {
+  padding: 10px 13px; font-size: 0.8rem; color: #6F829C;
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+}
+.cc-choisi { font-size: 0.8rem; color: #6F829C; }
+.cc-choisi[hidden] { display: none; }
