@@ -80,8 +80,8 @@
                  famille: 'Parquet', transporteur_id: codognotto.id, contact: 'Service commercial',
                  email: '', tel: '', adresse: '', cp: '', ville: '', delai_jours: 14, notes: '' };
 
-    const art = (ref, designation, unite, achat, vente, stock, alerte, fo, empl, poids, format, mult) =>
-      ({ id: id(), ref, designation, format: format || '', unite,
+    const art = (ref, designation, unite, achat, vente, stock, alerte, fo, empl, poids, format, mult, usine) =>
+      ({ id: id(), ref, designation, format: format || '', usine: usine || '', unite,
          unite_stock: unite === 'm²' ? 'M2' : 'PCS',
          multiple_vente: mult || 0, mini_palette: 0,
          poids_unitaire: poids || 0, code_barre: '', photo: '', commentaire: '',
@@ -90,19 +90,19 @@
          cree_le: jour(-150) + 'T09:00:00.000Z', maj_le: jour(-20) + 'T09:00:00.000Z' });
 
     const a = [
-      art('CAR-6060-BEI', 'Carrelage grès cérame 60x60 beige mat', 'm²', 18.40, 32.90, 148, 40, f1.id, 'Allée A - Rack 2', 21.2, '60X60X9', 1.44),
-      art('CAR-6060-GRI', 'Carrelage grès cérame 60x60 gris anthracite', 'm²', 19.10, 34.50, 22, 40, f1.id, 'Allée A - Rack 3', 21.2, '60X60X9', 1.44),
-      art('CAR-3060-BLA', 'Faïence murale 30x60 blanc brillant', 'm²', 9.70, 19.90, 310, 60, f1.id, 'Allée A - Rack 5', 14.5, '30X60X8', 1.08),
-      art('CAR-TER-2020', 'Carreau terrasse 20mm 60x60 pierre', 'm²', 26.80, 48.00, 64, 30, f1.id, 'Extérieur - Palette 4', 46.0, '60X60X20', 0.72),
-      art('PLO-NM1-110', 'Plot réglable 110 mm tête fixe', 'pce', 1.85, 3.60, 420, 150, f1.id, 'Extérieur - Bac 1', 0.18, '25/40', 0),
-      art('COL-C2TE-25', 'Colle carrelage C2TE sac 25 kg', 'sac', 11.20, 21.50, 74, 30, f1.id, 'Allée C - Sol', 25.0, '', 0),
-      art('JOI-FIN-5', 'Joint fin sac 5 kg gris perle', 'sac', 7.40, 14.90, 12, 25, f1.id, 'Allée C - Étagère', 5.0, '', 0),
-      art('SAN-REC-9012', 'Receveur de douche 90x120 blanc', 'pce', 212.00, 398.00, 6, 4, f1.id, 'Allée D - Box 2', 38.0, '90X120', 0),
-      art('SAN-MIT-LAV', 'Mitigeur lavabo nickel brossé', 'pce', 78.50, 149.00, 18, 8, f1.id, 'Allée D - Box 5', 2.4, '', 0),
-      art('SAN-VAS-5135', 'Vasque à poser 51x35 blanc mat', 'pce', 96.00, 189.00, 9, 5, f1.id, 'Allée D - Box 6', 11.0, '510X350X110', 0),
-      art('PAR-CHE-1190', 'Parquet contrecollé chêne naturel 1190x185', 'm²', 29.40, 54.00, 96, 40, f2.id, 'Allée E - Rack 1', 9.8, '1190X185X10', 2.2),
-      art('PAR-SOU-21DB', 'Sous-couche acoustique 21 dB rouleau 10 m', 'pce', 42.00, 78.00, 7, 10, f2.id, 'Allée E - Sol', 4.2, '1X10M', 0),
-      art('PAR-PLI-1950', 'Plinthe chêne naturel 1950 x 65', 'pce', 10.60, 19.90, 54, 20, f2.id, 'Allée E - Rack 2', 1.1, '1950X65', 0),
+      art('CAR-6060-BEI', 'Carrelage grès cérame 60x60 beige mat', 'm²', 18.40, 32.90, 148, 40, f1.id, 'Allée A - Rack 2', 21.2, '60X60X9', 1.44, 'MARGRES'),
+      art('CAR-6060-GRI', 'Carrelage grès cérame 60x60 gris anthracite', 'm²', 19.10, 34.50, 22, 40, f1.id, 'Allée A - Rack 3', 21.2, '60X60X9', 1.44, 'MARGRES'),
+      art('CAR-3060-BLA', 'Faïence murale 30x60 blanc brillant', 'm²', 9.70, 19.90, 310, 60, f1.id, 'Allée A - Rack 5', 14.5, '30X60X8', 1.08, 'MARGRES'),
+      art('CAR-TER-2020', 'Carreau terrasse 20mm 60x60 pierre', 'm²', 26.80, 48.00, 64, 30, f1.id, 'Extérieur - Palette 4', 46.0, '60X60X20', 0.72, 'ALELUIA'),
+      art('PLO-NM1-110', 'Plot réglable 110 mm tête fixe', 'pce', 1.85, 3.60, 420, 150, f1.id, 'Extérieur - Bac 1', 0.18, '25/40', 0, 'ETERNO'),
+      art('COL-C2TE-25', 'Colle carrelage C2TE sac 25 kg', 'sac', 11.20, 21.50, 74, 30, f1.id, 'Allée C - Sol', 25.0, '', 0, 'KERAKOLL'),
+      art('JOI-FIN-5', 'Joint fin sac 5 kg gris perle', 'sac', 7.40, 14.90, 12, 25, f1.id, 'Allée C - Étagère', 5.0, '', 0, 'KERAKOLL'),
+      art('SAN-REC-9012', 'Receveur de douche 90x120 blanc', 'pce', 212.00, 398.00, 6, 4, f1.id, 'Allée D - Box 2', 38.0, '90X120', 0, 'HIDRONATUR'),
+      art('SAN-MIT-LAV', 'Mitigeur lavabo nickel brossé', 'pce', 78.50, 149.00, 18, 8, f1.id, 'Allée D - Box 5', 2.4, '', 0, 'ODESIGN'),
+      art('SAN-VAS-5135', 'Vasque à poser 51x35 blanc mat', 'pce', 96.00, 189.00, 9, 5, f1.id, 'Allée D - Box 6', 11.0, '510X350X110', 0, 'ODESIGN'),
+      art('PAR-CHE-1190', 'Parquet contrecollé chêne naturel 1190x185', 'm²', 29.40, 54.00, 96, 40, f2.id, 'Allée E - Rack 1', 9.8, '1190X185X10', 2.2, 'PARQWOOD'),
+      art('PAR-SOU-21DB', 'Sous-couche acoustique 21 dB rouleau 10 m', 'pce', 42.00, 78.00, 7, 10, f2.id, 'Allée E - Sol', 4.2, '1X10M', 0, 'BERRY'),
+      art('PAR-PLI-1950', 'Plinthe chêne naturel 1950 x 65', 'pce', 10.60, 19.90, 54, 20, f2.id, 'Allée E - Rack 2', 1.1, '1950X65', 0, 'PARQWOOD'),
     ];
     const ref = (r) => a.find(x => x.ref === r);
 

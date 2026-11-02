@@ -91,6 +91,10 @@
   function go(name) { if (location.hash === '#' + name) render(); else location.hash = name; }
 
   function render() {
+    // Les panneaux de suggestions d'article vivent dans le body pour echapper
+    // au defilement du tableau. Changer d'ecran ne les emporte donc pas : on
+    // les retire ici, sinon ils s'accumulent a chaque devis ouvert.
+    document.querySelectorAll('body > .ar-inline').forEach(x => x.remove());
     const route = parseRoute();
     const view = route.view;
     const title = typeof view.title === 'function' ? view.title(route.id) : view.title;
@@ -220,20 +224,20 @@
       </tr></thead><tbody></tbody></table>`;
     const tbody = wrap.querySelector('tbody');
     const totalOf = l => (Number(l.qte) || 0) * (Number(l.pu) || 0) * (1 - (Number(l.remise_pct) || 0) / 100);
-    /* Une seule liste de suggestions partagée : taper une réf. ou un nom remplit la ligne */
-    const listId = 'art-datalist';
-    let dl = document.getElementById(listId);
-    if (!dl) { dl = document.createElement('datalist'); dl.id = listId; document.body.appendChild(dl); }
-    dl.innerHTML = articles.slice().sort((a, b) => a.designation.localeCompare(b.designation))
-      .map(a => `<option value="${esc(a.ref + ' — ' + a.designation)}"></option>`).join('');
+    /* Plus de liste complete en HTML : avec 20 000 references, la construire a
+       chaque ligne figeait la page. La recherche passe par ChoixArticle, qui
+       garde un index en memoire et ne dessine que les premiers resultats. */
     const findArticle = (txt) => articles.find(a => (a.ref + ' — ' + a.designation) === txt || a.designation === txt || a.ref === txt);
 
     function drawRow(l, idx) {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>
-          <input data-k="designation" list="${listId}" value="${esc(l.designation || '')}" placeholder="Tapez une référence ou une prestation…" autocomplete="off">
-          ${l.article_id ? '' : '<small class="muted" style="display:block;margin-top:4px">Prestation libre</small>'}
+          <div class="ar-cellule">
+            <input data-k="designation" value="${esc(l.designation || '')}" placeholder="Référence, désignation…" autocomplete="off" spellcheck="false">
+            <button type="button" class="ar-loupe" data-chercher title="Recherche avancée, avec filtre par usine" aria-label="Recherche avancée">${icon('search') || '⌕'}</button>
+          </div>
+          <small class="muted ar-note" style="display:block;margin-top:4px">${l.article_id ? esc(articles.find(x => x.id === l.article_id)?.ref || '') : 'Prestation libre'}</small>
         </td>
         <td><input type="number" step="0.01" min="0" data-k="qte" value="${l.qte ?? 1}"></td>
         <td><input type="number" step="0.01" min="0" data-k="pu" value="${l.pu ?? 0}"></td>
@@ -266,11 +270,100 @@
         inp.addEventListener(inp.tagName === 'SELECT' || inp.type === 'number' ? 'input' : 'input', apply);
         if (inp.tagName === 'SELECT') inp.addEventListener('change', apply);
       });
-      tr.querySelector('[data-del]').onclick = () => { lignes.splice(idx, 1); drawAll(); if (opts.onChange) opts.onChange(); };
+      /* Recherche d'article sur la cellule Designation : suggestions sous le
+         champ, et une loupe pour la recherche complete avec filtre par usine. */
+      const champ = tr.querySelector('[data-k="designation"]');
+      const note = tr.querySelector('.ar-note');
+      let pos = -1;
+
+      /* Le panneau de suggestions vit dans le body, pas dans la cellule : le
+         tableau des lignes defile horizontalement, et il y rognait la liste a
+         une seule ligne visible. Pose en « fixed », il suit le champ. */
+      const panneau = document.createElement('div');
+      panneau.className = 'ar-inline';
+      panneau.hidden = true;
+      document.body.appendChild(panneau);
+
+      const placer = () => {
+        const r = champ.getBoundingClientRect();
+        panneau.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 540)) + 'px';
+        panneau.style.top = (r.bottom + 4) + 'px';
+      };
+
+      const remplir = (a) => {
+        l.article_id = a.id;
+        l.designation = a.designation;
+        l.pu = opts.achat ? a.prix_achat : a.prix_vente;
+        l.tva = a.tva || 20;
+        if (!opts.achat && a.prix_achat) l.pu_interne = a.prix_achat;
+        champ.value = a.designation;
+        tr.querySelector('[data-k="pu"]').value = l.pu;
+        const t = tr.querySelector('[data-k="tva"]'); if (t) t.value = l.tva;
+        const pi = tr.querySelector('[data-k="pu_interne"]');
+        if (pi && l.pu_interne != null) pi.value = l.pu_interne;
+        if (note) note.textContent = [a.ref, a.format, a.usine].filter(Boolean).join(' · ');
+        tr.querySelector('[data-total]').textContent = S().money(totalOf(l));
+        fermerPanneau();
+        if (opts.onChange) opts.onChange();
+      };
+
+      function fermerPanneau() {
+        panneau.hidden = true; panneau.innerHTML = ''; pos = -1;
+        window.removeEventListener('scroll', placer, true);
+        window.removeEventListener('resize', placer);
+      }
+
+      function suggerer() {
+        const CA = window.ChoixArticle;
+        const q = champ.value.trim();
+        if (!CA || q.length < 2) { fermerPanneau(); return; }
+        const r = CA.chercher(q, {}, 10);
+        if (!r.articles.length) { fermerPanneau(); return; }
+        panneau.innerHTML = r.articles.map((a, i) => CA.ligneResultat(a, opts.achat, i)).join('')
+          + (r.total > r.articles.length
+             ? `<button type="button" class="ar-tout" data-tout>Voir les ${r.total} résultats et filtrer par usine</button>` : '');
+        panneau.hidden = false;
+        placer();
+        window.addEventListener('scroll', placer, true);
+        window.addEventListener('resize', placer);
+        pos = -1;
+        panneau.querySelectorAll('.ar-item').forEach(b => b.onclick = () => {
+          const a = S().db.articles.find(x => x.id === b.dataset.id);
+          if (a) remplir(a);
+        });
+        const tout = panneau.querySelector('[data-tout]');
+        if (tout) tout.onclick = () => { fermerPanneau(); CA.ouvrir({ terme: q, achat: opts.achat, onChoisir: remplir }); };
+      }
+
+      champ.addEventListener('input', suggerer);
+      champ.addEventListener('keydown', (e) => {
+        const items = [...panneau.querySelectorAll('.ar-item')];
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          if (!items.length) return;
+          e.preventDefault();
+          pos = (pos + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+          items.forEach((x, i) => x.classList.toggle('actif', i === pos));
+          items[pos].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter' && pos >= 0 && items[pos]) {
+          e.preventDefault(); items[pos].click();
+        } else if (e.key === 'Escape') { fermerPanneau(); }
+      });
+      champ.addEventListener('blur', () => setTimeout(fermerPanneau, 150));
+      tr.querySelector('[data-chercher]').onclick = () => {
+        if (!window.ChoixArticle) return;
+        fermerPanneau();
+        window.ChoixArticle.ouvrir({ terme: champ.value.trim(), achat: opts.achat, onChoisir: remplir });
+      };
+
+      tr.querySelector('[data-del]').onclick = () => {
+        panneau.remove();
+        lignes.splice(idx, 1); drawAll(); if (opts.onChange) opts.onChange();
+      };
       tbody.appendChild(tr);
     }
 
     function drawAll() {
+      document.querySelectorAll('body > .ar-inline').forEach(x => x.remove());
       tbody.innerHTML = '';
       if (!lignes.length) {
         tbody.innerHTML = `<tr><td colspan="6" class="empty-cell"><div class="empty" style="padding:22px"><strong>Aucune ligne</strong>Choisissez un article du stock ou saisissez une prestation libre.</div></td></tr>`;

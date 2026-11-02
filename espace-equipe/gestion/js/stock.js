@@ -81,6 +81,8 @@
         ${ch('Code article *', `<input name="ref" value="${esc(f.ref)}">`)}
         ${ch('Désignation *', `<input name="designation" value="${esc(f.designation)}">`)}
         ${ch('Format', `<input name="format" value="${esc(f.format)}" placeholder="60x60x9, 45X90X9…">`)}
+        ${ch('Usine', `<input name="usine" value="${esc(f.usine)}" list="liste-usines" placeholder="MARGRES, ALELUIA…">`, 'Sert à filtrer la recherche d\'article')}
+        <datalist id="liste-usines">${(window.ChoixArticle ? window.ChoixArticle.usines() : []).map(u => `<option value="${esc(u)}"></option>`).join('')}</datalist>
         ${ch('Code-barres', `<input name="code_barre" value="${esc(f.code_barre)}" inputmode="numeric">`)}
         ${ch('Fournisseur', `<select name="fournisseur_id">${UI.options(db.fournisseurs, f.fournisseur_id, x => x.nom + (x.pays ? ' · ' + x.pays : ''), '— aucun —')}</select>`)}
         ${ch('Emplacement', `<input name="emplacement" value="${esc(f.emplacement)}" placeholder="Allée, rack, bain…">`)}
@@ -158,7 +160,7 @@
         const txt = n => (g(n) ? g(n).value.trim() : '');
         const nb = n => { const e = g(n); return e && e.value !== '' ? (Number(e.value) || 0) : 0; };
         const o = {
-          ref: txt('ref'), designation: txt('designation'), format: txt('format'),
+          ref: txt('ref'), designation: txt('designation'), format: txt('format'), usine: txt('usine'),
           code_barre: txt('code_barre'), unite: txt('unite'), unite_stock: txt('unite_stock'),
           multiple_vente: nb('multiple_vente'), mini_palette: nb('mini_palette'),
           poids_unitaire: nb('poids_unitaire'),
@@ -179,6 +181,7 @@
         } else Object.assign(a, o);
         close();
         if (!S().save()) { UI.toast('Enregistrement refusé par le navigateur : la photo est peut-être trop lourde.', true); return; }
+        if (window.ChoixArticle) window.ChoixArticle.invalider();
         UI.commit('Article enregistré');
       } }
     ], { wide: true });

@@ -517,3 +517,81 @@ td input[list]::placeholder { color: #A0AAB9; }
 }
 .cc-choisi { font-size: 0.8rem; color: #6F829C; }
 .cc-choisi[hidden] { display: none; }
+
+/* ===========================================================================
+   Recherche d'article
+   Le magasin aura plus de 20 000 references : la cellule Designation propose
+   les premiers resultats, et la loupe ouvre la recherche complete avec le
+   filtre par usine.
+   =========================================================================== */
+.ar-cellule { position: relative; display: flex; gap: 6px; align-items: center; }
+.ar-cellule > input { flex: 1; min-width: 0; }
+.ar-loupe {
+  flex: 0 0 auto; width: 34px; height: 38px; display: inline-flex;
+  align-items: center; justify-content: center;
+  background: #F2F5FA; border: 1px solid #D5DBE6; border-radius: 9px;
+  color: #3C4A61; cursor: pointer; padding: 0;
+}
+.ar-loupe:hover { background: #14263C; border-color: #14263C; color: #fff; }
+.ar-loupe svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+.ar-inline {
+  /* « fixed » et pose dans le body : le tableau des lignes defile
+     horizontalement et rognait la liste a une seule ligne visible. */
+  position: fixed; z-index: 120;
+  min-width: min(520px, 88vw); width: max-content; max-width: min(680px, 92vw);
+  max-height: 340px; overflow-y: auto;
+  background: #fff; border: 1px solid #D5DBE6; border-radius: 10px;
+  box-shadow: 0 14px 36px rgba(16, 31, 56, 0.18);
+}
+.ar-inline[hidden] { display: none; }
+
+.ar-item {
+  display: grid; align-items: baseline; gap: 2px 14px; width: 100%;
+  grid-template-columns: 130px minmax(0, 1fr) 150px 92px 92px;
+  text-align: left; padding: 9px 13px; background: none; border: 0;
+  border-bottom: 1px solid #F2F5FA; cursor: pointer; font: inherit;
+}
+.ar-item:last-child { border-bottom: 0; }
+.ar-item:hover, .ar-item.actif { background: #F2F5FA; }
+.ar-ref { font-family: ui-monospace, Menlo, monospace; font-size: 0.78rem; color: #6F829C; }
+.ar-des { font-weight: 650; color: #14263C; font-size: 0.9rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ar-meta { font-size: 0.76rem; color: #6F829C;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ar-stock { font-size: 0.8rem; color: #3C4A61; text-align: right; font-variant-numeric: tabular-nums; }
+.ar-stock.vide { color: #C0392B; }
+.ar-prix { font-size: 0.88rem; font-weight: 700; color: #14263C; text-align: right; font-variant-numeric: tabular-nums; }
+.ar-tout {
+  display: block; width: 100%; text-align: left; padding: 10px 13px;
+  background: #F2F5FA; border: 0; border-top: 1px solid #D5DBE6;
+  font: inherit; font-size: 0.8rem; color: #3C4A61; cursor: pointer;
+}
+.ar-tout:hover { color: #14263C; text-decoration: underline; }
+
+/* Fenetre de recherche complete */
+.ar-filtres { display: grid; grid-template-columns: minmax(0, 2fr) 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.ar-filtres input, .ar-filtres select {
+  height: 40px; padding: 0 12px; border: 1px solid #D5DBE6; border-radius: 9px; font: inherit;
+}
+.ar-entete {
+  display: grid; grid-template-columns: 130px minmax(0, 1fr) 150px 92px 92px;
+  gap: 14px; padding: 0 13px 6px;
+  font-size: 0.7rem; font-weight: 750; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #6F829C;
+}
+.ar-entete .num { text-align: right; }
+.ar-resultats {
+  max-height: min(52vh, 420px); overflow-y: auto;
+  border: 1px solid #D5DBE6; border-radius: 10px;
+}
+.ar-rien { padding: 28px 14px; text-align: center; color: #6F829C; }
+.ar-pied { margin-top: 10px; font-size: 0.78rem; color: #6F829C; }
+
+@media (max-width: 820px) {
+  .ar-filtres { grid-template-columns: 1fr; }
+  .ar-item, .ar-entete { grid-template-columns: 1fr auto; }
+  .ar-entete { display: none; }
+  .ar-des { grid-column: 1 / -1; }
+  .ar-meta { grid-column: 1 / -1; }
+}
